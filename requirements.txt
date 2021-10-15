@@ -1,0 +1,6 @@
+PyYml
+PyYAML
+requests
+termcolor
+six
+python-owasp-zap-v2.4
