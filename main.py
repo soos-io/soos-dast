@@ -395,7 +395,7 @@ class SOOSDASTAnalysis:
                 configuration = yaml.load(file, Loader=yaml.FullLoader)
                 self.parse_configuration(configuration['config'], args.targetURL)
         else:
-            self.parse_configuration(args, args.targetURL)
+            self.parse_configuration(vars(args), args.targetURL)
 
     def run_analysis(self, configuration_file):
         console_log('Starting SOOS DAST Analysis')

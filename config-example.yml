@@ -1,6 +1,6 @@
 config:
-  clientId: 'd7dfb7ca7b58f9bf96c11e8b9c881d6eaa0a99dd5bbb9565cb0254ef12f5012f'
-  apiKey: 'YWE1NjhkODgtZTlkMC00ZTkwLThlYjktOTI0Mzg4ZDE5Njc5'
+  clientId: ''
+  apiKey: ''
   projectName: 'SOOS DAST Analysis'
   scanMode: 'baseline'
   failOnError: 'continue_on_error'
@@ -8,8 +8,8 @@ config:
   context:
     file: ''
     user: ''
-  apiURL: 'https://dev-app.soos.io/api/'
-  debug: true
+  apiURL: 'https://app.soos.io/api/'
+  debug: false
   ajaxSpider: false
   fullScan:
     minutes: ''
