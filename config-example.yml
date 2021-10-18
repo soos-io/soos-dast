@@ -8,9 +8,8 @@ config:
   context:
     file: ''
     user: ''
-  apiURL: 'https://dev-app.soos.io/api/'
-  targetUrl: ''
-  debug: true
+  apiURL: 'https://app.soos.io/api/'
+  debug: false
   ajaxSpider: false
   fullScan:
     minutes: ''

@@ -5,6 +5,7 @@ import json
 import requests
 from datetime import datetime
 from helpers.helper import ZAPHelper
+from argparse import ArgumentParser
 
 DEFAULT_API_URL = 'https://app.soos.io'
 
@@ -33,7 +34,7 @@ def has_value(prop):
 
 
 def is_true(prop):
-    return prop == True
+    return prop is True
 
 
 class DASTAnalysisResponse:
@@ -50,6 +51,7 @@ class SOOSDASTAnalysis:
     BASE_LINE_SCRIPT = 'zap-baseline.py'
     FULL_SCAN_SCRIPT = 'zap-full-scan.py'
     API_SCAN_SCRIPT = 'zap-api-scan.py'
+    CONFIG_FILE_FOLDER = '/zap/config/'
     DEFAULT_CONFIG_FILE = 'config.yml'
     ZAP_TARGET_URL_OPTION = '-t'
     ZAP_RULES_FILE_OPTION = '-c'
@@ -91,12 +93,13 @@ class SOOSDASTAnalysis:
         self.integration_type = "CI"
         self.analysis_tool = 'zap'
 
-    def parse_configuration(self, configuration):
+    def parse_configuration(self, configuration, target_url):
+        console_log('Configuration: ' + str(configuration))
+        valid_required('Target URL', target_url)
+        self.target_url = target_url
+
         for key, value in configuration.items():
-            if key == 'targetUrl':
-                valid_required(key, value)
-                self.target_url = value
-            elif key == 'clientId':
+            if key == 'clientId':
                 if value is None:
                     try:
                         self.api_key = os.environ.get('SOOS_CLIENT_ID')
@@ -139,10 +142,18 @@ class SOOSDASTAnalysis:
             elif key == 'context':
                 self.context_file = value['file']
                 self.user_context = value['user']
+            elif key == 'contextFile':
+                self.context_file = value
+            elif key == 'contextUser':
+                self.user_context = value
             elif key == 'fullScan':
-                self.api_scan_format = value['minutes']
+                self.minutes_delay = value['minutes']
+            elif key == 'fullScanMinutes':
+                self.minutes_delay = value
             elif key == 'apiScan':
                 self.api_scan_format = value['format']
+            elif key == 'apiScanFormat':
+                self.api_scan_format = value
             elif key == 'commitHash':
                 self.commit_hash = value
             elif key == 'branchName':
@@ -331,19 +342,66 @@ class SOOSDASTAnalysis:
         except Exception as e:
             exit_app(e)
 
+    def parse_args(self):
+        parser = ArgumentParser()
+        parser.add_argument('targetURL',
+                            help='The URL to be analyzed by the tool',)
+        parser.add_argument('--configFile', help='A Yaml file with all the analysis scan configuration', required=False)
+        parser.add_argument('--clientId', help='SOOS Client Id', required=False)
+        parser.add_argument('--apiKey', help='SOOS API Key', required=False)
+        parser.add_argument('--projectName', help='Project Name to be displayed in the SOOS Application', required=False)
+        parser.add_argument('--scanMode',
+                            help='DAST Scan mode. Values availables: baseline, fullscan, apiscan, and activescan',
+                            default='baseline',
+                            required=False)
+        parser.add_argument('--apiURL',
+                            help='The SOOS API URL',
+                            default='https://app.soos.io/api/',
+                            required=False)
+        parser.add_argument('--debug',
+                            help='Enable console log debugging',
+                            default=False,
+                            type=bool,
+                            required=False)
+        parser.add_argument('--ajaxSpider',
+                            help='Enable Ajax Spider scanning - Useful for Modern Web Apps',
+                            type=bool,
+                            required=False)
+        parser.add_argument('--rules',
+                            help='Project Name to be displayed in the SOOS Application',
+                            required=False)
+        parser.add_argument('--contextFile',
+                            help='Project Name to be displayed in the SOOS Application',
+                            required=False)
+        parser.add_argument('--contextUser',
+                            help='Project Name to be displayed in the SOOS Application',
+                            required=False)
+        parser.add_argument('--fullScanMinutes',
+                            help='Project Name to be displayed in the SOOS Application',
+                            required=False)
+        parser.add_argument('--apiScanFormat',
+                            help='Project Name to be displayed in the SOOS Application',
+                            required=False)
+        parser.add_argument('--activeScanLevel',
+                            help='Project Name to be displayed in the SOOS Application',
+                            required=False)
+
+        args = parser.parse_args()
+        if args.configFile is not None:
+            console_log('Reading config file: ' + args.configFile)
+            with open(self.CONFIG_FILE_FOLDER+args.configFile, mode='r') as file:
+                # The FullLoader parameter handles the conversion from YAML
+                # scalar values to Python the dictionary format
+                configuration = yaml.load(file, Loader=yaml.FullLoader)
+                self.parse_configuration(configuration['config'], args.targetURL)
+        else:
+            self.parse_configuration(vars(args), args.targetURL)
+
     def run_analysis(self, configuration_file):
         console_log('Starting SOOS DAST Analysis')
         print_line_separator()
-        if configuration_file is None:
-            configuration_file = self.DEFAULT_CONFIG_FILE
 
-        console_log('Reading config file: ' + configuration_file)
-        with open(configuration_file, mode='r') as file:
-            # The FullLoader parameter handles the conversion from YAML
-            # scalar values to Python the dictionary format
-            configuration = yaml.load(file, Loader=yaml.FullLoader)
-            console_log(configuration)
-            self.parse_configuration(configuration['config'])
+        self.parse_args()
 
         console_log('Configuration read')
         print_line_separator()
