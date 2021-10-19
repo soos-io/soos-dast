@@ -46,13 +46,12 @@ class DASTAnalysisResponse:
 
 class SOOSDASTAnalysis:
     REPORT_SCAN_RESULT_FILENAME = 'report.json'
-    REPORT_SCAN_RESULT_FILE = 'wrk/' + REPORT_SCAN_RESULT_FILENAME
+    REPORT_SCAN_RESULT_FILE = '/zap/wrk/' + REPORT_SCAN_RESULT_FILENAME
     PY_CMD = 'python3'
-    BASE_LINE_SCRIPT = 'zap-baseline.py'
-    FULL_SCAN_SCRIPT = 'zap-full-scan.py'
-    API_SCAN_SCRIPT = 'zap-api-scan.py'
+    BASE_LINE_SCRIPT = '/zap/zap-baseline.py'
+    FULL_SCAN_SCRIPT = '/zap/zap-full-scan.py'
+    API_SCAN_SCRIPT = '/zap/zap-api-scan.py'
     CONFIG_FILE_FOLDER = '/zap/config/'
-    DEFAULT_CONFIG_FILE = 'config.yml'
     ZAP_TARGET_URL_OPTION = '-t'
     ZAP_RULES_FILE_OPTION = '-c'
     ZAP_CONTEXT_FILE_OPTION = '-n'
