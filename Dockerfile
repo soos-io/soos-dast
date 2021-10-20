@@ -1,5 +1,7 @@
 FROM owasp/zap2docker-weekly
 
+USER root
+
 COPY ./main.py ./requirements.txt ./
 COPY ./helpers helpers/
 

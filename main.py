@@ -53,6 +53,7 @@ class SOOSDASTAnalysis:
     API_SCAN_SCRIPT = '/zap/zap-api-scan.py'
     CONFIG_FILE_FOLDER = '/zap/config/'
     ZAP_TARGET_URL_OPTION = '-t'
+    ZAP_MINIMUM_LEVEL_OPTION = '-l'
     ZAP_RULES_FILE_OPTION = '-c'
     ZAP_CONTEXT_FILE_OPTION = '-n'
     ZAP_MINUTES_DELAY_OPTION = '-m'
@@ -87,6 +88,7 @@ class SOOSDASTAnalysis:
         self.build_uri = None
         self.operating_environment = None
         self.integration_name = None
+        self.log_level = None
 
         # INTENTIONALLY HARDCODED
         self.integration_type = "CI"
@@ -135,9 +137,9 @@ class SOOSDASTAnalysis:
             elif key == 'rules':
                 self.rules_file = value
             elif key == 'debug':
-                self.debug_mode = value
+                self.debug_mode = True
             elif key == 'ajaxSpider':
-                self.ajax_spider_scan = value
+                self.ajax_spider_scan = True
             elif key == 'context':
                 self.context_file = value['file']
                 self.user_context = value['user']
@@ -167,6 +169,8 @@ class SOOSDASTAnalysis:
                 self.operating_environment = value
             elif key == 'integrationName':
                 self.integration_name = value
+            elif key == 'level':
+                self.log_level = value
 
     def __add_target_url_option__(self, args):
         if has_value(self.target_url):
@@ -202,8 +206,13 @@ class SOOSDASTAnalysis:
         if has_value(self.api_scan_format):
             args.append(self.ZAP_FORMAT_OPTION)
             args.append(self.api_scan_format)
-        elif self.scan_mode == 'fullscan':
-            exit_app('Format is required for fullscan mode.')
+        elif self.scan_mode == 'apiscan':
+            exit_app('Format is required for apiscan mode.')
+
+    def __add_log_level_option__(self, args):
+        if has_value(self.log_level):
+            args.append(self.ZAP_MINIMUM_LEVEL_OPTION)
+            args.append(self.log_level)
 
     def __add_report_file__(self, args):
         args.append(self.ZAP_JSON_REPORT_OPTION)
@@ -342,47 +351,55 @@ class SOOSDASTAnalysis:
             exit_app(e)
 
     def parse_args(self):
-        parser = ArgumentParser()
+        parser = ArgumentParser(description='SOOS DAST Analysis Script')
         parser.add_argument('targetURL',
-                            help='The URL to be analyzed by the tool',)
-        parser.add_argument('--configFile', help='A Yaml file with all the analysis scan configuration', required=False)
-        parser.add_argument('--clientId', help='SOOS Client Id', required=False)
-        parser.add_argument('--apiKey', help='SOOS API Key', required=False)
-        parser.add_argument('--projectName', help='Project Name to be displayed in the SOOS Application', required=False)
+                            help='target URL including the protocol, eg https://www.example.com',)
+        parser.add_argument('--configFile',
+                            help='SOOS yaml file with all the configuration for the DAST Analysis',
+                            required=False)
+        parser.add_argument('--clientId',
+                            help='SOOS Client Id',
+                            required=False)
+        parser.add_argument('--apiKey',
+                            help='SOOS API Key',
+                            required=False)
+        parser.add_argument('--projectName',
+                            help='SOOS project name',
+                            required=False)
         parser.add_argument('--scanMode',
-                            help='DAST Scan mode. Values availables: baseline, fullscan, apiscan, and activescan',
+                            help='SOOS DAST scan mode. Values available: baseline, fullscan, apiscan, and activescan',
                             default='baseline',
                             required=False)
         parser.add_argument('--apiURL',
-                            help='The SOOS API URL',
+                            help='SOOS API URL',
                             default='https://app.soos.io/api/',
                             required=False)
         parser.add_argument('--debug',
-                            help='Enable console log debugging',
+                            help='show debug messages',
                             default=False,
                             type=bool,
                             required=False)
         parser.add_argument('--ajaxSpider',
-                            help='Enable Ajax Spider scanning - Useful for Modern Web Apps',
+                            help='use the Ajax spider in addition to the traditional one',
                             type=bool,
                             required=False)
         parser.add_argument('--rules',
-                            help='Project Name to be displayed in the SOOS Application',
+                            help='rules file to use to INFO, IGNORE or FAIL warnings',
                             required=False)
         parser.add_argument('--contextFile',
-                            help='Project Name to be displayed in the SOOS Application',
+                            help='context file which will be loaded prior to scanning the target',
                             required=False)
         parser.add_argument('--contextUser',
-                            help='Project Name to be displayed in the SOOS Application',
+                            help='username to use for authenticated scans - must be defined in the given context file',
                             required=False)
         parser.add_argument('--fullScanMinutes',
                             help='Project Name to be displayed in the SOOS Application',
                             required=False)
         parser.add_argument('--apiScanFormat',
-                            help='Project Name to be displayed in the SOOS Application',
+                            help='target API format: openapi, soap, or graphql',
                             required=False)
-        parser.add_argument('--activeScanLevel',
-                            help='Project Name to be displayed in the SOOS Application',
+        parser.add_argument('--level',
+                            help='minimum level to show: PASS, IGNORE, INFO, WARN or FAIL',
                             required=False)
 
         args = parser.parse_args()
