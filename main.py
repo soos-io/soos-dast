@@ -37,11 +37,13 @@ def is_true(prop):
     return prop is True
 
 
-class DASTAnalysisResponse:
+class DASTStartAnalysisResponse:
     def __init__(self, dast_analysis_api_response):
-        self.report_url = dast_analysis_api_response['reportUrl']
         self.analysis_id = dast_analysis_api_response['analysisId']
-        self.project_id = dast_analysis_api_response['projectId']
+        if dast_analysis_api_response['projectId'] is not None:
+            self.project_id = dast_analysis_api_response['projectId']
+        elif dast_analysis_api_response['projectHash'] is not None:
+            self.project_id = dast_analysis_api_response['projectHash']
 
 
 class SOOSDASTAnalysis:
@@ -61,7 +63,8 @@ class SOOSDASTAnalysis:
     ZAP_AJAX_SPIDER_OPTION = '-j'
     ZAP_FORMAT_OPTION = '-f'
     ZAP_JSON_REPORT_OPTION = '-J'
-    URI_TEMPLATE = '{soos_base_uri}clients/{soos_client_id}/analysis/{soos_analysis_tool}'
+    URI_START_DAST_ANALYSIS_TEMPLATE = '{soos_base_uri}clients/{soos_client_id}/dast-tools/{soos_dast_tool}/analysis'
+    URI_UPLOAD_DAST_RESULTS_TEMPLATE = '{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/dast-tools/{soos_dast_tool}/analysis/{soos_analysis_id}'
 
     def __init__(self):
         self.client_id = None
@@ -92,7 +95,7 @@ class SOOSDASTAnalysis:
 
         # INTENTIONALLY HARDCODED
         self.integration_type = "CI"
-        self.analysis_tool = 'zap'
+        self.dast_analysis_tool = 'zap'
 
     def parse_configuration(self, configuration, target_url):
         console_log('Configuration: ' + str(configuration))
@@ -284,34 +287,48 @@ class SOOSDASTAnalysis:
 
         return self.__generate_command__(args)
 
-    def parse_zap_results_file(self):
+    def open_zap_results_file(self):
         with open(self.REPORT_SCAN_RESULT_FILE, mode='r') as file:
-            results = file.read()
-            zap_report_results = json.loads(results)
+            return file.read()
 
-        return zap_report_results
-
-    def __generate_api_request__(self):
-        url = self.URI_TEMPLATE
+    def __generate_start_dast_analysis_url__(self):
+        url = self.URI_START_DAST_ANALYSIS_TEMPLATE
         url = url.replace("{soos_base_uri}", self.base_uri)
         url = url.replace("{soos_client_id}", self.client_id)
-        url = url.replace("{soos_analysis_tool}", self.analysis_tool)
+        url = url.replace("{soos_dast_tool}", self.dast_analysis_tool)
 
         return url
 
-    def __make_soos_request__(self, zap_report_results):
+    def __generate_upload_results_url__(self, project_id, analysis_id):
+        url = self.URI_UPLOAD_DAST_RESULTS_TEMPLATE
+        url = url.replace("{soos_base_uri}", self.base_uri)
+        url = url.replace("{soos_client_id}", self.client_id)
+        url = url.replace("{soos_project_id}", project_id)
+        url = url.replace("{soos_dast_tool}", self.dast_analysis_tool)
+        url = url.replace("{soos_analysis_id}", analysis_id)
+
+        return url
+
+    def __make_soos_start_analysis_request__(self):
         console_log('Making request to SOOS')
-        api_url = self.__generate_api_request__()
+        api_url = self.__generate_start_dast_analysis_url__()
         console_log('SOOS URL Endpoint: ' + api_url)
 
-        param_values = dict(commitHast=self.commit_hash,
+        # Validate required fields
+        if self.project_name is None or len(self.project_name) == 0 or self.scan_mode is None or len(
+                self.scan_mode) == 0:
+            console_log('ERROR: projectName and scanMode are required')
+            sys.exit(1)
+
+        param_values = dict(projectName=self.project_name,
+                            commitHast=self.commit_hash,
                             branch=self.branch_name,
                             buildVersion=self.build_version,
                             buildUri=self.build_uri,
                             branchUri=self.branch_uri,
                             operationEnvironment=self.operating_environment,
                             integrationName=self.integration_name,
-                            result=zap_report_results)
+                            mode=self.scan_mode)
 
         # Clean up None values
         request_body = {k: v for k, v in param_values.items() if v is not None}
@@ -328,20 +345,47 @@ class SOOSDASTAnalysis:
             exit_app(message)
 
         elif api_response.status_code == 201:
-            return DASTAnalysisResponse(api_response.json())
+            return DASTStartAnalysisResponse(api_response.json())
 
-    def publish_results_to_soos(self):
+    def __make_upload_dast_results_request__(self, project_id, analysis_id):
+        console_log('Starting report results processing')
+        zap_report = self.open_zap_results_file()
+        console_log('File read')
+        results_json = json.loads(zap_report)
+        console_log('Get The json')
+        console_log('Making request to SOOS')
+        api_url = self.__generate_upload_results_url__(project_id, analysis_id)
+        console_log('SOOS URL Upload Results Endpoint: ' + api_url)
+        files = {'manifest': zap_report}
+
+        api_response = requests.put(
+            url=api_url,
+            data=dict(resultVersion=results_json["@version"]),
+            files=files,
+            headers={'x-soos-apikey': self.api_key, 'Content_type': 'multipart/form-data'})
+
+        console_log('response: '+str(api_response))
+
+        if api_response.status_code >= 400:
+            console_log('SOOS Upload Error')
+            error_response = api_response.json()
+            message = error_response['message']
+
+            exit_app(message)
+
+        elif api_response.status_code == 204:
+            console_log('SOOS Upload Success')
+            return True
+
+    def publish_results_to_soos(self, project_id, analysis_id):
         try:
-            console_log('Starting report results processing')
-            zap_report_results = self.parse_zap_results_file()
+            self.__make_upload_dast_results_request__(project_id, analysis_id)
 
-            results = self.__make_soos_request__(zap_report_results)
-
-            console_log('Report processed successfully')
             print_line_separator()
-            console_log('Project Id: ' + results['project_id'])
-            console_log('Analysis Id: ' + results['analysis_id'])
-            console_log('Report URL: ' + results['report_url'])
+            console_log('Report processed successfully')
+            console_log('Project Id: ' + project_id)
+            console_log('Analysis Id: ' + analysis_id)
+            # console_log('Report URL: ' + results['report_url'])
             print_line_separator()
             console_log('SOOS DAST Analysis successful')
             print_line_separator()
@@ -353,7 +397,7 @@ class SOOSDASTAnalysis:
     def parse_args(self):
         parser = ArgumentParser(description='SOOS DAST Analysis Script')
         parser.add_argument('targetURL',
-                            help='target URL including the protocol, eg https://www.example.com',)
+                            help='target URL including the protocol, eg https://www.example.com', )
         parser.add_argument('--configFile',
                             help='SOOS yaml file with all the configuration for the DAST Analysis',
                             required=False)
@@ -405,7 +449,7 @@ class SOOSDASTAnalysis:
         args = parser.parse_args()
         if args.configFile is not None:
             console_log('Reading config file: ' + args.configFile)
-            with open(self.CONFIG_FILE_FOLDER+args.configFile, mode='r') as file:
+            with open(self.CONFIG_FILE_FOLDER + args.configFile, mode='r') as file:
                 # The FullLoader parameter handles the conversion from YAML
                 # scalar values to Python the dictionary format
                 configuration = yaml.load(file, Loader=yaml.FullLoader)
@@ -413,48 +457,50 @@ class SOOSDASTAnalysis:
         else:
             self.parse_configuration(vars(args), args.targetURL)
 
-    def run_analysis(self, configuration_file):
-        console_log('Starting SOOS DAST Analysis')
-        print_line_separator()
-
-        self.parse_args()
-
-        console_log('Configuration read')
-        print_line_separator()
-
-        console_log('Project Name: ' + self.project_name)
-        console_log('Scan Mode: ' + self.scan_mode)
-        console_log('API URL: ' + self.base_uri)
-        console_log('Target URL: ' + self.target_url)
-        print_line_separator()
-
-        console_log('Executing ' + self.scan_mode + ' scan')
-        # execute test
-        command = ''
-        if self.scan_mode == 'baseline':
-            command = self.baseline_scan()
-        elif self.scan_mode == 'fullscan':
-            command = self.full_scan()
-        elif self.scan_mode == 'apiscan':
-            command = self.api_scan()
-        elif self.scan_mode == 'activescan':
-            self.active_scan()
-            sys.exit(0)
-
-        if len(command) == 0:
-            exit_app('Invalid scan mode')
+    def run_analysis(self):
+        try:
+            console_log('Starting SOOS DAST Analysis')
             print_line_separator()
 
-        console_log('Command to be executed: ' + command)
-        os.system(command)
-        print_line_separator()
+            self.parse_args()
 
-        self.publish_results_to_soos()
+            console_log('Configuration read')
+            print_line_separator()
+
+            console_log('Project Name: ' + self.project_name)
+            console_log('Scan Mode: ' + self.scan_mode)
+            console_log('API URL: ' + self.base_uri)
+            console_log('Target URL: ' + self.target_url)
+            print_line_separator()
+
+            console_log('Executing ' + self.scan_mode + ' scan')
+            soos_dast_start_response = self.__make_soos_start_analysis_request__()
+            # execute test
+            command = ''
+            if self.scan_mode == 'baseline':
+                command = self.baseline_scan()
+            elif self.scan_mode == 'fullscan':
+                command = self.full_scan()
+            elif self.scan_mode == 'apiscan':
+                command = self.api_scan()
+            elif self.scan_mode == 'activescan':
+                self.active_scan()
+                sys.exit(0)
+
+            if len(command) == 0:
+                exit_app('Invalid scan mode')
+                print_line_separator()
+
+            console_log('Command to be executed: ' + command)
+            os.system(command)
+            print_line_separator()
+
+            self.publish_results_to_soos(project_id=soos_dast_start_response.project_id,
+                                         analysis_id=soos_dast_start_response.analysis_id)
+        except Exception as e:
+            exit_app(e)
 
 
 if __name__ == "__main__":
     dastAnalysis = SOOSDASTAnalysis()
-    if len(sys.argv) == 2:
-        dastAnalysis.run_analysis(sys.argv[1])
-    else:
-        dastAnalysis.run_analysis(None)
+    dastAnalysis.run_analysis()
