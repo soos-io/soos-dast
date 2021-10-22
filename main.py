@@ -356,24 +356,27 @@ class SOOSDASTAnalysis:
         console_log('Making request to SOOS')
         api_url = self.__generate_upload_results_url__(project_id, analysis_id)
         console_log('SOOS URL Upload Results Endpoint: ' + api_url)
-        files = {'manifest': zap_report}
+        files = {'manifest': json.dumps(zap_report)}
 
         api_response = requests.put(
             url=api_url,
             data=dict(resultVersion=results_json["@version"]),
             files=files,
-            headers={'x-soos-apikey': self.api_key, 'Content_type': 'multipart/form-data'})
+            headers={'x-soos-apikey': self.api_key, 'Content-type': 'multipart/form-data'})
 
-        console_log('response: '+str(api_response))
+        console_log('response: ' + str(api_response))
 
         if api_response.status_code >= 400:
-            console_log('SOOS Upload Error')
-            error_response = api_response.json()
-            message = error_response['message']
+            console_log('SOOS Upload Error: ' + str(api_response.status_code))
+            try:
+                error_response = api_response.json()
+                message = error_response['message']
+            except Exception as e:
+                message = 'An error has occurred'
 
             exit_app(message)
 
-        elif api_response.status_code == 204:
+        elif api_response.status_code >= 200:
             console_log('SOOS Upload Success')
             return True
 
