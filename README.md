@@ -1,7 +1,7 @@
 # Stack-Aware
 
 ## DAST Analysis Tool
-A **Dynamic Analysis Security Testing**, or **DAST**, tool is an application security solution that can help to find certain vulnerabilities in web applications while they are running in production.
+A **Dynamic Analysis Security Testing**, or **DAST**, tool is a security solution application that can help find certain vulnerabilities in web applications while they are running in production.
 
 The **Stack-Aware** is the **DAST** solution provided by **SOOS** (Supported by [OWASP ZAP](https://owasp.org/www-project-zap/)) to get the analysis results for your web applications into the **SOOS** Application.
 
@@ -10,7 +10,7 @@ The **Stack-Aware** is the **DAST** solution provided by **SOOS** (Supported by 
 - Have your application or website reachable on some URL.  
 
 ## How to Use
-To execute the script you need to run from a terminal this command:
+To execute the script you need to run this command from a terminal:
 ``` shell
 docker run -it --rm [-v <path_with_config_files>:/zap/config/] soos/dast:x.y.z [--configFile CONFIGFILE] [--clientId CLIENTID]
                [--apiKey APIKEY] [--projectName PROJECTNAME]
@@ -32,7 +32,7 @@ docker run -it --rm [-v <path_with_config_files>:/zap/config/] soos/dast:x.y.z [
 
 | Name                                       | Required                                   | Description                                                                                          |
 |--------------------------------------------|--------------------------------------------|------------------------------------------------------------------------------------------------------|
-| `configFile`                               |                                            | SOOS YAML file with all the configuration for the DAST Analysis. See [config file definition](#config-file-definition)          |
+| `configFile`                               |                                            | SOOS YAML file with all the configurations for the DAST Analysis. See [config file definition](#config-file-definition)          |
 | `-v <path_with_config_files>:/zap/config/` | Yes - if `configFile` param is defined     |                                                                                                      |
 | `clientId`                                 | Yes - if `configFile` param is not defined | SOOS client id                                                                                       |
 | `apiKey`                                   | Yes - if `configFile` param is not defined | SOOS API key                                                                                         |
@@ -41,10 +41,10 @@ docker run -it --rm [-v <path_with_config_files>:/zap/config/] soos/dast:x.y.z [
 | `apiURL`                                   | Yes - if `configFile` param is not defined | SOOS API URL. By Default: `https://app.soos.io/api/`                                                 |
 | `debug`                                    |                                            | show debug messages                                                                                  |
 | `ajaxSpider`                               |                                            | use the Ajax spider in addition to the traditional one                                               |
-| `rules`                                    |                                            | rules file to use to `INFO`, `IGNORE` or `FAIL` warnings                                             |
+| `rules`                                    |                                            | rules file to use for `INFO`, `IGNORE` or `FAIL` warnings                                             |
 | `contextFile`                              |                                            | context file which will be loaded prior to scanning the target. Required for authenticated URLs      |
 | `contextUser`                              |                                            | username to use for authenticated scans - must be defined in the given context file                  |
-| `fullScanMinutes`                          | Yes - if `scanMode` is `fullscan`          | the number of minutes to spider for                                                                  |
+| `fullScanMinutes`                          | Yes - if `scanMode` is `fullscan`          | the number of minutes for spider to run                                                                  |
 | `apiScanFormat`                            | Yes - if `scanMode` is `apiscan`           | target API format: `openapi`, `soap`, or `graphql`                                                   |
 | `level`                                    |                                            | minimum level to show: `PASS`, `IGNORE`, `INFO`, `WARN` or `FAIL`                                    |
 
@@ -55,14 +55,14 @@ config:
   clientId: 'SOOS_CLIENT_ID' # Required - SOOS Client Id provided by the Application
   apiKey: 'SOOS_API_KEY' # Required - SOOS API Key provided by the Application
   projectName: 'Project Name' # Required
-  scanMode: 'activescan' # Required - DAST Scan mode. Values availables: baseline, fullscan, apiscan, and activescan
+  scanMode: 'activescan' # Required - DAST Scan mode. Values available: baseline, fullscan, apiscan, and activescan
   apiURL: 'https://app.soos.io/api/' # Required - The SOOS API URL
   debug: true # Optional - Enable console log debugging. Default: false 
   ajaxSpider: false # Optional - Enable Ajax Spider scanning - Useful for Modern Web Apps
   rules: '' # Optional - 
   context:
     file: '' # Optional
-    user: '' # Opitonal
+    user: '' # Optional
   fullScan:
     minutes: ''
   apiScan:
