@@ -6,6 +6,7 @@ import requests
 from datetime import datetime
 from helpers.helper import ZAPHelper
 from argparse import ArgumentParser
+from bleach import clean
 
 DEFAULT_API_URL = 'https://app.soos.io'
 
@@ -339,8 +340,11 @@ class SOOSDASTAnalysis:
             headers={'x-soos-apikey': self.api_key, 'Content-Type': 'application/json'})
 
         if api_response.status_code >= 400:
-            error_response = api_response.json()
-            message = error_response['message']
+            try:
+                error_response = api_response.json()
+                message = error_response['message']
+            except Exception as e:
+                message = "An error has occurred Starting the Analysis"
 
             exit_app(message)
 
@@ -356,23 +360,26 @@ class SOOSDASTAnalysis:
         console_log('Making request to SOOS')
         api_url = self.__generate_upload_results_url__(project_id, analysis_id)
         console_log('SOOS URL Upload Results Endpoint: ' + api_url)
-        files = {'manifest': json.dumps(zap_report)}
+        results_json = json.loads(zap_report)
+        files = {"manifest": clean(str(results_json)
+                                   .replace('<script ', '_script ')
+                                   .replace('<script>', '_script_')
+                                   .replace('</script>', '_script_'))}
 
         api_response = requests.put(
             url=api_url,
             data=dict(resultVersion=results_json["@version"]),
             files=files,
-            headers={'x-soos-apikey': self.api_key, 'Content-type': 'multipart/form-data'})
-
-        console_log('response: ' + str(api_response))
+            headers={"x-soos-apikey": self.api_key, "Content_type": "multipart/form-data"})
 
         if api_response.status_code >= 400:
-            console_log('SOOS Upload Error: ' + str(api_response.status_code))
+            console_log('ERROR Status Code ' + str(api_response.status_code))
+            console_log('ERROR Response ' + api_response.text)
             try:
                 error_response = api_response.json()
                 message = error_response['message']
             except Exception as e:
-                message = 'An error has occurred'
+                message = 'An error has occurred uploading the report'
 
             exit_app(message)
 
@@ -388,7 +395,6 @@ class SOOSDASTAnalysis:
             console_log('Report processed successfully')
             console_log('Project Id: ' + project_id)
             console_log('Analysis Id: ' + analysis_id)
-            # console_log('Report URL: ' + results['report_url'])
             print_line_separator()
             console_log('SOOS DAST Analysis successful')
             print_line_separator()
@@ -494,7 +500,6 @@ class SOOSDASTAnalysis:
                 exit_app('Invalid scan mode')
                 print_line_separator()
 
-            console_log('Command to be executed: ' + command)
             os.system(command)
             print_line_separator()
 
