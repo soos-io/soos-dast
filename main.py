@@ -7,20 +7,21 @@ from datetime import datetime
 from helpers.helper import ZAPHelper
 from argparse import ArgumentParser
 from bleach import clean
+from typing import List
 
 DEFAULT_API_URL = 'https://app.soos.io'
 
 
-def console_log(message):
+def console_log(message: str) -> None:
     time_now = datetime.utcnow().isoformat(timespec="seconds", sep=" ")
     print(time_now + " SOOS: " + str(message))
 
 
-def print_line_separator():
+def print_line_separator() -> None:
     print('----------------------------------------------------------------------------------------------------------')
 
 
-def exit_app(e):
+def exit_app(e) -> None:
     console_log('ERROR: ' + str(e))
     sys.exit(1)
 
@@ -30,11 +31,11 @@ def valid_required(key, value):
         exit_app(key + ' is required')
 
 
-def has_value(prop):
+def has_value(prop) -> bool:
     return prop is not None and len(prop) > 0
 
 
-def is_true(prop):
+def is_true(prop) -> bool:
     return prop is True
 
 
@@ -91,14 +92,14 @@ class SOOSDASTAnalysis:
         self.build_version = None
         self.build_uri = None
         self.operating_environment = None
-        self.integration_name = None
+        self.integration_name = 'Script'
         self.log_level = None
 
         # INTENTIONALLY HARDCODED
-        self.integration_type = "CI"
+        self.integration_type = 'Script'
         self.dast_analysis_tool = 'zap'
 
-    def parse_configuration(self, configuration, target_url):
+    def parse_configuration(self, configuration: dict, target_url: str):
         console_log('Configuration: ' + str(configuration))
         valid_required('Target URL', target_url)
         self.target_url = target_url
@@ -176,53 +177,53 @@ class SOOSDASTAnalysis:
             elif key == 'level':
                 self.log_level = value
 
-    def __add_target_url_option__(self, args):
+    def __add_target_url_option__(self, args: List[str]) -> None:
         if has_value(self.target_url):
             args.append(self.ZAP_TARGET_URL_OPTION)
             args.append(self.target_url)
         else:
             exit_app('Target url is required.')
 
-    def __add_rules_file_option__(self, args):
+    def __add_rules_file_option__(self, args: List[str]) -> None:
         if has_value(self.rules_file):
             args.append(self.ZAP_RULES_FILE_OPTION)
             args.append(self.rules_file)
 
-    def __add_context_file_option__(self, args):
+    def __add_context_file_option__(self, args: List[str]) -> None:
         if has_value(self.context_file):
             args.append(self.ZAP_CONTEXT_FILE_OPTION)
             args.append(self.context_file)
 
-    def __add_debug_option__(self, args):
+    def __add_debug_option__(self, args: List[str]) -> None:
         if is_true(self.debug_mode):
             args.append(self.ZAP_DEBUG_OPTION)
 
-    def __add_ajax_spider_scan_option__(self, args):
+    def __add_ajax_spider_scan_option__(self, args: List[str]) -> None:
         if is_true(self.ajax_spider_scan):
             args.append(self.ZAP_AJAX_SPIDER_OPTION)
 
-    def __add_minutes_delay_option__(self, args):
+    def __add_minutes_delay_option__(self, args: List[str]) -> None:
         if has_value(self.minutes_delay):
             args.append(self.ZAP_MINUTES_DELAY_OPTION)
             args.append(self.minutes_delay)
 
-    def __add_format_option__(self, args):
+    def __add_format_option__(self, args: List[str]) -> None:
         if has_value(self.api_scan_format):
             args.append(self.ZAP_FORMAT_OPTION)
             args.append(self.api_scan_format)
         elif self.scan_mode == 'apiscan':
             exit_app('Format is required for apiscan mode.')
 
-    def __add_log_level_option__(self, args):
+    def __add_log_level_option__(self, args: List[str]) -> None:
         if has_value(self.log_level):
             args.append(self.ZAP_MINIMUM_LEVEL_OPTION)
             args.append(self.log_level)
 
-    def __add_report_file__(self, args):
+    def __add_report_file__(self, args: List[str]) -> None:
         args.append(self.ZAP_JSON_REPORT_OPTION)
         args.append(self.REPORT_SCAN_RESULT_FILENAME)
 
-    def __generate_command__(self, args):
+    def __generate_command__(self, args: List[str]) -> str:
         self.__add_debug_option__(args)
         self.__add_rules_file_option__(args)
         self.__add_context_file_option__(args)
@@ -233,26 +234,26 @@ class SOOSDASTAnalysis:
 
         return ' '.join(args)
 
-    def baseline_scan(self):
-        args = [self.PY_CMD,
-                self.BASE_LINE_SCRIPT]
+    def baseline_scan(self) -> str:
+        args: List[str] = [self.PY_CMD,
+                           self.BASE_LINE_SCRIPT]
 
         self.__add_target_url_option__(args)
 
         return self.__generate_command__(args)
 
-    def full_scan(self):
-        args = [self.PY_CMD,
-                self.BASE_LINE_SCRIPT]
+    def full_scan(self) -> str:
+        args: List[str] = [self.PY_CMD,
+                           self.BASE_LINE_SCRIPT]
 
         self.__add_target_url_option__(args)
 
         return self.__generate_command__(args)
 
-    def api_scan(self):
+    def api_scan(self) -> str:
         valid_required('api_scan_format', self.api_scan_format)
-        args = [self.PY_CMD,
-                self.API_SCAN_SCRIPT]
+        args: List[str] = [self.PY_CMD,
+                           self.API_SCAN_SCRIPT]
 
         self.__add_target_url_option__(args)
         self.__add_format_option__(args)
@@ -292,7 +293,7 @@ class SOOSDASTAnalysis:
         with open(self.REPORT_SCAN_RESULT_FILE, mode='r') as file:
             return file.read()
 
-    def __generate_start_dast_analysis_url__(self):
+    def __generate_start_dast_analysis_url__(self) -> str:
         url = self.URI_START_DAST_ANALYSIS_TEMPLATE
         url = url.replace("{soos_base_uri}", self.base_uri)
         url = url.replace("{soos_client_id}", self.client_id)
@@ -300,7 +301,7 @@ class SOOSDASTAnalysis:
 
         return url
 
-    def __generate_upload_results_url__(self, project_id, analysis_id):
+    def __generate_upload_results_url__(self, project_id: str, analysis_id: str) -> str:
         url = self.URI_UPLOAD_DAST_RESULTS_TEMPLATE
         url = url.replace("{soos_base_uri}", self.base_uri)
         url = url.replace("{soos_client_id}", self.client_id)
@@ -310,7 +311,7 @@ class SOOSDASTAnalysis:
 
         return url
 
-    def __make_soos_start_analysis_request__(self):
+    def __make_soos_start_analysis_request__(self) -> DASTStartAnalysisResponse:
         console_log('Making request to SOOS')
         api_url = self.__generate_start_dast_analysis_url__()
         console_log('SOOS URL Endpoint: ' + api_url)
@@ -321,15 +322,16 @@ class SOOSDASTAnalysis:
             console_log('ERROR: projectName and scanMode are required')
             sys.exit(1)
 
-        param_values = dict(projectName=self.project_name,
-                            commitHast=self.commit_hash,
-                            branch=self.branch_name,
-                            buildVersion=self.build_version,
-                            buildUri=self.build_uri,
-                            branchUri=self.branch_uri,
-                            operationEnvironment=self.operating_environment,
-                            integrationName=self.integration_name,
-                            mode=self.scan_mode)
+        param_values: dict = dict(projectName=self.project_name,
+                                  commitHast=self.commit_hash,
+                                  branch=self.branch_name,
+                                  buildVersion=self.build_version,
+                                  buildUri=self.build_uri,
+                                  branchUri=self.branch_uri,
+                                  operationEnvironment=self.operating_environment,
+                                  integrationName=self.integration_name,
+                                  integrationType=self.integration_type,
+                                  mode=self.scan_mode)
 
         # Clean up None values
         request_body = {k: v for k, v in param_values.items() if v is not None}
@@ -351,14 +353,13 @@ class SOOSDASTAnalysis:
         elif api_response.status_code == 201:
             return DASTStartAnalysisResponse(api_response.json())
 
-    def __make_upload_dast_results_request__(self, project_id, analysis_id):
+    def __make_upload_dast_results_request__(self, project_id: str, analysis_id: str) -> bool:
         console_log('Starting report results processing')
         zap_report = self.open_zap_results_file()
         console_log('File read')
-        results_json = json.loads(zap_report)
         console_log('Get The json')
         console_log('Making request to SOOS')
-        api_url = self.__generate_upload_results_url__(project_id, analysis_id)
+        api_url: str = self.__generate_upload_results_url__(project_id, analysis_id)
         console_log('SOOS URL Upload Results Endpoint: ' + api_url)
         results_json = json.loads(zap_report)
         files = {"manifest": clean(str(results_json)
@@ -366,15 +367,13 @@ class SOOSDASTAnalysis:
                                    .replace('<script>', '_script_')
                                    .replace('</script>', '_script_'))}
 
-        api_response = requests.put(
+        api_response: requests.Response = requests.put(
             url=api_url,
             data=dict(resultVersion=results_json["@version"]),
             files=files,
             headers={"x-soos-apikey": self.api_key, "Content_type": "multipart/form-data"})
 
         if api_response.status_code >= 400:
-            console_log('ERROR Status Code ' + str(api_response.status_code))
-            console_log('ERROR Response ' + api_response.text)
             try:
                 error_response = api_response.json()
                 message = error_response['message']
@@ -387,7 +386,7 @@ class SOOSDASTAnalysis:
             console_log('SOOS Upload Success')
             return True
 
-    def publish_results_to_soos(self, project_id, analysis_id):
+    def publish_results_to_soos(self, project_id: str, analysis_id: str) -> None:
         try:
             self.__make_upload_dast_results_request__(project_id, analysis_id)
 
@@ -403,7 +402,7 @@ class SOOSDASTAnalysis:
         except Exception as e:
             exit_app(e)
 
-    def parse_args(self):
+    def parse_args(self) -> None:
         parser = ArgumentParser(description='SOOS DAST Analysis Script')
         parser.add_argument('targetURL',
                             help='target URL including the protocol, eg https://www.example.com', )
@@ -455,7 +454,7 @@ class SOOSDASTAnalysis:
                             help='minimum level to show: PASS, IGNORE, INFO, WARN or FAIL',
                             required=False)
 
-        args = parser.parse_args()
+        args: Namespace = parser.parse_args()
         if args.configFile is not None:
             console_log('Reading config file: ' + args.configFile)
             with open(self.CONFIG_FILE_FOLDER + args.configFile, mode='r') as file:
@@ -466,7 +465,7 @@ class SOOSDASTAnalysis:
         else:
             self.parse_configuration(vars(args), args.targetURL)
 
-    def run_analysis(self):
+    def run_analysis(self) -> None:
         try:
             console_log('Starting SOOS DAST Analysis')
             print_line_separator()
