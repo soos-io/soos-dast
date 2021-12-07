@@ -11,6 +11,7 @@ DEFAULT_INTEGRATION_TYPE: str = 'Script'
 DEFAULT_DAST_TOOL: str = 'zap'
 SERVER_ERROR_CODES = range(500, 599)
 RETRY_DELAY = 3  # seconds
+REQUEST_TIMEOUT = 5
 
 
 # OWASP ZAP Constants
