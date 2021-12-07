@@ -290,7 +290,7 @@ class SOOSDASTAnalysis:
         return self.__generate_command__(args)
 
     def open_zap_results_file(self):
-        with open(self.REPORT_SCAN_RESULT_FILE, mode='r') as file:
+        with open(self.REPORT_SCAN_RESULT_FILE, mode='r', encoding='utf-8') as file:
             return file.read()
 
     def __generate_start_dast_analysis_url__(self) -> str:
@@ -362,10 +362,11 @@ class SOOSDASTAnalysis:
         api_url: str = self.__generate_upload_results_url__(project_id, analysis_id)
         console_log('SOOS URL Upload Results Endpoint: ' + api_url)
         results_json = json.loads(zap_report)
-        files = {"manifest": clean(str(results_json)
-                                   .replace('<script ', '_script ')
-                                   .replace('<script>', '_script_')
-                                   .replace('</script>', '_script_'))}
+        manifest = zap_report.replace('<script ', '_script ')\
+            .replace('<script>', '_script_')\
+            .replace('</script>', '_script_')
+
+        files = {"manifest": manifest}
 
         api_response: requests.Response = requests.put(
             url=api_url,
@@ -457,7 +458,7 @@ class SOOSDASTAnalysis:
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
             console_log('Reading config file: ' + args.configFile)
-            with open(self.CONFIG_FILE_FOLDER + args.configFile, mode='r') as file:
+            with open(self.CONFIG_FILE_FOLDER + args.configFile, mode='r', encoding='utf-8') as file:
                 # The FullLoader parameter handles the conversion from YAML
                 # scalar values to Python the dictionary format
                 configuration = yaml.load(file, Loader=yaml.FullLoader)
