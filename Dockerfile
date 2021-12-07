@@ -4,6 +4,7 @@ USER root
 
 COPY ./main.py ./requirements.txt ./
 COPY ./helpers helpers/
+COPY ./model model/
 
 RUN pip3 install -r requirements.txt && mkdir /zap/wrk
 

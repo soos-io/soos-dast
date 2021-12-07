@@ -4,9 +4,9 @@ from requests import Response, RequestException
 
 
 class TargetAvailabilityCheck:
-
     def __init__(
-        self, is_available: bool,
+        self,
+        is_available: bool,
         response: Optional[Response] = None,
         unavailable_reason: Optional[RequestException] = None,
     ):

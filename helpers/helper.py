@@ -24,29 +24,48 @@ class ZAPHelper(object):
     """ZAPHelper class for wrapping the ZAP API client."""
 
     alert_levels = {
-        'Informational': 1,
-        'Low': 2,
-        'Medium': 3,
-        'High': 4,
+        "Informational": 1,
+        "Low": 2,
+        "Medium": 3,
+        "High": 4,
     }
 
     scanner_group_map = {
-        'sqli': ['40018', '40019','40020','40021','40022','40024','40027', '90018'],
-        'xss': ['40012', '40014', '40016', '40017', '40026', '90026'],
-        'xss_reflected': ['40012'],
-        'xss_persistent': ['40014', '40016', '40017'],
+        "sqli": [
+            "40018",
+            "40019",
+            "40020",
+            "40021",
+            "40022",
+            "40024",
+            "40027",
+            "90018",
+        ],
+        "xss": ["40012", "40014", "40016", "40017", "40026", "90026"],
+        "xss_reflected": ["40012"],
+        "xss_persistent": ["40014", "40016", "40017"],
     }
 
     timeout = 60
     _status_check_sleep = 10
 
-    def __init__(self, zap_path='./', port=8090, url='http://127.0.0.1', api_key='', log_path=None, logger=None):
+    def __init__(
+        self,
+        zap_path="./",
+        port=8090,
+        url="http://127.0.0.1",
+        api_key="",
+        log_path=None,
+        logger=None,
+    ):
         if os.path.isfile(zap_path):
             zap_path = os.path.dirname(zap_path)
         self.zap_path = zap_path
         self.port = port
-        self.proxy_url = '{0}:{1}'.format(url, self.port)
-        self.zap = ZAPv2(proxies={'http': self.proxy_url, 'https': self.proxy_url}, apikey=api_key)
+        self.proxy_url = "{0}:{1}".format(url, self.port)
+        self.zap = ZAPv2(
+            proxies={"http": self.proxy_url, "https": self.proxy_url}, apikey=api_key
+        )
         self.api_key = api_key
         self.log_path = log_path
         self.logger = logger or console
@@ -54,70 +73,79 @@ class ZAPHelper(object):
     @property
     def scanner_groups(self):
         """Available scanner groups."""
-        return ['all'] + list(self.scanner_group_map.keys())
+        return ["all"] + list(self.scanner_group_map.keys())
 
     def start(self, options=None):
         """Start the ZAP Daemon."""
         if self.is_running():
-            self.logger.warn('ZAP is already running on port {0}'.format(self.port))
+            self.logger.warn("ZAP is already running on port {0}".format(self.port))
             return
 
-        if platform.system() == 'Windows' or platform.system().startswith('CYGWIN'):
-            executable = 'zap.bat'
+        if platform.system() == "Windows" or platform.system().startswith("CYGWIN"):
+            executable = "zap.bat"
         else:
-            executable = 'zap.sh'
+            executable = "zap.sh"
 
         executable_path = os.path.join(self.zap_path, executable)
         if not os.path.isfile(executable_path):
-            raise ZAPError(('ZAP was not found in the path "{0}". You can set the path to where ZAP is ' +
-                            'installed on your system using the --zap-path command line parameter or by ' +
-                            'default using the ZAP_PATH environment variable.').format(self.zap_path))
+            raise ZAPError(
+                (
+                    'ZAP was not found in the path "{0}". You can set the path to where ZAP is '
+                    + "installed on your system using the --zap-path command line parameter or by "
+                    + "default using the ZAP_PATH environment variable."
+                ).format(self.zap_path)
+            )
 
-        zap_command = [executable_path, '-daemon', '-port', str(self.port)]
+        zap_command = [executable_path, "-daemon", "-port", str(self.port)]
         if options:
             extra_options = shlex.split(options)
             zap_command += extra_options
 
         if self.log_path is None:
-            log_path = os.path.join(self.zap_path, 'zap.log')
+            log_path = os.path.join(self.zap_path, "zap.log")
         else:
-            log_path = os.path.join(self.log_path, 'zap.log')
+            log_path = os.path.join(self.log_path, "zap.log")
 
-        self.logger.debug('Starting ZAP process with command: {0}.'.format(' '.join(zap_command)))
-        self.logger.debug('Logging to {0}'.format(log_path))
-        self.logger.debug('ZAP Path {0}'.format(self.zap_path))
-        with open(log_path, 'w+') as log_file:
+        self.logger.debug(
+            "Starting ZAP process with command: {0}.".format(" ".join(zap_command))
+        )
+        self.logger.debug("Logging to {0}".format(log_path))
+        self.logger.debug("ZAP Path {0}".format(self.zap_path))
+        with open(log_path, "w+") as log_file:
             subprocess.Popen(
-                zap_command, cwd=self.zap_path, stdout=log_file,
-                stderr=subprocess.STDOUT)
+                zap_command,
+                cwd=self.zap_path,
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+            )
 
         self.wait_for_zap(self.timeout)
 
-        self.logger.debug('ZAP started successfully.')
+        self.logger.debug("ZAP started successfully.")
 
     def shutdown(self):
         """Shutdown ZAP."""
         if not self.is_running():
-            self.logger.warn('ZAP is not running.')
+            self.logger.warn("ZAP is not running.")
             return
 
-        self.logger.debug('Shutting down ZAP.')
+        self.logger.debug("Shutting down ZAP.")
         self.zap.core.shutdown()
 
         timeout_time = time.time() + self.timeout
         while self.is_running():
             if time.time() > timeout_time:
-                raise ZAPError('Timed out waiting for ZAP to shutdown.')
+                raise ZAPError("Timed out waiting for ZAP to shutdown.")
             time.sleep(2)
 
-        self.logger.debug('ZAP shutdown successfully.')
+        self.logger.debug("ZAP shutdown successfully.")
 
     def wait_for_zap(self, timeout):
         """Wait for ZAP to be ready to receive API calls."""
         timeout_time = time.time() + timeout
         while not self.is_running():
             if time.time() > timeout_time:
-                raise ZAPError('Timed out waiting for ZAP to start.')
+                raise ZAPError("Timed out waiting for ZAP to start.")
             time.sleep(2)
 
     def is_running(self):
@@ -127,10 +155,10 @@ class ZAPHelper(object):
         except RequestException:
             return False
 
-        if 'ZAP-Header' in result.headers.get('Access-Control-Allow-Headers', []):
+        if "ZAP-Header" in result.headers.get("Access-Control-Allow-Headers", []):
             return True
 
-        raise ZAPError('Another process is listening on {0}'.format(self.proxy_url))
+        raise ZAPError("Another process is listening on {0}".format(self.proxy_url))
 
     def open_url(self, url, sleep_after_open=2):
         """Access a URL through ZAP."""
@@ -140,96 +168,115 @@ class ZAPHelper(object):
 
     def run_spider(self, target_url, context_name=None, user_name=None):
         """Run spider against a URL."""
-        self.logger.debug('Spidering target {0}...'.format(target_url))
+        self.logger.debug("Spidering target {0}...".format(target_url))
 
         context_id, user_id = self._get_context_and_user_ids(context_name, user_name)
 
         if user_id:
-            self.logger.debug('Running spider in context {0} as user {1}'.format(context_id, user_id))
+            self.logger.debug(
+                "Running spider in context {0} as user {1}".format(context_id, user_id)
+            )
             scan_id = self.zap.spider.scan_as_user(context_id, user_id, target_url)
         else:
             scan_id = self.zap.spider.scan(target_url)
 
         if not scan_id:
-            raise ZAPError('Error running spider.')
+            raise ZAPError("Error running spider.")
         elif not scan_id.isdigit():
             raise ZAPError('Error running spider: "{0}"'.format(scan_id))
 
-        self.logger.debug('Started spider with ID {0}...'.format(scan_id))
+        self.logger.debug("Started spider with ID {0}...".format(scan_id))
 
         while int(self.zap.spider.status()) < 100:
-            self.logger.debug('Spider progress %: {0}'.format(self.zap.spider.status()))
+            self.logger.debug("Spider progress %: {0}".format(self.zap.spider.status()))
             time.sleep(self._status_check_sleep)
 
-        self.logger.debug('Spider #{0} completed'.format(scan_id))
+        self.logger.debug("Spider #{0} completed".format(scan_id))
 
-    def run_active_scan(self, target_url, recursive=False, context_name=None, user_name=None):
+    def run_active_scan(
+        self, target_url, recursive=False, context_name=None, user_name=None
+    ):
         """Run an active scan against a URL."""
-        self.logger.debug('Scanning target {0}...'.format(target_url))
+        self.logger.debug("Scanning target {0}...".format(target_url))
 
         context_id, user_id = self._get_context_and_user_ids(context_name, user_name)
 
         if user_id:
-            self.logger.debug('Scanning in context {0} as user {1}'.format(context_id, user_id))
-            scan_id = self.zap.ascan.scan_as_user(target_url, context_id, user_id, recursive)
+            self.logger.debug(
+                "Scanning in context {0} as user {1}".format(context_id, user_id)
+            )
+            scan_id = self.zap.ascan.scan_as_user(
+                target_url, context_id, user_id, recursive
+            )
         else:
             self.zap.ascan.enable_all_scanners()
             scan_id = self.zap.ascan.scan(target_url, recurse=recursive)
 
         if not scan_id:
-            raise ZAPError('Error running active scan.')
+            raise ZAPError("Error running active scan.")
         elif not scan_id.isdigit():
-            raise ZAPError(('Error running active scan: "{0}". Make sure the URL is in the site ' +
-                            'tree by using the open-url or scanner commands before running an active ' +
-                            'scan.').format(scan_id))
+            raise ZAPError(
+                (
+                    'Error running active scan: "{0}". Make sure the URL is in the site '
+                    + "tree by using the open-url or scanner commands before running an active "
+                    + "scan."
+                ).format(scan_id)
+            )
 
-        self.logger.debug('Started scan with ID {0}...'.format(scan_id))
+        self.logger.debug("Started scan with ID {0}...".format(scan_id))
 
         while int(self.zap.ascan.status()) < 100:
-            self.logger.debug('Scan progress %: {0}'.format(self.zap.ascan.status()))
+            self.logger.debug("Scan progress %: {0}".format(self.zap.ascan.status()))
             time.sleep(self._status_check_sleep)
 
-        self.logger.debug('Scan #{0} completed'.format(scan_id))
+        self.logger.debug("Scan #{0} completed".format(scan_id))
 
     def run_passive_scan(self, target_url):
         """Run an passive scan against a URL."""
-        self.logger.debug('Scanning target {0}...'.format(target_url))
+        self.logger.debug("Scanning target {0}...".format(target_url))
 
         scan_id = self.zap.pscan.scan(target_url)
         if not scan_id:
-            raise ZAPError('Error running passive scan.')
+            raise ZAPError("Error running passive scan.")
         elif not scan_id.isdigit():
-            raise ZAPError(('Error running passive scan: "{0}". Make sure the URL is in the site ' +
-                            'tree by using the open-url or scanner commands before running an active ' +
-                            'scan.').format(scan_id))
+            raise ZAPError(
+                (
+                    'Error running passive scan: "{0}". Make sure the URL is in the site '
+                    + "tree by using the open-url or scanner commands before running an active "
+                    + "scan."
+                ).format(scan_id)
+            )
 
-        self.logger.debug('Started scan with ID {0}...'.format(scan_id))
+        self.logger.debug("Started scan with ID {0}...".format(scan_id))
 
         while int(self.zap.pscan.status()) < 100:
-            self.logger.debug('Scan progress %: {0}'.format(self.zap.pscan.status()))
+            self.logger.debug("Scan progress %: {0}".format(self.zap.pscan.status()))
             time.sleep(self._status_check_sleep)
 
-        self.logger.debug('Scan #{0} completed'.format(scan_id))
+        self.logger.debug("Scan #{0} completed".format(scan_id))
 
     def run_ajax_spider(self, target_url):
         """Run AJAX Spider against a URL."""
-        self.logger.debug('AJAX Spidering target {0}...'.format(target_url))
+        self.logger.debug("AJAX Spidering target {0}...".format(target_url))
 
         self.zap.ajaxSpider.scan(target_url)
 
-        while self.zap.ajaxSpider.status == 'running':
-            self.logger.debug('AJAX Spider: {0}'.format(self.zap.ajaxSpider.status))
+        while self.zap.ajaxSpider.status == "running":
+            self.logger.debug("AJAX Spider: {0}".format(self.zap.ajaxSpider.status))
             time.sleep(self._status_check_sleep)
 
-        self.logger.debug('AJAX Spider completed')
+        self.logger.debug("AJAX Spider completed")
 
-    def alerts(self, alert_level='High'):
+    def alerts(self, alert_level="High"):
         """Get a filtered list of alerts at the given alert level, and sorted by alert level."""
         alerts = self.zap.core.alerts()
         alert_level_value = self.alert_levels[alert_level]
 
-        alerts = sorted((a for a in alerts if self.alert_levels[a['risk']] >= alert_level_value),
-                        key=lambda k: self.alert_levels[k['risk']], reverse=True)
+        alerts = sorted(
+            (a for a in alerts if self.alert_levels[a["risk"]] >= alert_level_value),
+            key=lambda k: self.alert_levels[k["risk"]],
+            reverse=True,
+        )
 
         return alerts
 
@@ -239,29 +286,29 @@ class ZAPHelper(object):
         scanners = self.zap.ascan.scanners()
 
         for scanner in scanners:
-            if scanner['enabled'] == 'true':
-                enabled_scanners.append(scanner['id'])
+            if scanner["enabled"] == "true":
+                enabled_scanners.append(scanner["id"])
 
         return enabled_scanners
 
     def enable_scanners_by_ids(self, scanner_ids):
         """Enable a list of scanner IDs."""
-        scanner_ids = ','.join(scanner_ids)
-        self.logger.debug('Enabling scanners with IDs {0}'.format(scanner_ids))
+        scanner_ids = ",".join(scanner_ids)
+        self.logger.debug("Enabling scanners with IDs {0}".format(scanner_ids))
         return self.zap.ascan.enable_scanners(scanner_ids)
 
     def disable_scanners_by_ids(self, scanner_ids):
         """Disable a list of scanner IDs."""
-        scanner_ids = ','.join(scanner_ids)
-        self.logger.debug('Disabling scanners with IDs {0}'.format(scanner_ids))
+        scanner_ids = ",".join(scanner_ids)
+        self.logger.debug("Disabling scanners with IDs {0}".format(scanner_ids))
         return self.zap.ascan.disable_scanners(scanner_ids)
 
     def enable_scanners_by_group(self, group):
         """
         Enables the scanners in the group if it matches one in the scanner_group_map.
         """
-        if group == 'all':
-            self.logger.debug('Enabling all scanners')
+        if group == "all":
+            self.logger.debug("Enabling all scanners")
             return self.zap.ascan.enable_all_scanners()
 
         try:
@@ -269,19 +316,19 @@ class ZAPHelper(object):
         except KeyError:
             raise ZAPError(
                 'Invalid group "{0}" provided. Valid groups are: {1}'.format(
-                    group, ', '.join(self.scanner_groups)
+                    group, ", ".join(self.scanner_groups)
                 )
             )
 
-        self.logger.debug('Enabling scanner group {0}'.format(group))
+        self.logger.debug("Enabling scanner group {0}".format(group))
         return self.enable_scanners_by_ids(scanner_list)
 
     def disable_scanners_by_group(self, group):
         """
         Disables the scanners in the group if it matches one in the scanner_group_map.
         """
-        if group == 'all':
-            self.logger.debug('Disabling all scanners')
+        if group == "all":
+            self.logger.debug("Disabling all scanners")
             return self.zap.ascan.disable_all_scanners()
 
         try:
@@ -289,11 +336,11 @@ class ZAPHelper(object):
         except KeyError:
             raise ZAPError(
                 'Invalid group "{0}" provided. Valid groups are: {1}'.format(
-                    group, ', '.join(self.scanner_groups)
+                    group, ", ".join(self.scanner_groups)
                 )
             )
 
-        self.logger.debug('Disabling scanner group {0}'.format(group))
+        self.logger.debug("Disabling scanner group {0}".format(group))
         return self.disable_scanners_by_ids(scanner_list)
 
     def enable_scanners(self, scanners):
@@ -307,7 +354,11 @@ class ZAPHelper(object):
             elif scanner.isdigit():
                 scanner_ids.append(scanner)
             else:
-                raise ZAPError('Invalid scanner "{0}" provided. Must be a valid group or numeric ID.'.format(scanner))
+                raise ZAPError(
+                    'Invalid scanner "{0}" provided. Must be a valid group or numeric ID.'.format(
+                        scanner
+                    )
+                )
 
         if scanner_ids:
             self.enable_scanners_by_ids(scanner_ids)
@@ -323,7 +374,11 @@ class ZAPHelper(object):
             elif scanner.isdigit():
                 scanner_ids.append(scanner)
             else:
-                raise ZAPError('Invalid scanner "{0}" provided. Must be a valid group or numeric ID.'.format(scanner))
+                raise ZAPError(
+                    'Invalid scanner "{0}" provided. Must be a valid group or numeric ID.'.format(
+                        scanner
+                    )
+                )
 
         if scanner_ids:
             self.disable_scanners_by_ids(scanner_ids)
@@ -332,47 +387,87 @@ class ZAPHelper(object):
         """
         Set only the provided scanners by group and/or IDs and disable all others.
         """
-        self.logger.debug('Disabling all current scanners')
+        self.logger.debug("Disabling all current scanners")
         self.zap.ascan.disable_all_scanners()
         self.enable_scanners(scanners)
 
     def set_scanner_attack_strength(self, scanner_ids, attack_strength):
         """Set the attack strength for the given scanners."""
         for scanner_id in scanner_ids:
-            self.logger.debug('Setting strength for scanner {0} to {1}'.format(scanner_id, attack_strength))
-            result = self.zap.ascan.set_scanner_attack_strength(scanner_id, attack_strength)
-            if result != 'OK':
-                raise ZAPError('Error setting strength for scanner with ID {0}: {1}'.format(scanner_id, result))
+            self.logger.debug(
+                "Setting strength for scanner {0} to {1}".format(
+                    scanner_id, attack_strength
+                )
+            )
+            result = self.zap.ascan.set_scanner_attack_strength(
+                scanner_id, attack_strength
+            )
+            if result != "OK":
+                raise ZAPError(
+                    "Error setting strength for scanner with ID {0}: {1}".format(
+                        scanner_id, result
+                    )
+                )
 
     def set_scanner_alert_threshold(self, scanner_ids, alert_threshold):
         """Set the alert theshold for the given policies."""
         for scanner_id in scanner_ids:
-            self.logger.debug('Setting alert threshold for scanner {0} to {1}'.format(scanner_id, alert_threshold))
-            result = self.zap.ascan.set_scanner_alert_threshold(scanner_id, alert_threshold)
-            if result != 'OK':
-                raise ZAPError('Error setting alert threshold for scanner with ID {0}: {1}'.format(scanner_id, result))
+            self.logger.debug(
+                "Setting alert threshold for scanner {0} to {1}".format(
+                    scanner_id, alert_threshold
+                )
+            )
+            result = self.zap.ascan.set_scanner_alert_threshold(
+                scanner_id, alert_threshold
+            )
+            if result != "OK":
+                raise ZAPError(
+                    "Error setting alert threshold for scanner with ID {0}: {1}".format(
+                        scanner_id, result
+                    )
+                )
 
     def enable_policies_by_ids(self, policy_ids):
         """Set enabled policy from a list of IDs."""
-        policy_ids = ','.join(policy_ids)
-        self.logger.debug('Setting enabled policies to IDs {0}'.format(policy_ids))
+        policy_ids = ",".join(policy_ids)
+        self.logger.debug("Setting enabled policies to IDs {0}".format(policy_ids))
         self.zap.ascan.set_enabled_policies(policy_ids)
 
     def set_policy_attack_strength(self, policy_ids, attack_strength):
         """Set the attack strength for the given policies."""
         for policy_id in policy_ids:
-            self.logger.debug('Setting strength for policy {0} to {1}'.format(policy_id, attack_strength))
-            result = self.zap.ascan.set_policy_attack_strength(policy_id, attack_strength)
-            if result != 'OK':
-                raise ZAPError('Error setting strength for policy with ID {0}: {1}'.format(policy_id, result))
+            self.logger.debug(
+                "Setting strength for policy {0} to {1}".format(
+                    policy_id, attack_strength
+                )
+            )
+            result = self.zap.ascan.set_policy_attack_strength(
+                policy_id, attack_strength
+            )
+            if result != "OK":
+                raise ZAPError(
+                    "Error setting strength for policy with ID {0}: {1}".format(
+                        policy_id, result
+                    )
+                )
 
     def set_policy_alert_threshold(self, policy_ids, alert_threshold):
         """Set the alert theshold for the given policies."""
         for policy_id in policy_ids:
-            self.logger.debug('Setting alert threshold for policy {0} to {1}'.format(policy_id, alert_threshold))
-            result = self.zap.ascan.set_policy_alert_threshold(policy_id, alert_threshold)
-            if result != 'OK':
-                raise ZAPError('Error setting alert threshold for policy with ID {0}: {1}'.format(policy_id, result))
+            self.logger.debug(
+                "Setting alert threshold for policy {0} to {1}".format(
+                    policy_id, alert_threshold
+                )
+            )
+            result = self.zap.ascan.set_policy_alert_threshold(
+                policy_id, alert_threshold
+            )
+            if result != "OK":
+                raise ZAPError(
+                    "Error setting alert threshold for policy with ID {0}: {1}".format(
+                        policy_id, result
+                    )
+                )
 
     def exclude_from_all(self, exclude_regex):
         """Exclude a pattern from proxy, spider and active scanner."""
@@ -381,7 +476,9 @@ class ZAPHelper(object):
         except re.error:
             raise ZAPError('Invalid regex "{0}" provided'.format(exclude_regex))
 
-        self.logger.debug('Excluding {0} from proxy, spider and active scanner.'.format(exclude_regex))
+        self.logger.debug(
+            "Excluding {0} from proxy, spider and active scanner.".format(exclude_regex)
+        )
 
         self.zap.core.exclude_from_proxy(exclude_regex)
         self.zap.spider.exclude_from_scan(exclude_regex)
@@ -389,34 +486,34 @@ class ZAPHelper(object):
 
     def xml_report(self, file_path):
         """Generate and save XML report"""
-        self.logger.debug('Generating XML report')
+        self.logger.debug("Generating XML report")
         report = self.zap.core.xmlreport()
         self._write_report(report, file_path)
 
     def md_report(self, file_path):
         """Generate and save MD report"""
-        self.logger.debug('Generating MD report')
+        self.logger.debug("Generating MD report")
         report = self.zap.core.mdreport()
         self._write_report(report, file_path)
 
     def html_report(self, file_path):
         """Generate and save HTML report."""
-        self.logger.debug('Generating HTML report')
+        self.logger.debug("Generating HTML report")
         report = self.zap.core.htmlreport()
         self._write_report(report, file_path)
 
     def json_report(self, file_path):
         """Generate and save JSON report."""
-        self.logger.debug('Generating HTML report')
+        self.logger.debug("Generating HTML report")
         report = self.zap.core.jsonreport()
         self._write_report(report, file_path)
 
     @staticmethod
     def _write_report(report, file_path):
         """Write report to the given file path."""
-        with open(file_path, mode='wb') as f:
+        with open(file_path, mode="wb") as f:
             if not isinstance(report, binary_type):
-                report = report.encode('utf-8')
+                report = report.encode("utf-8")
             f.write(report)
 
     def get_context_info(self, context_name):
@@ -432,7 +529,7 @@ class ZAPHelper(object):
         if context_name is None:
             return None, None
 
-        context_id = self.get_context_info(context_name)['id']
+        context_id = self.get_context_info(context_name)["id"]
         user_id = None
         if user_name:
             user_id = self._get_user_id_from_name(context_id, user_name)
@@ -443,13 +540,17 @@ class ZAPHelper(object):
         """Get a user ID from the user name."""
         users = self.zap.users.users_list(context_id)
         for user in users:
-            if user['name'] == user_name:
-                return user['id']
+            if user["name"] == user_name:
+                return user["id"]
 
-        raise ZAPError('No user with the name "{0}"" was found for context {1}'.format(user_name, context_id))
+        raise ZAPError(
+            'No user with the name "{0}"" was found for context {1}'.format(
+                user_name, context_id
+            )
+        )
 
     def scan(self, target_url, options=None):
-        self.start('-config api.disablekey=true')
+        self.start("-config api.disablekey=true")
         self.open_url(target_url)
         recursive = None
         output_file = None
@@ -458,27 +559,27 @@ class ZAPHelper(object):
         user = None
         spider = False
         ajax_spider = False
-        scan_type = 'active'
+        scan_type = "active"
 
         if options is not None:
             for key in options:
                 value = options[key]
                 if value is not None:
-                    if key == 'recursive':
+                    if key == "recursive":
                         recursive = value
-                    elif key == 'output_file' and len(value) > 0:
+                    elif key == "output_file" and len(value) > 0:
                         output_file = value
-                    elif key == 'output_format' and len(value) > 0:
+                    elif key == "output_format" and len(value) > 0:
                         output_format = value
-                    elif key == 'context' and len(value) > 0:
+                    elif key == "context" and len(value) > 0:
                         context = value
-                    elif key == 'user' and len(value) > 0:
+                    elif key == "user" and len(value) > 0:
                         user = value
-                    elif key == 'spider':
+                    elif key == "spider":
                         spider = True
-                    elif key == 'ajax_spider':
+                    elif key == "ajax_spider":
                         ajax_spider = value
-                    elif key == 'scan_type':
+                    elif key == "scan_type":
                         scan_type = value
 
         if spider is True:
@@ -487,18 +588,20 @@ class ZAPHelper(object):
         if ajax_spider is True:
             self.run_ajax_spider(target_url)
 
-        if scan_type == 'passive':
+        if scan_type == "passive":
             self.run_passive_scan(target_url)
         else:
-            self.run_active_scan(target_url, recursive, context_name=context, user_name=user)
+            self.run_active_scan(
+                target_url, recursive, context_name=context, user_name=user
+            )
 
-        alerts = self.alerts('Low')
+        alerts = self.alerts("Low")
 
         # Report the results
 
-        print('Hosts: ' + ', '.join(self.zap.core.hosts))
-        print('Sites: ' + ', '.join(self.zap.core.sites))
+        print("Hosts: " + ", ".join(self.zap.core.hosts))
+        print("Sites: " + ", ".join(self.zap.core.sites))
         # print('Urls: ' + ', '.join(self.zap.core.urls.join(',')))
-        print('Alerts: ')
+        print("Alerts: ")
         print(alerts)
         self.shutdown()
