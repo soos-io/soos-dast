@@ -5,3 +5,5 @@ termcolor
 six
 python-owasp-zap-v2.4
 bleach
+selenium==3.141.0
+pyotp==2.6.0
