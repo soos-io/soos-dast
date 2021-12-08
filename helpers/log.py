@@ -4,6 +4,7 @@ Logger classes for the ZAP CLI.
 
 import logging
 import sys
+from helpers import constants as Constants
 
 from termcolor import colored
 
@@ -51,7 +52,10 @@ class ConsoleLogger(logging.Logger):
     def __init__(self, name):
         super(ConsoleLogger, self).__init__(name)
         self.setLevel(logging.DEBUG)
-        self.addHandler(ColorStreamHandler(sys.stdout))
+        handler = ColorStreamHandler(sys.stdout)
+        handler.setFormatter(logging.Formatter(fmt=Constants.LOG_FORMAT, datefmt="%m/%d/%Y %I:%M:%S %p %Z"))
+        self.addHandler(handler)
+        self.propagate = False
 
 
 # Save the current logger
@@ -59,8 +63,6 @@ default_logger_class = logging.getLoggerClass()
 
 # Console logging for CLI
 logging.setLoggerClass(ConsoleLogger)
-FORMAT = '%(name)s %(levelname)s %(asctime)s %(message)s'
-logging.basicConfig(format=FORMAT)
 console = logging.getLogger("SOOS DAST")
 
 # Restore the previous logger

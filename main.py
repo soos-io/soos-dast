@@ -2,14 +2,16 @@ import json
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from typing import List, Optional
+from typing import List, Optional, Any
 
 import yaml
 from bleach import clean
 from requests import Response, put, post
 
 import helpers.constants as Constants
-from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator
+from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
+    check_site_is_available
+from model.log_level import LogLevel
 
 
 class DASTStartAnalysisResponse:
@@ -22,39 +24,46 @@ class DASTStartAnalysisResponse:
 
 
 class SOOSDASTAnalysis:
+
     def __init__(self):
-        self.client_id = None
-        self.api_key = None
-        self.project_name = None
-        self.base_uri = None
-        self.scan_mode = None
-        self.fail_on_error = None
-        self.target_url = None
-        self.rules_file = None
-        self.context_file = None
-        self.user_context = None
-        self.api_scan_format = None
-        self.debug_mode = False
-        self.ajax_spider_scan = False
-        self.spider = False
-        self.minutes_delay = None
+        self.client_id: Optional[str] = None
+        self.api_key: Optional[str] = None
+        self.project_name: Optional[str] = None
+        self.base_uri: Optional[str] = None
+        self.scan_mode: Optional[str] = None
+        self.fail_on_error: Optional[str] = None
+        self.target_url: Optional[str] = None
+        self.rules_file: Optional[str] = None
+        self.context_file: Optional[str] = None
+        self.user_context: Optional[str] = None
+        self.api_scan_format: Optional[str] = None
+        self.debug_mode: bool = False
+        self.ajax_spider_scan: bool = False
+        self.spider: bool = False
+        self.minutes_delay: Optional[str] = None
 
         # Special Context - loads from script arguments only
-        self.commit_hash = None
-        self.branch_name = None
-        self.branch_uri = None
-        self.build_version = None
-        self.build_uri = None
-        self.operating_environment = None
-        self.integration_name = Constants.DEFAULT_INTEGRATION_NAME
-        self.log_level = None
+        self.commit_hash: Optional[str] = None
+        self.branch_name: Optional[str] = None
+        self.branch_uri: Optional[str] = None
+        self.build_version: Optional[str] = None
+        self.build_uri: Optional[str] = None
+        self.operating_environment: Optional[str] = None
+        self.log_level: Optional[str] = None
+        self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
 
         # INTENTIONALLY HARDCODED
-        self.integration_type = Constants.DEFAULT_INTEGRATION_TYPE
-        self.dast_analysis_tool = Constants.DEFAULT_DAST_TOOL
+        self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
+        self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
+
+        self.scan_mode_map: dict = {
+            Constants.BASELINE: self.baseline_scan,
+            Constants.FULL_SCAN: self.full_scan,
+            Constants.API_SCAN: self.api_scan
+        }
 
     def parse_configuration(self, configuration: dict, target_url: str):
-        log("Configuration: " + str(configuration))
+        log(f"Configuration: {str(configuration)}")
         valid_required("Target URL", target_url)
         self.target_url = target_url
 
@@ -165,7 +174,7 @@ class SOOSDASTAnalysis:
         if has_value(self.api_scan_format):
             args.append(Constants.ZAP_FORMAT_OPTION)
             args.append(self.api_scan_format)
-        elif self.scan_mode == "apiscan":
+        elif self.scan_mode == Constants.API_SCAN:
             exit_app("Format is required for apiscan mode.")
 
     def __add_log_level_option__(self, args: List[str]) -> None:
@@ -213,25 +222,25 @@ class SOOSDASTAnalysis:
 
     def open_zap_results_file(self):
         with open(
-            Constants.REPORT_SCAN_RESULT_FILE, mode="r", encoding="utf-8"
+                Constants.REPORT_SCAN_RESULT_FILE, mode=Constants.FILE_READ_MODE, encoding=Constants.UTF_8_ENCODING
         ) as file:
             return file.read()
 
     def __generate_start_dast_analysis_url__(self) -> str:
         url = Constants.URI_START_DAST_ANALYSIS_TEMPLATE
-        url = url.replace("{soos_base_uri}", self.base_uri)
-        url = url.replace("{soos_client_id}", self.client_id)
-        url = url.replace("{soos_dast_tool}", self.dast_analysis_tool)
+        url = url.replace(Constants.BASE_URI_PLACEHOLDER, self.base_uri)
+        url = url.replace(Constants.CLIENT_ID_PLACEHOLDER, self.client_id)
+        url = url.replace(Constants.DAST_TOOL_PLACEHOLDER, self.dast_analysis_tool)
 
         return url
 
     def __generate_upload_results_url__(self, project_id: str, analysis_id: str) -> str:
         url = Constants.URI_UPLOAD_DAST_RESULTS_TEMPLATE
-        url = url.replace("{soos_base_uri}", self.base_uri)
-        url = url.replace("{soos_client_id}", self.client_id)
-        url = url.replace("{soos_project_id}", project_id)
-        url = url.replace("{soos_dast_tool}", self.dast_analysis_tool)
-        url = url.replace("{soos_analysis_id}", analysis_id)
+        url = url.replace(Constants.BASE_URI_PLACEHOLDER, self.base_uri)
+        url = url.replace(Constants.CLIENT_ID_PLACEHOLDER, self.client_id)
+        url = url.replace(Constants.PROJECT_ID_PLACEHOLDER, project_id)
+        url = url.replace(Constants.DAST_TOOL_PLACEHOLDER, self.dast_analysis_tool)
+        url = url.replace(Constants.ANALYSIS_ID_PLACEHOLDER, analysis_id)
 
         return url
 
@@ -240,16 +249,16 @@ class SOOSDASTAnalysis:
         try:
             log("Making request to SOOS")
             api_url: str = self.__generate_start_dast_analysis_url__()
-            log("SOOS URL Endpoint: " + api_url)
+            log(f"SOOS URL Endpoint: {api_url}")
 
             # Validate required fields
             if (
-                self.project_name is None
-                or len(self.project_name) == 0
-                or self.scan_mode is None
-                or len(self.scan_mode) == 0
+                    self.project_name is None
+                    or len(self.project_name) == 0
+                    or self.scan_mode is None
+                    or len(self.scan_mode) == 0
             ):
-                log("ERROR: projectName and scanMode are required")
+                log("projectName and scanMode are required", LogLevel.ERROR)
                 sys.exit(1)
 
             param_values: dict = dict(
@@ -269,7 +278,7 @@ class SOOSDASTAnalysis:
             request_body = {k: v for k, v in param_values.items() if v is not None}
 
             attempt: int = 1
-            error_response: Optional[Response] = None
+            error_response: Optional[Any] = None
 
             while attempt <= Constants.MAX_RETRY_COUNT:
                 api_response: Response = post(
@@ -303,7 +312,7 @@ class SOOSDASTAnalysis:
         exit_app(message)
 
     def __make_upload_dast_results_request__(
-        self, project_id: str, analysis_id: str
+            self, project_id: str, analysis_id: str
     ) -> bool:
         error_response = None
         error_message: Optional[str] = None
@@ -316,10 +325,7 @@ class SOOSDASTAnalysis:
             results_json = json.loads(zap_report)
             files = {
                 "manifest": clean(
-                    str(results_json)
-                    .replace("<script ", "_script ")
-                    .replace("<script>", "_script_")
-                    .replace("</script>", "_script_")
+                    str(results_json).replace("<script ", "_script ").replace("<script>", "_script_").replace("</script>", "_script_")
                 )
             }
 
@@ -342,9 +348,7 @@ class SOOSDASTAnalysis:
                 else:
                     error_response = api_response
                     log(
-                        "An error has occurred performing the request. Retrying Request: "
-                        + str(attempt)
-                        + "Attempts"
+                        f"An error has occurred performing the request. Retrying Request: {str(attempt)} attempts"
                     )
                     attempt = attempt + 1
 
@@ -447,9 +451,9 @@ class SOOSDASTAnalysis:
         if args.configFile is not None:
             log("Reading config file: " + args.configFile)
             with open(
-                Constants.CONFIG_FILE_FOLDER + args.configFile,
-                mode="r",
-                encoding="utf-8",
+                    Constants.CONFIG_FILE_FOLDER + args.configFile,
+                    mode="r",
+                    encoding="utf-8",
             ) as file:
                 # The FullLoader parameter handles the conversion from YAML
                 # scalar values to Python the dictionary format
@@ -468,29 +472,36 @@ class SOOSDASTAnalysis:
             log("Configuration read")
             print_line_separator()
 
-            log("Project Name: " + self.project_name)
-            log("Scan Mode: " + self.scan_mode)
-            log("API URL: " + self.base_uri)
-            log("Target URL: " + self.target_url)
+            log(f"Project Name: {self.project_name}")
+            log(f"Scan Mode: {self.scan_mode}")
+            log(f"API URL: {self.base_uri}")
+            log(f"Target URL: {self.target_url}")
             print_line_separator()
 
-            log("Executing " + self.scan_mode + " scan")
+            check: bool = check_site_is_available(self.target_url)
+
+            if check is False:
+                exit_app(f"The URL {self.target_url} is not available")
+                return None
+
+            log(f"Executing {self.scan_mode} scan")
             soos_dast_start_response = self.__make_soos_start_analysis_request__()
             # execute test
-            command = ""
-            if self.scan_mode == "baseline":
-                command = self.baseline_scan()
-            elif self.scan_mode == "fullscan":
-                command = self.full_scan()
-            elif self.scan_mode == "apiscan":
-                command = self.api_scan()
+            scan_function = self.scan_mode_map.get(self.scan_mode, None)
 
-            if len(command) == 0:
-                exit_app("Invalid scan mode")
-                print_line_separator()
+            if scan_function is None:
+                exit_app(f"The scan mode {self.scan_mode} is invalid.")
+                return None
+
+            command: str = scan_function()
 
             os.system(command)
+
+            run_success = os.path.exists(Constants.REPORT_SCAN_RESULT_FILE)
+
             print_line_separator()
+            if run_success is False:
+                raise Exception(f"An Unexpected error has occurred running the {self.scan_mode} scan")
 
             self.publish_results_to_soos(
                 project_id=soos_dast_start_response.project_id,

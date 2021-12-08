@@ -13,6 +13,22 @@ SERVER_ERROR_CODES = range(500, 599)
 RETRY_DELAY = 3  # seconds
 REQUEST_TIMEOUT = 5
 
+# SCAN MODES
+BASELINE = 'baseline'
+FULL_SCAN = 'fullscan'
+API_SCAN = 'apiscan'
+
+# URL PLACEHOLDERS
+BASE_URI_PLACEHOLDER = "{soos_base_uri}"
+CLIENT_ID_PLACEHOLDER = "{soos_client_id}"
+PROJECT_ID_PLACEHOLDER = "{soos_project_id}"
+DAST_TOOL_PLACEHOLDER = "{soos_dast_tool}"
+ANALYSIS_ID_PLACEHOLDER = "{soos_analysis_id}"
+
+# FILE PROCESSING
+FILE_READ_MODE = "r"
+UTF_8_ENCODING = "utf-8"
+
 
 # OWASP ZAP Constants
 REPORT_SCAN_RESULT_FILENAME = "report.json"
@@ -35,3 +51,7 @@ URI_START_DAST_ANALYSIS_TEMPLATE = (
     "{soos_base_uri}clients/{soos_client_id}/dast-tools/{soos_dast_tool}/analysis"
 )
 URI_UPLOAD_DAST_RESULTS_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/dast-tools/{soos_dast_tool}/analysis/{soos_analysis_id}"
+
+# LOGS
+LOG_FORMAT = "%(asctime)s %(message)s"
+LOG_DATE_FORMAT = "%m/%d/%Y %I:%M:%S %p %Z"
