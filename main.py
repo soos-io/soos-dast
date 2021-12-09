@@ -2,7 +2,7 @@ import json
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 
 import yaml
 from bleach import clean
