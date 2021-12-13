@@ -7,17 +7,17 @@ class LocalStorage:
         return self.driver.execute_script("return window.localStorage.length;")
 
     def items(self):
-        return self.driver.execute_script( \
-            "var ls = window.localStorage, items = {}; " \
-            "for (var i = 0, k; i < ls.length; ++i) " \
-            "  items[k = ls.key(i)] = ls.getItem(k); " \
+        return self.driver.execute_script(
+            "var ls = window.localStorage, items = {}; "
+            "for (var i = 0, k; i < ls.length; ++i) "
+            "  items[k = ls.key(i)] = ls.getItem(k); "
             "return items; ")
 
     def keys(self):
-        return self.driver.execute_script( \
-            "var ls = window.localStorage, keys = []; " \
-            "for (var i = 0; i < ls.length; ++i) " \
-            "  keys[i] = ls.key(i); " \
+        return self.driver.execute_script(
+            "var ls = window.localStorage, keys = []; "
+            "for (var i = 0; i < ls.length; ++i) "
+            "  keys[i] = ls.key(i); "
             "return keys; ")
 
     def get(self, key):

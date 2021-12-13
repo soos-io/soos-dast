@@ -1,10 +1,9 @@
 from helpers.auth import DASTAuth
 from helpers.configuration import DASTConfig
 import helpers.blindxss as blindxss
-import os
+import sys
 import traceback
-from helpers.utils import log
-from model.log_level import LogLevel
+from helpers.utils import log, exit_app
 
 config = DASTConfig()
 
@@ -34,8 +33,8 @@ def zap_started(zap, target):
 
         blindxss.load(config, zap)
     except Exception:
-        log(f"error in zap_started: {traceback.print_exc()}", log_level=LogLevel.ERROR)
-        os.exit(1)
+        exit_app(f"error in zap_started: {traceback.print_exc()}")
+        sys.exit(1)
 
     return zap, target
 

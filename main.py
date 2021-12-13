@@ -58,13 +58,25 @@ class SOOSDASTAnalysis:
         self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
 
-        self.scan_mode_map: dict = {
+        # Auth Options
+        self.auth_auto: Optional[str] = '0'
+        self.auth_loginUrl: Optional[str] = None
+        self.auth_username: Optional[str] = ''
+        self.auth_password: Optional[str] = ''
+        self.auth_username_field_name: Optional[str] = ''
+        self.auth_password_field_name: Optional[str] = ''
+        self.auth_submit_field_name: Optional[str] = ''
+        self.auth_first_submit_field_name: Optional[str] = ''
+        self.auth_excludeUrls: Optional[str] = ''
+        self.auth_display: bool = False
+
+        self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
             Constants.FULL_SCAN: self.full_scan,
             Constants.API_SCAN: self.api_scan
         }
 
-    def parse_configuration(self, configuration: dict, target_url: str):
+    def parse_configuration(self, configuration: Dict, target_url: str):
         log(f"Configuration: {str(configuration)}")
         valid_required("Target URL", target_url)
         self.target_url = target_url
@@ -141,6 +153,24 @@ class SOOSDASTAnalysis:
                 self.integration_name = value
             elif key == "integrationType":
                 self.integration_type = value
+            elif key == 'authAuto':
+                self.auth_auto = '1'
+            elif key == 'authDisplay':
+                self.auth_display = True
+            elif key == 'authUsername':
+                self.auth_username = value
+            elif key == 'authPassword':
+                self.auth_password = value
+            elif key == 'authLoginURL':
+                self.auth_loginUrl = value
+            elif key == 'authUsernameField':
+                self.auth_username_field_name = value
+            elif key == 'authPasswordField':
+                self.auth_password_field_name = value
+            elif key == 'authSubmitField':
+                self.auth_submit_field_name = value
+            elif key == 'authFirstSubmitField':
+                self.auth_first_submit_field_name = value
             elif key == "level":
                 self.log_level = value
 
@@ -190,12 +220,28 @@ class SOOSDASTAnalysis:
         args.append(Constants.ZAP_JSON_REPORT_OPTION)
         args.append(Constants.REPORT_SCAN_RESULT_FILENAME)
 
+    def __add_auth_options__(self, args: List[str]) -> None:
+        args.append(Constants.ZAP_OTHER_OPTIONS)
+        template = '"auth.loginurl="{}" auth.username="{}" auth.password="{}" auth.auto={} auth.username_field="{}" auth.password_field="{}" auth.submit_field="{}" auth.first_submit_field="{}" auth.exclude="{}" auth.display="{}""'
+        template.format(self.auth_loginUrl, self.auth_username, self.auth_password, self.auth_auto,
+                        self.auth_username_field_name, self.auth_password_field_name, self.auth_submit_field_name,
+                        self.auth_first_submit_field_name, self.auth_excludeUrls, self.auth_display)
+        args.append(template)
+
+    def __add_hook_option__(self, args: List[str]) -> None:
+        args.append(Constants.ZAP_HOOK_OPTION)
+        args.append('/zap/auth_hook.py')
+
     def __generate_command__(self, args: List[str]) -> str:
         self.__add_debug_option__(args)
         self.__add_rules_file_option__(args)
         self.__add_context_file_option__(args)
         self.__add_ajax_spider_scan_option__(args)
         self.__add_minutes_delay_option__(args)
+        if self.auth_loginUrl is not None:
+            self.__add_auth_options__(args)
+
+        self.__add_hook_option__(args)
 
         self.__add_report_file__(args)
 
@@ -231,21 +277,18 @@ class SOOSDASTAnalysis:
             return file.read()
 
     def __generate_start_dast_analysis_url__(self) -> str:
-        url = Constants.URI_START_DAST_ANALYSIS_TEMPLATE
-        url = url.replace(Constants.BASE_URI_PLACEHOLDER, self.base_uri)
-        url = url.replace(Constants.CLIENT_ID_PLACEHOLDER, self.client_id)
-        url = url.replace(Constants.DAST_TOOL_PLACEHOLDER, self.dast_analysis_tool)
+        url = Constants.URI_START_DAST_ANALYSIS_TEMPLATE.format(soos_base_uri=self.base_uri,
+                                                                soos_client_id=self.client_id,
+                                                                soos_dast_tool=self.dast_analysis_tool)
 
         return url
 
     def __generate_upload_results_url__(self, project_id: str, analysis_id: str) -> str:
-        url = Constants.URI_UPLOAD_DAST_RESULTS_TEMPLATE
-        url = url.replace(Constants.BASE_URI_PLACEHOLDER, self.base_uri)
-        url = url.replace(Constants.CLIENT_ID_PLACEHOLDER, self.client_id)
-        url = url.replace(Constants.PROJECT_ID_PLACEHOLDER, project_id)
-        url = url.replace(Constants.DAST_TOOL_PLACEHOLDER, self.dast_analysis_tool)
-        url = url.replace(Constants.ANALYSIS_ID_PLACEHOLDER, analysis_id)
-
+        url = Constants.URI_UPLOAD_DAST_RESULTS_TEMPLATE.format(soos_base_uri=self.base_uri,
+                                                                soos_client_id=self.client_id,
+                                                                soos_project_id=project_id,
+                                                                soos_dast_tool=self.dast_analysis_tool,
+                                                                soos_analysis_id=analysis_id)
         return url
 
     def __make_soos_start_analysis_request__(self) -> DASTStartAnalysisResponse:
@@ -330,7 +373,8 @@ class SOOSDASTAnalysis:
             results_json = json.loads(zap_report)
             files = {
                 "manifest": clean(
-                    str(results_json).replace("<script ", "_script ").replace("<script>", "_script_").replace("</script>", "_script_")
+                    str(results_json).replace("<script ", "_script ").replace("<script>", "_script_").replace(
+                        "</script>", "_script_")
                 )
             }
 
@@ -453,12 +497,47 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--integrationName",
+            help="Integration Name (e.g. Provider)",
+            required=False,
+        )
+        parser.add_argument(
+            "--authDisplay",
             help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
             required=False,
         )
         parser.add_argument(
-            "--integrationType",
-            help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            "--authUsername",
+            help="Username to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authPassword",
+            help="Password to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authLoginURL",
+            help="login url to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authUsernameField",
+            help="Username input id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authPasswordField",
+            help="Password input id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authSubmitField",
+            help="Submit button id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authFirstSubmitField",
+            help="First submit button id to use in auth apps",
             required=False,
         )
 
