@@ -371,12 +371,10 @@ class SOOSDASTAnalysis:
             api_url: str = self.__generate_upload_results_url__(project_id, analysis_id)
             log("SOOS URL Upload Results Endpoint: " + api_url)
             results_json = json.loads(zap_report)
-            files = {
-                "manifest": clean(
-                    str(results_json).replace("<script ", "_script ").replace("<script>", "_script_").replace(
-                        "</script>", "_script_")
-                )
-            }
+            manifest = zap_report.replace('<script ', '_script ') \
+                .replace('<script>', '_script_') \
+                .replace('</script>', '_script_')
+            files = {"manifest": manifest}
 
             attempt: int = 1
 
@@ -396,6 +394,7 @@ class SOOSDASTAnalysis:
                     return True
                 else:
                     error_response = api_response
+                    log_error(error_response)
                     log(
                         f"An error has occurred performing the request. Retrying Request: {str(attempt)} attempts"
                     )
