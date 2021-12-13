@@ -127,3 +127,9 @@ def set_generic_value(self, object_key: str, param_key: str, param_value: Option
 
     if self[object_key]:
         self[object_key] = param_value
+
+
+def log_error(api_response: Response) -> NoReturn:
+    log(f"Status Code: {api_response.status_code}", log_level=LogLevel.ERROR)
+    if api_response.text is not None:
+        log(f"Response Text: {api_response.text}", log_level=LogLevel.ERROR)

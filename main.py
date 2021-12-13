@@ -10,8 +10,10 @@ from requests import Response, put, post
 
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
-    check_site_is_available
+    check_site_is_available, log_error
 from model.log_level import LogLevel
+
+param_mapper = {}
 
 
 class DASTStartAnalysisResponse:
@@ -137,6 +139,8 @@ class SOOSDASTAnalysis:
                 self.operating_environment = value
             elif key == "integrationName":
                 self.integration_name = value
+            elif key == "integrationType":
+                self.integration_type = value
             elif key == "level":
                 self.log_level = value
 
@@ -293,6 +297,7 @@ class SOOSDASTAnalysis:
                 if api_response.ok:
                     return DASTStartAnalysisResponse(api_response.json())
                 else:
+                    log_error(api_response)
                     error_response = api_response
                     log(
                         "An error has occurred performing the request. Retrying Request: "
@@ -443,6 +448,16 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--level",
+            help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            required=False,
+        )
+        parser.add_argument(
+            "--integrationName",
+            help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            required=False,
+        )
+        parser.add_argument(
+            "--integrationType",
             help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
             required=False,
         )
