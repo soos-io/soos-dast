@@ -2,7 +2,7 @@ import sys
 from datetime import datetime, timedelta
 from time import sleep
 import helpers.constants as Constants
-from typing import Optional, Any
+from typing import Optional, Any, NoReturn
 
 from requests import Response, get
 from requests.exceptions import (
@@ -119,3 +119,17 @@ def make_call(request) -> Response:
         log(str(e))
 
     exit_app(error_message)
+
+
+def set_generic_value(self, object_key: str, param_key: str, param_value: Optional[Any], is_required=False) -> NoReturn:
+    if is_required:
+        valid_required(param_key, param_value)
+
+    if self[object_key]:
+        self[object_key] = param_value
+
+
+def log_error(api_response: Response) -> NoReturn:
+    log(f"Status Code: {api_response.status_code}", log_level=LogLevel.ERROR)
+    if api_response.text is not None:
+        log(f"Response Text: {api_response.text}", log_level=LogLevel.ERROR)
