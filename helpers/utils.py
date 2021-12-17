@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from time import sleep
 import helpers.constants as Constants
 from typing import Optional, Any, NoReturn
+from urllib.parse import unquote
+from html import unescape
 
 from requests import Response, get
 from requests.exceptions import (
@@ -133,3 +135,10 @@ def log_error(api_response: Response) -> NoReturn:
     log(f"Status Code: {api_response.status_code}", log_level=LogLevel.ERROR)
     if api_response.text is not None:
         log(f"Response Text: {api_response.text}", log_level=LogLevel.ERROR)
+
+
+def unescape_string(value: str) -> str or None:
+    if value is None:
+        return value
+
+    return unescape(unquote(value))
