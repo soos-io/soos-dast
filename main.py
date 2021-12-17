@@ -5,12 +5,11 @@ from argparse import ArgumentParser, Namespace
 from typing import List, Optional, Any, Dict
 
 import yaml
-from bleach import clean
 from requests import Response, put, post
 
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
-    check_site_is_available, log_error
+    check_site_is_available, log_error, unescape_string
 from model.log_level import LogLevel
 
 param_mapper = {}
@@ -109,7 +108,7 @@ class SOOSDASTAnalysis:
                     self.base_uri = value
             elif key == "projectName":
                 valid_required(key, value)
-                self.project_name = value
+                self.project_name = unescape_string(value)
             elif key == "scanMode":
                 valid_required(key, value)
                 self.scan_mode = value
