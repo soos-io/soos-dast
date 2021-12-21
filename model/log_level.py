@@ -12,6 +12,7 @@ class LogLevel(Enum):
 
 
 loggerFunc = {
+    LogLevel.DEBUG: console.debug,
     LogLevel.INFO: console.info,
     LogLevel.WARN: console.warn,
     LogLevel.ERROR: console.error,

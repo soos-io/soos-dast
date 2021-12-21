@@ -5,6 +5,7 @@ import helpers.constants as Constants
 from typing import Optional, Any, NoReturn
 from urllib.parse import unquote
 from html import unescape
+import base64
 
 from requests import Response, get
 from requests.exceptions import (
@@ -49,7 +50,7 @@ def check_site_is_available(url: str) -> bool:
     log(f"Waiting for {url} to be available")
 
     check = False
-    max_time = datetime.utcnow() + timedelta(days=0, minutes=5)
+    max_time = datetime.utcnow() + timedelta(days=0, minutes=0, seconds=30)
 
     while datetime.utcnow() < max_time:
         check = __send_ping__(url)
@@ -66,8 +67,11 @@ def check_site_is_available(url: str) -> bool:
 
 
 def __send_ping__(target: str) -> bool:
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response: Response = get(
         url=target,
+        headers=headers,
         timeout=REQUEST_TIMEOUT,
         verify=False,  # nosec
         allow_redirects=True,  # nosec
@@ -142,3 +146,21 @@ def unescape_string(value: str) -> str or None:
         return value
 
     return unescape(unquote(value))
+
+
+def encode_report(report_json):
+    if report_json['site'] is not None:
+        for site in report_json['site']:
+            if site['alerts'] is not None:
+                for alert in site['alerts']:
+                    if alert['instances'] is not None:
+                        for instance in alert['instances']:
+                            instance['base64Uri'] = convert_string_to_b64(instance['uri'])
+                            instance['uri'] = ''
+
+
+def convert_string_to_b64(content: str) -> str:
+    message_bytes = content.encode('utf-8')
+    base64_bytes = base64.b64encode(message_bytes)
+    base64_message = base64_bytes.decode('utf-8')
+    return base64_message
