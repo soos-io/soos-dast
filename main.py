@@ -9,7 +9,7 @@ from requests import Response, put, post
 
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
-    check_site_is_available, log_error, unescape_string
+    check_site_is_available, log_error, unescape_string, encode_report
 from model.log_level import LogLevel
 
 param_mapper = {}
@@ -51,6 +51,7 @@ class SOOSDASTAnalysis:
         self.build_uri: Optional[str] = None
         self.operating_environment: Optional[str] = None
         self.log_level: Optional[str] = None
+        self.zap_options: Optional[str] = None
         self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
 
         # INTENTIONALLY HARDCODED
@@ -172,6 +173,8 @@ class SOOSDASTAnalysis:
                 self.auth_first_submit_field_name = value
             elif key == "level":
                 self.log_level = value
+            elif key == "zapOptions":
+                self.zap_options = value
 
     def __add_target_url_option__(self, args: List[str]) -> None:
         if has_value(self.target_url):
@@ -221,10 +224,10 @@ class SOOSDASTAnalysis:
 
     def __add_auth_options__(self, args: List[str]) -> None:
         args.append(Constants.ZAP_OTHER_OPTIONS)
-        template = '"auth.loginurl="{}" auth.username="{}" auth.password="{}" auth.auto={} auth.username_field="{}" auth.password_field="{}" auth.submit_field="{}" auth.first_submit_field="{}" auth.exclude="{}" auth.display="{}""'
+        template = '"auth.loginurl="{}" auth.username="{}" auth.password="{}" auth.auto={} auth.username_field="{}" auth.password_field="{}" auth.submit_field="{}" auth.first_submit_field="{}" auth.exclude="{}" auth.display="{}" "{}""'
         template.format(self.auth_loginUrl, self.auth_username, self.auth_password, self.auth_auto,
                         self.auth_username_field_name, self.auth_password_field_name, self.auth_submit_field_name,
-                        self.auth_first_submit_field_name, self.auth_excludeUrls, self.auth_display)
+                        self.auth_first_submit_field_name, self.auth_excludeUrls, self.auth_display, self.zap_options)
         args.append(template)
 
     def __add_hook_option__(self, args: List[str]) -> None:
@@ -370,7 +373,11 @@ class SOOSDASTAnalysis:
             api_url: str = self.__generate_upload_results_url__(project_id, analysis_id)
             log("SOOS URL Upload Results Endpoint: " + api_url)
             results_json = json.loads(zap_report)
-            manifest = zap_report.replace('<script ', '_script ') \
+            encode_report(results_json)
+
+            zap_report_cleaned = json.dumps(results_json)
+
+            manifest = zap_report_cleaned.replace('<script ', '_script ') \
                 .replace('<script>', '_script_') \
                 .replace('</script>', '_script_')
             files = {"manifest": manifest}
@@ -536,6 +543,11 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--authFirstSubmitField",
             help="First submit button id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--zapOptions",
+            help="ZAP Additional Options",
             required=False,
         )
 
