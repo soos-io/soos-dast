@@ -4,8 +4,9 @@ USER root
 
 COPY ./main.py ./auth_hook.py ./requirements.txt ./
 COPY ./helpers helpers/
+COPY ./hooks hooks/
 COPY ./model model/
-COPY scripts /home/zap/.ZAP_D/scripts/scripts/active/
+COPY ./scripts /home/zap/.ZAP_D/scripts/scripts/active/
 RUN chmod 777 /home/zap/.ZAP_D/scripts/scripts/active/
 
 RUN pip3 install -r requirements.txt && mkdir /zap/wrk && cd /opt \

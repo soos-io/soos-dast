@@ -57,3 +57,7 @@ URI_UPLOAD_DAST_RESULTS_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/proj
 # LOGS
 LOG_FORMAT = "%(asctime)s %(message)s"
 LOG_DATE_FORMAT = "%m/%d/%Y %I:%M:%S %p %Z"
+
+
+# ZAP SCRIPTS
+ZAP_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP_D/scripts/scripts/active/"

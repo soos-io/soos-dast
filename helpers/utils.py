@@ -148,7 +148,7 @@ def unescape_string(value: str) -> str or None:
     return unescape(unquote(value))
 
 
-def encode_report(report_json):
+def encode_report(report_json) -> NoReturn:
     if report_json['site'] is not None:
         for site in report_json['site']:
             if site['alerts'] is not None:

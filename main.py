@@ -2,7 +2,7 @@ import json
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from typing import List, Optional, Any, Dict
+from typing import List, Optional, Any, Dict, NoReturn
 
 import yaml
 from requests import Response, put, post
@@ -52,6 +52,8 @@ class SOOSDASTAnalysis:
         self.operating_environment: Optional[str] = None
         self.log_level: Optional[str] = None
         self.zap_options: Optional[str] = None
+        self.request_cookies: Optional[str] = None
+        self.request_header: Optional[str] = None
         self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
 
         # INTENTIONALLY HARDCODED
@@ -175,64 +177,69 @@ class SOOSDASTAnalysis:
                 self.log_level = value
             elif key == "zapOptions":
                 self.zap_options = value
+            elif key == "requestCookies":
+                self.request_cookies = value
+            elif key == "requestHeader":
+                self.request_cookies = value
 
-    def __add_target_url_option__(self, args: List[str]) -> None:
+    def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
             args.append(Constants.ZAP_TARGET_URL_OPTION)
             args.append(self.target_url)
         else:
             exit_app("Target url is required.")
 
-    def __add_rules_file_option__(self, args: List[str]) -> None:
+    def __add_rules_file_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.rules_file):
             args.append(Constants.ZAP_RULES_FILE_OPTION)
             args.append(self.rules_file)
 
-    def __add_context_file_option__(self, args: List[str]) -> None:
+    def __add_context_file_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.context_file):
             args.append(Constants.ZAP_CONTEXT_FILE_OPTION)
             args.append(self.context_file)
 
-    def __add_debug_option__(self, args: List[str]) -> None:
+    def __add_debug_option__(self, args: List[str]) -> NoReturn:
         if is_true(self.debug_mode):
             args.append(Constants.ZAP_DEBUG_OPTION)
 
-    def __add_ajax_spider_scan_option__(self, args: List[str]) -> None:
+    def __add_ajax_spider_scan_option__(self, args: List[str]) -> NoReturn:
         if is_true(self.ajax_spider_scan):
             args.append(Constants.ZAP_AJAX_SPIDER_OPTION)
 
-    def __add_minutes_delay_option__(self, args: List[str]) -> None:
+    def __add_minutes_delay_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.minutes_delay):
             args.append(Constants.ZAP_MINUTES_DELAY_OPTION)
             args.append(self.minutes_delay)
 
-    def __add_format_option__(self, args: List[str]) -> None:
+    def __add_format_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.api_scan_format):
             args.append(Constants.ZAP_FORMAT_OPTION)
             args.append(self.api_scan_format)
         elif self.scan_mode == Constants.API_SCAN:
             exit_app("Format is required for apiscan mode.")
 
-    def __add_log_level_option__(self, args: List[str]) -> None:
+    def __add_log_level_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.log_level):
             args.append(Constants.ZAP_MINIMUM_LEVEL_OPTION)
             args.append(self.log_level)
 
-    def __add_report_file__(self, args: List[str]) -> None:
+    def __add_report_file__(self, args: List[str]) -> NoReturn:
         args.append(Constants.ZAP_JSON_REPORT_OPTION)
         args.append(Constants.REPORT_SCAN_RESULT_FILENAME)
 
-    def __add_auth_options__(self, args: List[str]) -> None:
+    def __add_zap_options__(self, args: List[str]) -> NoReturn:
         args.append(Constants.ZAP_OTHER_OPTIONS)
-        template = '"auth.loginurl="{}" auth.username="{}" auth.password="{}" auth.auto={} auth.username_field="{}" auth.password_field="{}" auth.submit_field="{}" auth.first_submit_field="{}" auth.exclude="{}" auth.display="{}" "{}""'
+        template = '"auth.loginurl="{}" auth.username="{}" auth.password="{}" auth.auto={} auth.username_field="{}" auth.password_field="{}" auth.submit_field="{}" auth.first_submit_field="{}" auth.exclude="{}" auth.display="{}" cookies="{}" "{}""'
         template.format(self.auth_loginUrl, self.auth_username, self.auth_password, self.auth_auto,
                         self.auth_username_field_name, self.auth_password_field_name, self.auth_submit_field_name,
-                        self.auth_first_submit_field_name, self.auth_excludeUrls, self.auth_display, self.zap_options)
+                        self.auth_first_submit_field_name, self.auth_excludeUrls, self.auth_display,
+                        self.request_cookies, self.zap_options)
         args.append(template)
 
     def __add_hook_option__(self, args: List[str]) -> None:
         args.append(Constants.ZAP_HOOK_OPTION)
-        args.append('/zap/auth_hook.py')
+        args.append('/zap/hooks/soos_dast_hook.py')
 
     def __generate_command__(self, args: List[str]) -> str:
         self.__add_debug_option__(args)
@@ -240,8 +247,8 @@ class SOOSDASTAnalysis:
         self.__add_context_file_option__(args)
         self.__add_ajax_spider_scan_option__(args)
         self.__add_minutes_delay_option__(args)
-        if self.auth_loginUrl is not None:
-            self.__add_auth_options__(args)
+        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None:
+            self.__add_zap_options__(args)
 
         self.__add_hook_option__(args)
 
@@ -548,6 +555,16 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--zapOptions",
             help="ZAP Additional Options",
+            required=False,
+        )
+        parser.add_argument(
+            "--requestCookies",
+            help="Set Cookie values for the requests to the target URL",
+            required=False,
+        )
+        parser.add_argument(
+            "--requestHeader",
+            help="Set extra Header requests",
             required=False,
         )
 

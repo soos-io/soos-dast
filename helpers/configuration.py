@@ -1,7 +1,7 @@
 from helpers.utils import log
 import os
 import traceback
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from model.log_level import LogLevel
 
@@ -25,6 +25,7 @@ class DASTConfig:
     auth_exclude_urls: Optional[List[str]] = None
     auth_include_urls: Optional[List[str]] = None
     xss_collector: Optional[str] = None
+    cookies: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
@@ -51,6 +52,8 @@ class DASTConfig:
             self.auth_exclude_urls = self._get_zap_param_list('auth.exclude') or list()
             self.auth_include_urls = self._get_zap_param_list('auth.include') or list()
             self.xss_collector = self._get_zap_param('xss.collector') or ''
+            self.cookies = self._get_zap_param('cookies') or ''
+
         except Exception:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)
             os.exit(1)
