@@ -79,11 +79,11 @@ class SOOSDASTAnalysis:
         }
 
     def parse_configuration(self, configuration: Dict, target_url: str):
-        log(f"Configuration: {str(configuration)}")
         valid_required("Target URL", target_url)
         self.target_url = target_url
-
+        log(f"Configuration", log_level=LogLevel.DEBUG)
         for key, value in configuration.items():
+            log(f"{key}={value}", log_level=LogLevel.DEBUG)
             if key == "clientId":
                 if value is None:
                     try:
@@ -180,7 +180,7 @@ class SOOSDASTAnalysis:
             elif key == "requestCookies":
                 self.request_cookies = value
             elif key == "requestHeader":
-                self.request_cookies = value
+                self.request_header = value
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -229,15 +229,23 @@ class SOOSDASTAnalysis:
         args.append(Constants.REPORT_SCAN_RESULT_FILENAME)
 
     def __add_zap_options__(self, args: List[str]) -> NoReturn:
+        log(f"Adding Zap Options")
         args.append(Constants.ZAP_OTHER_OPTIONS)
-        template = '"auth.loginurl="{}" auth.username="{}" auth.password="{}" auth.auto={} auth.username_field="{}" auth.password_field="{}" auth.submit_field="{}" auth.first_submit_field="{}" auth.exclude="{}" auth.display="{}" cookies="{}" "{}""'
-        template.format(self.auth_loginUrl, self.auth_username, self.auth_password, self.auth_auto,
-                        self.auth_username_field_name, self.auth_password_field_name, self.auth_submit_field_name,
-                        self.auth_first_submit_field_name, self.auth_excludeUrls, self.auth_display,
-                        self.request_cookies, self.zap_options)
-        args.append(template)
 
-    def __add_hook_option__(self, args: List[str]) -> None:
+        zap_options: List[str] = list()
+        if self.auth_loginUrl is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.loginurl", value=self.auth_loginUrl))
+        if self.request_cookies is not None:
+            zap_options.append(self.__add_custom_option__(label="cookies", value=self.request_cookies))
+        if self.request_header is not None:
+            zap_options.append(self.__add_custom_option__(label="header", value=self.request_header))
+
+        args.append(" ".join(zap_options))
+
+    def __add_custom_option__(self, label, value) -> str:
+        return f"{label}=\"{value}\""
+
+    def __add_hook_option__(self, args: List[str]) -> NoReturn:
         args.append(Constants.ZAP_HOOK_OPTION)
         args.append('/zap/hooks/soos_dast_hook.py')
 
@@ -247,6 +255,10 @@ class SOOSDASTAnalysis:
         self.__add_context_file_option__(args)
         self.__add_ajax_spider_scan_option__(args)
         self.__add_minutes_delay_option__(args)
+        log(f"Add ZAP Options?")
+        log(f"Auth Login: {str(self.auth_loginUrl)}")
+        log(f"Zap Options: {str(self.zap_options)}")
+        log(f"Cookies : {str(self.request_cookies)}")
         if self.auth_loginUrl or self.zap_options or self.request_cookies is not None:
             self.__add_zap_options__(args)
 
@@ -570,7 +582,7 @@ class SOOSDASTAnalysis:
 
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
-            log("Reading config file: " + args.configFile)
+            log(f"Reading config file: {args.configFile}", log_level=LogLevel.DEBUG)
             with open(
                     Constants.CONFIG_FILE_FOLDER + args.configFile,
                     mode="r",
@@ -615,6 +627,8 @@ class SOOSDASTAnalysis:
                 return None
 
             command: str = scan_function()
+
+            log(f"Command to be executed: {command}")
 
             os.system(command)
 

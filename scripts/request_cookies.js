@@ -27,7 +27,8 @@
 
 function sendingRequest(msg, initiator, helper) {
 	// Debugging can be done using println like this
-	print('sendingRequest called for url=' + msg.getRequestHeader().getURI().toString())
+	var cookies = org.zaproxy.zap.extension.script.ScriptVars.getGlobalVar("cookies")
+	print("Cookies", cookies)
 }
 
 function responseReceived(msg, initiator, helper) {

@@ -2,7 +2,7 @@ FROM owasp/zap2docker-weekly
 
 USER root
 
-COPY ./main.py ./auth_hook.py ./requirements.txt ./
+COPY ./main.py ./requirements.txt ./
 COPY ./helpers helpers/
 COPY ./hooks hooks/
 COPY ./model model/

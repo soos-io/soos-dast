@@ -64,6 +64,7 @@ default_logger_class = logging.getLoggerClass()
 # Console logging for CLI
 logging.setLoggerClass(ConsoleLogger)
 console = logging.getLogger("SOOS DAST")
+console.setLevel(level=logging.INFO)
 
 # Restore the previous logger
 logging.setLoggerClass(default_logger_class)

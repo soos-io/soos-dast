@@ -1,36 +1,38 @@
-import sys
+from base64 import b64encode
 from datetime import datetime, timedelta
+from html import unescape
+from sys import exit
 from time import sleep
-import helpers.constants as Constants
 from typing import Optional, Any, NoReturn
 from urllib.parse import unquote
-from html import unescape
-import base64
 
 from requests import Response, get
 from requests.exceptions import (
     HTTPError,
 )
 
+import helpers.constants as Constants
 from helpers.constants import RETRY_DELAY, REQUEST_TIMEOUT
 from model.log_level import LogLevel, loggerFunc
 from model.target_availability_check import TargetAvailabilityCheck
 
+UTF_8: str = 'utf-8'
 
-def log(message: str, log_level: LogLevel = LogLevel.INFO) -> None:
+
+def log(message: str, log_level: LogLevel = LogLevel.INFO) -> NoReturn:
     logFunc = loggerFunc.get(log_level)
     logFunc(str(message))
 
 
-def print_line_separator() -> None:
+def print_line_separator() -> NoReturn:
     print(
         "----------------------------------------------------------------------------------------------------------"
     )
 
 
-def exit_app(e) -> None:
+def exit_app(e) -> NoReturn:
     log(str(e), LogLevel.ERROR)
-    sys.exit(1)
+    exit(1)
 
 
 def valid_required(key, value):
@@ -68,7 +70,8 @@ def check_site_is_available(url: str) -> bool:
 
 def __send_ping__(target: str) -> bool:
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
+    }
     response: Response = get(
         url=target,
         headers=headers,
@@ -160,7 +163,7 @@ def encode_report(report_json) -> NoReturn:
 
 
 def convert_string_to_b64(content: str) -> str:
-    message_bytes = content.encode('utf-8')
-    base64_bytes = base64.b64encode(message_bytes)
-    base64_message = base64_bytes.decode('utf-8')
+    message_bytes = content.encode(UTF_8)
+    base64_bytes = b64encode(message_bytes)
+    base64_message = base64_bytes.decode(UTF_8)
     return base64_message

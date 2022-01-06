@@ -1,6 +1,6 @@
 from helpers.auth import DASTAuth
 from helpers.configuration import DASTConfig
-import helpers.blindxss as blindxss
+import helpers.cookies as cookies
 import sys
 import traceback
 from helpers.utils import log, exit_app
@@ -19,6 +19,7 @@ def start_zap(port, extra_zap_params):
 
 
 def zap_started(zap, target):
+    log(f"zap_started_hook is running")
     try:
         # ZAP Docker scripts reset the target to the root URL
         if target.count('/') > 2:
@@ -30,8 +31,8 @@ def zap_started(zap, target):
 
         auth = DASTAuth(config)
         auth.authenticate(zap, target)
-
-        blindxss.load(config, zap)
+        log(f"checking cookies request")
+        cookies.load(config, zap)
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
         sys.exit(1)

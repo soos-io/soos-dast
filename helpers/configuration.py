@@ -26,11 +26,13 @@ class DASTConfig:
     auth_include_urls: Optional[List[str]] = None
     xss_collector: Optional[str] = None
     cookies: Optional[str] = None
+    header: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
 
     def load_config(self, extra_zap_params):
+        log(f"load_config: {extra_zap_params}")
         try:
             self.extra_zap_params = extra_zap_params
             log(f"Extra params passed by ZAP: {self.extra_zap_params}")
@@ -53,6 +55,7 @@ class DASTConfig:
             self.auth_include_urls = self._get_zap_param_list('auth.include') or list()
             self.xss_collector = self._get_zap_param('xss.collector') or ''
             self.cookies = self._get_zap_param('cookies') or ''
+            self.header = self._get_zap_param('requestHeader') or ''
 
         except Exception:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)
