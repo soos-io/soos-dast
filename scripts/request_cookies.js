@@ -25,9 +25,21 @@
 // helper.getHttpSender().sendAndReceive(msg2, false);
 // print('msg2 response=' + msg2.getResponseHeader().getStatusCode())
 
+var COOKIE_TYPE   = org.parosproxy.paros.network.HtmlParameter.Type.cookie;
+var HtmlParameter = Java.type('org.parosproxy.paros.network.HtmlParameter');
+var ScriptVars = Java.type('org.zaproxy.zap.extension.script.ScriptVars');
+
 function sendingRequest(msg, initiator, helper) {
 	// Debugging can be done using println like this
-	var cookies = org.zaproxy.zap.extension.script.ScriptVars.getGlobalVar("cookies")
+	var cookiesString = ScriptVars.getGlobalVar("cookies");
+	var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cm46U09PUzpDbGllbnRIYXNoIjoiZDdkZmI3Y2E3YjU4ZjliZjk2YzExZThiOWM4ODFkNmVhYTBhOTlkZDViYmI5NTY1Y2IwMjU0ZWYxMmY1MDEyZiIsInVybjpTT09TOlVzZXJJZGVudGlmaWVyIjoiNTZhZDc2NzYtNzQ4OS00YjZjLWJlN2YtNDUzZGY3MjljZDEzIiwidXJuOlNPT1M6VXNlclJvbGUiOiJBZG1pbmlzdHJhdG9yIiwiZXhwIjoxNjQxNTgyNzU4LCJpc3MiOiJodHRwczovL2Rldi1hcHAuc29vcy5pby8iLCJhdWQiOiJodHRwczovL2Rldi1hcHAuc29vcy5pby8ifQ._8SXa-aAU3VtEGM7KhUQE6bjHk4a1PrqskGDwWnUIp4"
+	// Debugging can be done using println like this
+	var cookie = new HtmlParameter(COOKIE_TYPE, "_jwt", token);
+	// add the saved authentication token as an Authentication header and a cookie
+	var cookies = msg.getRequestHeader().getCookieParams();
+	cookies.add(cookie);
+	msg.getRequestHeader().setCookieParams(cookies);
+	print('sendingRequest called for url=' + msg.getRequestHeader().getURI().toString())
 	print("Cookies", cookies)
 }
 

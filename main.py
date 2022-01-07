@@ -276,7 +276,7 @@ class SOOSDASTAnalysis:
         return self.__generate_command__(args)
 
     def full_scan(self) -> str:
-        args: List[str] = [Constants.PY_CMD, Constants.BASE_LINE_SCRIPT]
+        args: List[str] = [Constants.PY_CMD, Constants.FULL_SCAN_SCRIPT]
 
         self.__add_target_url_option__(args)
 
