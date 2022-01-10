@@ -19,6 +19,8 @@ docker run -it --rm [-v <path_with_config_files>:/zap/config/] soos/dast:x.y.z [
                [--contextFile CONTEXTFILE] [--contextUser CONTEXTUSER]
                [--fullScanMinutes FULLSCANMINUTES]
                [--apiScanFormat APISCANFORMAT] [--level LEVEL]
+               [--zapOptions ZAPOPTIONS] [--requestCookies REQUESTCOOKIES]
+               [--requestHeader REQUESTHEADER]
                targetURL
 ```
 
@@ -30,23 +32,26 @@ docker run -it --rm [-v <path_with_config_files>:/zap/config/] soos/dast:x.y.z [
 
 ### Script Parameters
 
-| Name                                       | Required                                   | Description                                                                                          |
-|--------------------------------------------|--------------------------------------------|------------------------------------------------------------------------------------------------------|
-| `configFile`                               |                                            | SOOS YAML file with all the configurations for the DAST Analysis. See [config file definition](#config-file-definition)          |
-| `-v <path_with_config_files>:/zap/config/` | Yes - if `configFile` param is defined     |                                                                                                      |
-| `clientId`                                 | Yes - if `configFile` param is not defined | SOOS client id                                                                                       |
-| `apiKey`                                   | Yes - if `configFile` param is not defined | SOOS API key                                                                                         |
-| `projectName`                              | Yes - if `configFile` param is not defined | SOOS project name                                                                                    |
-| `scanMode`                                 | Yes - if `configFile` param is not defined | SOOS DAST scan mode. Values: `baseline` (Default), `fullscan`, `apiscan`, or `activescan`            |
-| `apiURL`                                   | Yes - if `configFile` param is not defined | SOOS API URL. By Default: `https://app.soos.io/api/`                                                 |
-| `debug`                                    |                                            | show debug messages                                                                                  |
-| `ajaxSpider`                               |                                            | use the Ajax spider in addition to the traditional one                                               |
-| `rules`                                    |                                            | rules file to use for `INFO`, `IGNORE` or `FAIL` warnings                                             |
-| `contextFile`                              |                                            | context file which will be loaded prior to scanning the target. Required for authenticated URLs      |
-| `contextUser`                              |                                            | username to use for authenticated scans - must be defined in the given context file                  |
-| `fullScanMinutes`                          | Yes - if `scanMode` is `fullscan`          | the number of minutes for spider to run                                                                  |
-| `apiScanFormat`                            | Yes - if `scanMode` is `apiscan`           | target API format: `openapi`, `soap`, or `graphql`                                                   |
-| `level`                                    |                                            | minimum level to show: `PASS`, `IGNORE`, `INFO`, `WARN` or `FAIL`                                    |
+| Name                                       | Required                                   | Description                                                                                                      |
+|--------------------------------------------|--------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `configFile`                               |                                            | SOOS YAML file with all the configurations for the DAST Analysis. See [config file definition](#config-file-definition) |
+| `-v <path_with_config_files>:/zap/config/` | Yes - if `configFile` param is defined     |                                                                                                                  |
+| `clientId`                                 | Yes - if `configFile` param is not defined | SOOS client id                                                                                                   |
+| `apiKey`                                   | Yes - if `configFile` param is not defined | SOOS API key                                                                                                     |
+| `projectName`                              | Yes - if `configFile` param is not defined | SOOS project name                                                                                                |
+| `scanMode`                                 | Yes - if `configFile` param is not defined | SOOS DAST scan mode. Values: `baseline` (Default), `fullscan`, `apiscan`, or `activescan`                        |
+| `apiURL`                                   | Yes - if `configFile` param is not defined | SOOS API URL. By Default: `https://app.soos.io/api/`                                                             |
+| `debug`                                    |                                            | show debug messages                                                                                              |
+| `ajaxSpider`                               |                                            | use the Ajax spider in addition to the traditional one                                                           |
+| `rules`                                    |                                            | rules file to use for `INFO`, `IGNORE` or `FAIL` warnings                                                        |
+| `contextFile`                              |                                            | context file which will be loaded prior to scanning the target. Required for authenticated URLs                  |
+| `contextUser`                              |                                            | username to use for authenticated scans - must be defined in the given context file                              |
+| `fullScanMinutes`                          | Yes - if `scanMode` is `fullscan`          | the number of minutes for spider to run                                                                          |
+| `apiScanFormat`                            | Yes - if `scanMode` is `apiscan`           | target API format: `openapi`, `soap`, or `graphql`                                                               |
+| `level`                                    |                                            | minimum level to show: `PASS`, `IGNORE`, `INFO`, `WARN` or `FAIL`                                                |
+| `zapOptions`                               |                                            | add zap options                                                                                                  |
+| `requestCookies`                           |                                            | add custom cookies to the requests                                                                               |
+| `requestHeaders`                           |                                            | add custom headers to the requests                                                                               |
 
 
 #### Config File Definition

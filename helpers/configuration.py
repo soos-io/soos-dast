@@ -1,5 +1,5 @@
 from helpers.utils import log
-import os
+import sys
 import traceback
 from typing import Optional, List
 
@@ -25,11 +25,14 @@ class DASTConfig:
     auth_exclude_urls: Optional[List[str]] = None
     auth_include_urls: Optional[List[str]] = None
     xss_collector: Optional[str] = None
+    cookies: Optional[str] = None
+    header: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
 
     def load_config(self, extra_zap_params):
+        log(f"load_config: {extra_zap_params}")
         try:
             self.extra_zap_params = extra_zap_params
             log(f"Extra params passed by ZAP: {self.extra_zap_params}")
@@ -51,9 +54,12 @@ class DASTConfig:
             self.auth_exclude_urls = self._get_zap_param_list('auth.exclude') or list()
             self.auth_include_urls = self._get_zap_param_list('auth.include') or list()
             self.xss_collector = self._get_zap_param('xss.collector') or ''
-        except Exception:
+            self.cookies = self._get_zap_param('request.custom_cookies') or ''
+            self.header = self._get_zap_param('request.custom_header') or ''
+
+        except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)
-            os.exit(1)
+            sys.exit(1)
 
     def _get_zap_param(self, key):
         for param in self.extra_zap_params:

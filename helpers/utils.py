@@ -1,36 +1,38 @@
-import sys
+from base64 import b64encode
 from datetime import datetime, timedelta
-from time import sleep
-import helpers.constants as Constants
-from typing import Optional, Any, NoReturn
-from urllib.parse import unquote
 from html import unescape
-import base64
+from sys import exit
+from time import sleep
+from typing import Optional, Any, NoReturn, Dict
+from urllib.parse import unquote
 
 from requests import Response, get
 from requests.exceptions import (
     HTTPError,
 )
 
+import helpers.constants as Constants
 from helpers.constants import RETRY_DELAY, REQUEST_TIMEOUT
 from model.log_level import LogLevel, loggerFunc
 from model.target_availability_check import TargetAvailabilityCheck
 
+UTF_8: str = 'utf-8'
 
-def log(message: str, log_level: LogLevel = LogLevel.INFO) -> None:
+
+def log(message: str, log_level: LogLevel = LogLevel.INFO) -> NoReturn:
     logFunc = loggerFunc.get(log_level)
     logFunc(str(message))
 
 
-def print_line_separator() -> None:
+def print_line_separator() -> NoReturn:
     print(
         "----------------------------------------------------------------------------------------------------------"
     )
 
 
-def exit_app(e) -> None:
+def exit_app(e) -> NoReturn:
     log(str(e), LogLevel.ERROR)
-    sys.exit(1)
+    exit(1)
 
 
 def valid_required(key, value):
@@ -51,24 +53,31 @@ def check_site_is_available(url: str) -> bool:
 
     check = False
     max_time = datetime.utcnow() + timedelta(days=0, minutes=0, seconds=30)
+    attempt = 1
 
     while datetime.utcnow() < max_time:
-        check = __send_ping__(url)
+        log(f"Attempt {attempt} to connect to {url}")
+        try:
+            check = __send_ping__(url)
 
-        if check is True:
-            break
+            if check is True:
+                break
 
-        if datetime.utcnow() + timedelta(0, RETRY_DELAY) > max_time:
-            break
+            if datetime.utcnow() + timedelta(0, RETRY_DELAY) > max_time:
+                break
+        except Exception as e:
+            pass
 
         sleep(RETRY_DELAY)
+        attempt = attempt + 1
 
     return check
 
 
 def __send_ping__(target: str) -> bool:
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
+    }
     response: Response = get(
         url=target,
         headers=headers,
@@ -148,7 +157,7 @@ def unescape_string(value: str) -> str or None:
     return unescape(unquote(value))
 
 
-def encode_report(report_json):
+def encode_report(report_json) -> NoReturn:
     if report_json['site'] is not None:
         for site in report_json['site']:
             if site['alerts'] is not None:
@@ -160,7 +169,19 @@ def encode_report(report_json):
 
 
 def convert_string_to_b64(content: str) -> str:
-    message_bytes = content.encode('utf-8')
-    base64_bytes = base64.b64encode(message_bytes)
-    base64_message = base64_bytes.decode('utf-8')
+    message_bytes = content.encode(UTF_8)
+    base64_bytes = b64encode(message_bytes)
+    base64_message = base64_bytes.decode(UTF_8)
     return base64_message
+
+
+def process_custom_cookie_header_data(data: str) -> Dict:
+    values: Dict = dict()
+
+    if data is not None:
+        dataModified = data.replace('[', '').replace(']', '')
+        for value in dataModified.split(','):
+            dict_key, dict_value = value.split(':')
+            values[dict_key] = dict_value
+
+    return values

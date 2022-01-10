@@ -11,7 +11,7 @@ DEFAULT_INTEGRATION_TYPE: str = "Script"
 DEFAULT_DAST_TOOL: str = "zap"
 SERVER_ERROR_CODES = range(500, 599)
 RETRY_DELAY = 3  # seconds
-REQUEST_TIMEOUT = 5
+REQUEST_TIMEOUT = 10  # seconds
 
 # SCAN MODES
 BASELINE = 'baseline'
@@ -57,3 +57,8 @@ URI_UPLOAD_DAST_RESULTS_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/proj
 # LOGS
 LOG_FORMAT = "%(asctime)s %(message)s"
 LOG_DATE_FORMAT = "%m/%d/%Y %I:%M:%S %p %Z"
+
+
+# ZAP SCRIPTS
+ZAP_ACTIVE_SCAN_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP_D/scripts/scripts/active/"
+ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP_D/scripts/scripts/httpsender/"

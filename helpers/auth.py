@@ -1,18 +1,18 @@
+from os import environ
+from re import search
+from time import sleep
+from traceback import print_exc
 
-from helpers.utils import log
-import time
-import re
-import os
-import traceback
-import requests
+from pyotp import TOTP
+from requests import post
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from helpers.localstorage import LocalStorage
-import pyotp
+from selenium.webdriver.support.ui import WebDriverWait
 
+from helpers.localstorage import LocalStorage
+from helpers.utils import log
 from model.log_level import LogLevel
 
 
@@ -57,8 +57,8 @@ class DASTAuth:
     def setup_webdriver(self):
         log('Start webdriver')
 
-        os.environ['MOZ_HEADLESS_WIDTH'] = '1920'
-        os.environ['MOZ_HEADLESS_HEIGHT'] = '1080'
+        environ['MOZ_HEADLESS_WIDTH'] = '1920'
+        environ['MOZ_HEADLESS_HEIGHT'] = '1080'
 
         profile = webdriver.FirefoxProfile()
         profile.accept_untrusted_certs = True
@@ -97,10 +97,12 @@ class DASTAuth:
                 self.login_from_token_endpoint(zap)
             else:
                 log(
-                    'No login URL, Token Endpoint or Bearer token provided - skipping authentication', log_level=LogLevel.WARN)
+                    'No login URL, Token Endpoint or Bearer token provided - skipping authentication',
+                    log_level=LogLevel.WARN
+                )
 
         except Exception:
-            log(f"error in authenticate: {traceback.print_exc()}")
+            log(f"error in authenticate: {print_exc()}", log_level=LogLevel.ERROR)
         finally:
             self.cleanup()
 
@@ -130,7 +132,7 @@ class DASTAuth:
         storage = LocalStorage(self.driver)
         for key in storage.items():
             log(f"Found storage item: {key}: {storage.get(key)[:50]}")
-            match = re.search('(eyJ[^"]*)', storage.get(key))
+            match = search('(eyJ[^"]*)', storage.get(key))
             if match:
                 auth_header = f"Bearer {match.group()}"
                 self.add_authorization_header(zap, auth_header)
@@ -138,8 +140,8 @@ class DASTAuth:
     def login_from_token_endpoint(self, zap):
         log('Fetching authentication token from endpoint')
 
-        response = requests.post(self.config.auth_token_endpoint, data={
-                                 'username': self.config.auth_username, 'password': self.config.auth_password})
+        response = post(self.config.auth_token_endpoint, data={
+            'username': self.config.auth_username, 'password': self.config.auth_password})
         data = response.json()
         auth_header = None
 
@@ -163,7 +165,7 @@ class DASTAuth:
         self.driver.get(self.config.auth_login_url)
 
         # wait for the page to load
-        time.sleep(5)
+        sleep(5)
 
         log('automatically finding login elements')
 
@@ -212,7 +214,7 @@ class DASTAuth:
             except TimeoutException:
                 log('Check element timeout')
         else:
-            time.sleep(self.config.auth_check_delay)
+            sleep(self.config.auth_check_delay)
 
     def submit_form(self, submit_action, submit_field_name, username_element):
         if submit_action == "click":
@@ -237,7 +239,7 @@ class DASTAuth:
                                           "//input[@type='password' or contains(@name,'ass')]")
 
     def fill_otp(self):
-        totp = pyotp.TOTP(self.config.auth_otp_secret)
+        totp = TOTP(self.config.auth_otp_secret)
         otp = totp.now()
 
         log(f"Generated OTP: {otp}")
