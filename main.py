@@ -236,9 +236,9 @@ class SOOSDASTAnalysis:
         if self.auth_loginUrl is not None:
             zap_options.append(self.__add_custom_option__(label="auth.loginurl", value=self.auth_loginUrl))
         if self.request_cookies is not None:
-            zap_options.append(self.__add_custom_option__(label="cookies", value=self.request_cookies))
+            zap_options.append(self.__add_custom_option__(label="request.custom_cookies", value=self.request_cookies))
         if self.request_header is not None:
-            zap_options.append(self.__add_custom_option__(label="header", value=self.request_header))
+            zap_options.append(self.__add_custom_option__(label="request.custom_header", value=self.request_header))
 
         args.append(" ".join(zap_options))
 

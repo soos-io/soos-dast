@@ -1,6 +1,7 @@
 from helpers.auth import DASTAuth
 from helpers.configuration import DASTConfig
-import helpers.cookies as cookies
+import helpers.custom_cookies as cookies
+import helpers.custom_headers as headers
 import sys
 import traceback
 from helpers.utils import log, exit_app
@@ -33,6 +34,7 @@ def zap_started(zap, target):
         auth.authenticate(zap, target)
         log(f"checking cookies request")
         cookies.load(config, zap)
+        headers.load(config, zap)
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
         sys.exit(1)

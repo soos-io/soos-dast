@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from html import unescape
 from sys import exit
 from time import sleep
-from typing import Optional, Any, NoReturn
+from typing import Optional, Any, NoReturn, Dict
 from urllib.parse import unquote
 
 from requests import Response, get
@@ -167,3 +167,15 @@ def convert_string_to_b64(content: str) -> str:
     base64_bytes = b64encode(message_bytes)
     base64_message = base64_bytes.decode(UTF_8)
     return base64_message
+
+
+def process_custom_cookie_header_data(data: str) -> Dict:
+    values: Dict = dict()
+
+    if data is not None:
+        dataModified = data.replace('[', '').replace(']', '')
+        for value in dataModified.split(','):
+            dict_key, dict_value = value.split(':')
+            values[dict_key] = dict_value
+
+    return values
