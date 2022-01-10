@@ -53,17 +53,23 @@ def check_site_is_available(url: str) -> bool:
 
     check = False
     max_time = datetime.utcnow() + timedelta(days=0, minutes=0, seconds=30)
+    attempt = 1
 
     while datetime.utcnow() < max_time:
-        check = __send_ping__(url)
+        log(f"Attempt {attempt} to connect to {url}")
+        try:
+            check = __send_ping__(url)
 
-        if check is True:
-            break
+            if check is True:
+                break
 
-        if datetime.utcnow() + timedelta(0, RETRY_DELAY) > max_time:
-            break
+            if datetime.utcnow() + timedelta(0, RETRY_DELAY) > max_time:
+                break
+        except Exception as e:
+            pass
 
         sleep(RETRY_DELAY)
+        attempt = attempt + 1
 
     return check
 
