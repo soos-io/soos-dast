@@ -1,3 +1,4 @@
+from helpers.constants import EMPTY_STRING
 from helpers.utils import log
 import sys
 import traceback
@@ -37,25 +38,25 @@ class DASTConfig:
             self.extra_zap_params = extra_zap_params
             log(f"Extra params passed by ZAP: {self.extra_zap_params}")
 
-            self.auth_login_url = self._get_zap_param('auth.loginurl') or ''
-            self.auth_username = self._get_zap_param('auth.username') or ''
-            self.auth_password = self._get_zap_param('auth.password') or ''
-            self.auth_otp_secret = self._get_zap_param('auth.otpsecret') or ''
+            self.auth_login_url = self._get_zap_param('auth.loginurl') or EMPTY_STRING
+            self.auth_username = self._get_zap_param('auth.username') or EMPTY_STRING
+            self.auth_password = self._get_zap_param('auth.password') or EMPTY_STRING
+            self.auth_otp_secret = self._get_zap_param('auth.otpsecret') or EMPTY_STRING
             self.auth_submit_action = self._get_zap_param('auth.submitaction') or 'click'
-            self.auth_token_endpoint = self._get_zap_param('auth.token_endpoint') or ''
-            self.auth_bearer_token = self._get_zap_param('auth.bearer_token') or ''
+            self.auth_token_endpoint = self._get_zap_param('auth.token_endpoint') or EMPTY_STRING
+            self.auth_bearer_token = self._get_zap_param('auth.bearer_token') or EMPTY_STRING
             self.auth_username_field_name = self._get_zap_param('auth.username_field') or 'username'
             self.auth_password_field_name = self._get_zap_param('auth.password_field') or 'password'
             self.auth_otp_field_name = self._get_zap_param('auth.otp_field') or 'otp'
             self.auth_submit_field_name = self._get_zap_param('auth.submit_field') or 'login'
             self.auth_first_submit_field_name = self._get_zap_param('auth.first_submit_field') or 'next'
             self.auth_check_delay = self._get_zap_param_float('auth.check_delay') or 5
-            self.auth_check_element = self._get_zap_param('auth.check_element') or ''
+            self.auth_check_element = self._get_zap_param('auth.check_element') or EMPTY_STRING
             self.auth_exclude_urls = self._get_zap_param_list('auth.exclude') or list()
             self.auth_include_urls = self._get_zap_param_list('auth.include') or list()
-            self.xss_collector = self._get_zap_param('xss.collector') or ''
-            self.cookies = self._get_zap_param('request.custom_cookies') or ''
-            self.header = self._get_zap_param('request.custom_header') or ''
+            self.xss_collector = self._get_zap_param('xss.collector') or EMPTY_STRING
+            self.cookies = self._get_zap_param('request.custom_cookies') or EMPTY_STRING
+            self.header = self._get_zap_param('request.custom_header') or EMPTY_STRING
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)

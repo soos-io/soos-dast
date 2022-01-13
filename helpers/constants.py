@@ -12,6 +12,7 @@ DEFAULT_DAST_TOOL: str = "zap"
 SERVER_ERROR_CODES = range(500, 599)
 RETRY_DELAY = 3  # seconds
 REQUEST_TIMEOUT = 10  # seconds
+EMPTY_STRING = ''
 
 # SCAN MODES
 BASELINE = 'baseline'
@@ -27,6 +28,7 @@ ANALYSIS_ID_PLACEHOLDER = "{soos_analysis_id}"
 
 # FILE PROCESSING
 FILE_READ_MODE = "r"
+FILE_WRITE_MODE = "x"
 UTF_8_ENCODING = "utf-8"
 
 
