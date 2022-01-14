@@ -389,7 +389,6 @@ class SOOSDASTAnalysis:
             api_url: str = self.__generate_upload_results_url__(project_id, analysis_id)
             log("SOOS URL Upload Results Endpoint: " + api_url)
             results_json = json.loads(zap_report)
-            encode_report(results_json)
 
             zap_report_encoded = convert_string_to_b64(json.dumps(results_json))
             files = {"base64Manifest": zap_report_encoded}
