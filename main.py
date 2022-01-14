@@ -9,7 +9,7 @@ from requests import Response, put, post
 
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
-    check_site_is_available, log_error, unescape_string, encode_report
+    check_site_is_available, log_error, unescape_string, encode_report, read_file, convert_string_to_b64, write_file
 from model.log_level import LogLevel
 
 param_mapper = {}
@@ -63,13 +63,13 @@ class SOOSDASTAnalysis:
         # Auth Options
         self.auth_auto: Optional[str] = '0'
         self.auth_loginUrl: Optional[str] = None
-        self.auth_username: Optional[str] = ''
-        self.auth_password: Optional[str] = ''
-        self.auth_username_field_name: Optional[str] = ''
-        self.auth_password_field_name: Optional[str] = ''
-        self.auth_submit_field_name: Optional[str] = ''
-        self.auth_first_submit_field_name: Optional[str] = ''
-        self.auth_excludeUrls: Optional[str] = ''
+        self.auth_username: Optional[str] = Constants.EMPTY_STRING
+        self.auth_password: Optional[str] = Constants.EMPTY_STRING
+        self.auth_username_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_password_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_submit_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_first_submit_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_excludeUrls: Optional[str] = Constants.EMPTY_STRING
         self.auth_display: bool = False
 
         self.scan_mode_map: Dict = {
@@ -292,10 +292,7 @@ class SOOSDASTAnalysis:
         return self.__generate_command__(args)
 
     def open_zap_results_file(self):
-        with open(
-                Constants.REPORT_SCAN_RESULT_FILE, mode=Constants.FILE_READ_MODE, encoding=Constants.UTF_8_ENCODING
-        ) as file:
-            return file.read()
+        return read_file(file_path=Constants.REPORT_SCAN_RESULT_FILE)
 
     def __generate_start_dast_analysis_url__(self) -> str:
         url = Constants.URI_START_DAST_ANALYSIS_TEMPLATE.format(soos_base_uri=self.base_uri,
@@ -392,14 +389,9 @@ class SOOSDASTAnalysis:
             api_url: str = self.__generate_upload_results_url__(project_id, analysis_id)
             log("SOOS URL Upload Results Endpoint: " + api_url)
             results_json = json.loads(zap_report)
-            encode_report(results_json)
 
-            zap_report_cleaned = json.dumps(results_json)
-
-            manifest = zap_report_cleaned.replace('<script ', '_script ') \
-                .replace('<script>', '_script_') \
-                .replace('</script>', '_script_')
-            files = {"manifest": manifest}
+            zap_report_encoded = convert_string_to_b64(json.dumps(results_json))
+            files = {"base64Manifest": zap_report_encoded}
 
             attempt: int = 1
 
@@ -583,15 +575,9 @@ class SOOSDASTAnalysis:
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
             log(f"Reading config file: {args.configFile}", log_level=LogLevel.DEBUG)
-            with open(
-                    Constants.CONFIG_FILE_FOLDER + args.configFile,
-                    mode="r",
-                    encoding="utf-8",
-            ) as file:
-                # The FullLoader parameter handles the conversion from YAML
-                # scalar values to Python the dictionary format
-                configuration = yaml.load(file, Loader=yaml.FullLoader)
-                self.parse_configuration(configuration["config"], args.targetURL)
+            file = read_file(file_path=Constants.CONFIG_FILE_FOLDER + args.configFile)
+            configuration = yaml.load(file, Loader=yaml.FullLoader)
+            self.parse_configuration(configuration["config"], args.targetURL)
         else:
             self.parse_configuration(vars(args), args.targetURL)
 

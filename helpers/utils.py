@@ -165,7 +165,7 @@ def encode_report(report_json) -> NoReturn:
                     if alert['instances'] is not None:
                         for instance in alert['instances']:
                             instance['base64Uri'] = convert_string_to_b64(instance['uri'])
-                            instance['uri'] = ''
+                            instance['uri'] = Constants.EMPTY_STRING
 
 
 def convert_string_to_b64(content: str) -> str:
@@ -179,9 +179,20 @@ def process_custom_cookie_header_data(data: str) -> Dict:
     values: Dict = dict()
 
     if data is not None:
-        dataModified = data.replace('[', '').replace(']', '')
+        dataModified = data.replace('[', Constants.EMPTY_STRING).replace(']', Constants.EMPTY_STRING)
         for value in dataModified.split(','):
             dict_key, dict_value = value.split(':')
             values[dict_key] = dict_value
 
     return values
+
+
+def read_file(file_path):
+    with open(file=file_path, mode=Constants.FILE_READ_MODE, encoding=Constants.UTF_8_ENCODING) as file:
+        return file.read()
+
+
+def write_file(file_path, file_content):
+    with open(file=file_path, mode=Constants.FILE_WRITE_MODE, encoding=Constants.UTF_8_ENCODING) as file:
+        file.write(file_content)
+        file.close()

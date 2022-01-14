@@ -1,6 +1,6 @@
 from traceback import print_exc
 from helpers.configuration import DASTConfig
-from helpers.utils import log
+from helpers.utils import log, read_file
 from random import randint
 from sys import exit
 
@@ -23,8 +23,7 @@ def load(config: DASTConfig, zap):
 def replace_collector_uri(uri):
     template_script_path = '/home/zap/.ZAP_D/scripts/scripts/active/blindxss.js'
 
-    with open(template_script_path, 'r') as file:
-        file_data = file.read()
+    file_data = read_file(file_path=template_script_path)
 
     file_data = file_data.replace('callbackdomain.com', uri)
 
