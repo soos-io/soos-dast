@@ -395,9 +395,6 @@ class SOOSDASTAnalysis:
 
             attempt: int = 1
 
-            report_cleaned_path = '/zap/wrk/report_cleaned.json'
-            write_file(file_path=report_cleaned_path, file_content=json.dumps(files))
-
             while attempt <= Constants.MAX_RETRY_COUNT:
                 api_response: Response = put(
                     url=api_url,
