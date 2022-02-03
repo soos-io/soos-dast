@@ -2,6 +2,7 @@ import json
 import os
 import sys
 from argparse import ArgumentParser, Namespace
+from datetime import datetime
 from typing import List, Optional, Any, Dict, NoReturn
 
 import yaml
@@ -12,16 +13,26 @@ from helpers.utils import log, valid_required, has_value, exit_app, is_true, pri
     check_site_is_available, log_error, unescape_string, encode_report, read_file, convert_string_to_b64, write_file
 from model.log_level import LogLevel
 
+SCRIPT_VERSION = "alpha"
+
 param_mapper = {}
 
 
 class DASTStartAnalysisResponse:
     def __init__(self, dast_analysis_api_response):
-        self.analysis_id = dast_analysis_api_response["analysisId"]
-        if dast_analysis_api_response["projectId"] is not None:
-            self.project_id = dast_analysis_api_response["projectId"]
-        elif dast_analysis_api_response["projectHash"] is not None:
-            self.project_id = dast_analysis_api_response["projectHash"]
+        self.analysis_id = dast_analysis_api_response[
+            "analysisId"] if "analysisId" in dast_analysis_api_response else None
+        self.branch_hash = dast_analysis_api_response[
+            "branchHash"] if "branchHash" in dast_analysis_api_response else None
+        self.scan_type = dast_analysis_api_response["scanType"] if "scanType" in dast_analysis_api_response else None
+        self.scan_url = dast_analysis_api_response["scanUrl"] if "scanUrl" in dast_analysis_api_response else None
+        self.scan_status_url = dast_analysis_api_response[
+            "scanStatusUrl"] if "scanStatusUrl" in dast_analysis_api_response else None
+        self.errors = dast_analysis_api_response["errors"] if "errors" in dast_analysis_api_response else None
+        self.project_id = dast_analysis_api_response["projectId"] if "projectId" in dast_analysis_api_response else None
+        if self.project_id is None:
+            self.project_id = dast_analysis_api_response[
+                "projectHash"] if "projectHash" in dast_analysis_api_response else None
 
 
 class SOOSDASTAnalysis:
@@ -295,18 +306,22 @@ class SOOSDASTAnalysis:
         return read_file(file_path=Constants.REPORT_SCAN_RESULT_FILE)
 
     def __generate_start_dast_analysis_url__(self) -> str:
-        url = Constants.URI_START_DAST_ANALYSIS_TEMPLATE.format(soos_base_uri=self.base_uri,
-                                                                soos_client_id=self.client_id,
-                                                                soos_dast_tool=self.dast_analysis_tool)
+        url = Constants.URI_START_DAST_ANALYSIS_TEMPLATE_v2.format(soos_base_uri=self.base_uri,
+                                                                   soos_client_id=self.client_id)
 
         return url
 
-    def __generate_upload_results_url__(self, project_id: str, analysis_id: str) -> str:
-        url = Constants.URI_UPLOAD_DAST_RESULTS_TEMPLATE.format(soos_base_uri=self.base_uri,
-                                                                soos_client_id=self.client_id,
-                                                                soos_project_id=project_id,
-                                                                soos_dast_tool=self.dast_analysis_tool,
-                                                                soos_analysis_id=analysis_id)
+    def __generate_upload_results_url__(self, project_id: str, branch_hash: str, analysis_id: str) -> str:
+        url = Constants.URI_UPLOAD_DAST_RESULTS_TEMPLATE_v2.format(soos_base_uri=self.base_uri,
+                                                                   soos_client_id=self.client_id,
+                                                                   soos_project_id=project_id,
+                                                                   soos_branch_hash=branch_hash,
+                                                                   soos_analysis_id=analysis_id)
+        return url
+
+    def __generate_project_details_url__(self, project_id: str) -> str:
+        url = Constants.URI_PROJECT_DETAILS_TEMPLATE.format(soos_base_uri=self.base_uri,
+                                                            soos_project_id=project_id)
         return url
 
     def __make_soos_start_analysis_request__(self) -> DASTStartAnalysisResponse:
@@ -328,31 +343,33 @@ class SOOSDASTAnalysis:
 
             param_values: dict = dict(
                 projectName=self.project_name,
+                name=datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+                integrationType=self.integration_type,
+                scriptVersion=SCRIPT_VERSION,
+                toolName=self.dast_analysis_tool,
                 commitHast=self.commit_hash,
                 branch=self.branch_name,
+                branchUri=self.branch_uri,
                 buildVersion=self.build_version,
                 buildUri=self.build_uri,
-                branchUri=self.branch_uri,
                 operationEnvironment=self.operating_environment,
                 integrationName=self.integration_name,
-                integrationType=self.integration_type,
-                mode=self.scan_mode,
             )
 
             # Clean up None values
             request_body = {k: v for k, v in param_values.items() if v is not None}
 
-            attempt: int = 1
             error_response: Optional[Any] = None
 
-            while attempt <= Constants.MAX_RETRY_COUNT:
+            attempt = 0
+
+            data = json.dumps(request_body)
+
+            for attempt in range(0, Constants.MAX_RETRY_COUNT):
                 api_response: Response = post(
                     url=api_url,
-                    data=json.dumps(request_body),
-                    headers={
-                        "x-soos-apikey": self.api_key,
-                        "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE,
-                    },
+                    data=data,
+                    headers={"x-soos-apikey": self.api_key, "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE}
                 )
 
                 if api_response.ok:
@@ -362,10 +379,9 @@ class SOOSDASTAnalysis:
                     error_response = api_response
                     log(
                         "An error has occurred performing the request. Retrying Request: "
-                        + str(attempt)
+                        + str(attempt + 1)
                         + "Attempts"
                     )
-                    attempt = attempt + 1
 
             if attempt > Constants.MAX_RETRY_COUNT and error_response is not None:
                 error_response = error_response.json()
@@ -378,7 +394,7 @@ class SOOSDASTAnalysis:
         exit_app(message)
 
     def __make_upload_dast_results_request__(
-            self, project_id: str, analysis_id: str
+            self, project_id: str, branch_hash: str, analysis_id: str
     ) -> bool:
         error_response = None
         error_message: Optional[str] = None
@@ -386,7 +402,7 @@ class SOOSDASTAnalysis:
             log("Starting report results processing")
             zap_report = self.open_zap_results_file()
             log("Making request to SOOS")
-            api_url: str = self.__generate_upload_results_url__(project_id, analysis_id)
+            api_url: str = self.__generate_upload_results_url__(project_id, branch_hash, analysis_id)
             log("SOOS URL Upload Results Endpoint: " + api_url)
             results_json = json.loads(zap_report)
 
@@ -426,16 +442,19 @@ class SOOSDASTAnalysis:
 
         exit_app(error_message)
 
-    def publish_results_to_soos(self, project_id: str, analysis_id: str) -> None:
+    def publish_results_to_soos(self, project_id: str, branch_hash: str, analysis_id: str) -> None:
         try:
-            self.__make_upload_dast_results_request__(project_id, analysis_id)
+            self.__make_upload_dast_results_request__(project_id=project_id, branch_hash=branch_hash,
+                                                      analysis_id=analysis_id)
 
             print_line_separator()
             log("Report processed successfully")
-            log("Project Id: " + project_id)
-            log("Analysis Id: " + analysis_id)
+            log(f"Project Id: {project_id}")
+            log(f"Analysis Id: {analysis_id}")
+            log(f"Branch Hash: {branch_hash}")
             print_line_separator()
             log("SOOS DAST Analysis successful")
+            log(f"Project URL: {self.__generate_project_details_url__(project_id=project_id)}")
             print_line_separator()
             sys.exit(0)
 
@@ -626,6 +645,7 @@ class SOOSDASTAnalysis:
 
             self.publish_results_to_soos(
                 project_id=soos_dast_start_response.project_id,
+                branch_hash=soos_dast_start_response.branch_hash,
                 analysis_id=soos_dast_start_response.analysis_id,
             )
         except Exception as e:

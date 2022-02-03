@@ -54,7 +54,14 @@ ZAP_HOOK_OPTION = "--hook"
 URI_START_DAST_ANALYSIS_TEMPLATE = (
     "{soos_base_uri}clients/{soos_client_id}/dast-tools/{soos_dast_tool}/analysis"
 )
+URI_START_DAST_ANALYSIS_TEMPLATE_v2 = (
+    "{soos_base_uri}clients/{soos_client_id}/scan-types/dast/scans"
+)
 URI_UPLOAD_DAST_RESULTS_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/dast-tools/{soos_dast_tool}/analysis/{soos_analysis_id}"
+
+URI_UPLOAD_DAST_RESULTS_TEMPLATE_v2 = "{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/branches/{soos_branch_hash}/scan-types/dast/scans/{soos_analysis_id}"
+
+URI_PROJECT_DETAILS_TEMPLATE = "{soos_base_uri}projects/{soos_project_id}/details"
 
 # LOGS
 LOG_FORMAT = "%(asctime)s %(message)s"
