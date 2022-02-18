@@ -484,7 +484,7 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--apiURL",
             help="SOOS API URL",
-            default="https://app.soos.io/api/",
+            default="https://api.soos.io/api/",
             required=False,
         )
         parser.add_argument(
