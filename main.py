@@ -442,7 +442,7 @@ class SOOSDASTAnalysis:
 
         exit_app(error_message)
 
-    def publish_results_to_soos(self, project_id: str, branch_hash: str, analysis_id: str) -> None:
+    def publish_results_to_soos(self, project_id: str, branch_hash: str, analysis_id: str, report_url: str) -> None:
         try:
             self.__make_upload_dast_results_request__(project_id=project_id, branch_hash=branch_hash,
                                                       analysis_id=analysis_id)
@@ -454,7 +454,7 @@ class SOOSDASTAnalysis:
             log(f"Branch Hash: {branch_hash}")
             print_line_separator()
             log("SOOS DAST Analysis successful")
-            log(f"Project URL: {self.__generate_project_details_url__(project_id=project_id)}")
+            log(f"Project URL: {report_url}")
             print_line_separator()
             sys.exit(0)
 
@@ -688,6 +688,7 @@ class SOOSDASTAnalysis:
                 project_id=soos_dast_start_response.project_id,
                 branch_hash=soos_dast_start_response.branch_hash,
                 analysis_id=soos_dast_start_response.analysis_id,
+                report_url=soos_dast_start_response.scan_url,
             )
         except Exception as e:
             exit_app(e)
