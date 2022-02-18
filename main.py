@@ -347,7 +347,7 @@ class SOOSDASTAnalysis:
                 integrationType=self.integration_type,
                 scriptVersion=SCRIPT_VERSION,
                 toolName=self.dast_analysis_tool,
-                commitHast=self.commit_hash,
+                commitHash=self.commit_hash,
                 branch=self.branch_name,
                 branchUri=self.branch_uri,
                 buildVersion=self.build_version,
@@ -588,6 +588,47 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--requestHeader",
             help="Set extra Header requests",
+            required=False,
+        )
+        parser.add_argument(
+            "--commitHash",
+            help="Set the commit hash value",
+            type=str,
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--branchName",
+            help="Set the branch name",
+            type=str,
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--branchURI",
+            help="Set the branch URI",
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--buildVersion",
+            help="Set the build version",
+            type=str,
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--buildURI",
+            help="Set the build URI",
+            type=str,
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--operatingEnvironment",
+            help="Set the Operating Environment",
+            type=str,
+            default=None,
             required=False,
         )
 
