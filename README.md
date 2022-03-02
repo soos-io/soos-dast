@@ -1,9 +1,9 @@
-# Stack-Aware
+# SOOS-DAST-Python
 
 ## DAST Analysis Tool
 A **Dynamic Analysis Security Testing**, or **DAST**, tool is a security solution application that can help find certain vulnerabilities in web applications while they are running in production.
 
-The **Stack-Aware** is the **DAST** solution provided by **SOOS** (Supported by [OWASP ZAP](https://owasp.org/www-project-zap/)) to get the analysis results for your web applications into the **SOOS** Application.
+The **SOOS-DAST-Python** is the **DAST** solution provided by **SOOS** (Supported by [OWASP ZAP](https://owasp.org/www-project-zap/)) to get the analysis results for your web applications into the **SOOS** Application.
 
 ## Requirements
 - [Docker](https://www.docker.com/get-started)
