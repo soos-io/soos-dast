@@ -1,17 +1,19 @@
 from enum import Enum
+from logging import DEBUG, INFO, WARN, ERROR, CRITICAL
 
 from helpers.log import console
 
 
 class LogLevel(Enum):
-    DEBUG = 0
-    INFO = 1
-    WARN = 2
-    ERROR = 3
-    CRITICAL = 4
+    DEBUG = DEBUG
+    INFO = INFO
+    WARN = WARN
+    ERROR = ERROR
+    CRITICAL = CRITICAL
 
 
 loggerFunc = {
+    LogLevel.DEBUG: console.debug,
     LogLevel.INFO: console.info,
     LogLevel.WARN: console.warn,
     LogLevel.ERROR: console.error,

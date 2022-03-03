@@ -1,33 +1,38 @@
-import sys
+from base64 import b64encode
 from datetime import datetime, timedelta
+from html import unescape
+from sys import exit
 from time import sleep
-import helpers.constants as Constants
-from typing import Optional, Any
+from typing import Optional, Any, NoReturn, Dict
+from urllib.parse import unquote
 
 from requests import Response, get
 from requests.exceptions import (
     HTTPError,
 )
 
+import helpers.constants as Constants
 from helpers.constants import RETRY_DELAY, REQUEST_TIMEOUT
 from model.log_level import LogLevel, loggerFunc
 from model.target_availability_check import TargetAvailabilityCheck
 
+UTF_8: str = 'utf-8'
 
-def log(message: str, log_level: LogLevel = LogLevel.INFO) -> None:
+
+def log(message: str, log_level: LogLevel = LogLevel.INFO) -> NoReturn:
     logFunc = loggerFunc.get(log_level)
     logFunc(str(message))
 
 
-def print_line_separator() -> None:
+def print_line_separator() -> NoReturn:
     print(
         "----------------------------------------------------------------------------------------------------------"
     )
 
 
-def exit_app(e) -> None:
+def exit_app(e) -> NoReturn:
     log(str(e), LogLevel.ERROR)
-    sys.exit(1)
+    exit(1)
 
 
 def valid_required(key, value):
@@ -47,25 +52,35 @@ def check_site_is_available(url: str) -> bool:
     log(f"Waiting for {url} to be available")
 
     check = False
-    max_time = datetime.utcnow() + timedelta(days=0, minutes=5)
+    max_time = datetime.utcnow() + timedelta(days=0, minutes=0, seconds=30)
+    attempt = 1
 
     while datetime.utcnow() < max_time:
-        check = __send_ping__(url)
+        log(f"Attempt {attempt} to connect to {url}")
+        try:
+            check = __send_ping__(url)
 
-        if check is True:
-            break
+            if check is True:
+                break
 
-        if datetime.utcnow() + timedelta(0, RETRY_DELAY) > max_time:
-            break
+            if datetime.utcnow() + timedelta(0, RETRY_DELAY) > max_time:
+                break
+        except Exception as e:
+            pass
 
         sleep(RETRY_DELAY)
+        attempt = attempt + 1
 
     return check
 
 
 def __send_ping__(target: str) -> bool:
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
+    }
     response: Response = get(
         url=target,
+        headers=headers,
         timeout=REQUEST_TIMEOUT,
         verify=False,  # nosec
         allow_redirects=True,  # nosec
@@ -119,3 +134,65 @@ def make_call(request) -> Response:
         log(str(e))
 
     exit_app(error_message)
+
+
+def set_generic_value(self, object_key: str, param_key: str, param_value: Optional[Any], is_required=False) -> NoReturn:
+    if is_required:
+        valid_required(param_key, param_value)
+
+    if self[object_key]:
+        self[object_key] = param_value
+
+
+def log_error(api_response: Response) -> NoReturn:
+    log(f"Status Code: {api_response.status_code}", log_level=LogLevel.ERROR)
+    if api_response.text is not None:
+        log(f"Response Text: {api_response.text}", log_level=LogLevel.ERROR)
+
+
+def unescape_string(value: str) -> str or None:
+    if value is None:
+        return value
+
+    return unescape(unquote(value))
+
+
+def encode_report(report_json) -> NoReturn:
+    if report_json['site'] is not None:
+        for site in report_json['site']:
+            if site['alerts'] is not None:
+                for alert in site['alerts']:
+                    if alert['instances'] is not None:
+                        for instance in alert['instances']:
+                            instance['base64Uri'] = convert_string_to_b64(instance['uri'])
+                            instance['uri'] = Constants.EMPTY_STRING
+
+
+def convert_string_to_b64(content: str) -> str:
+    message_bytes = content.encode(UTF_8)
+    base64_bytes = b64encode(message_bytes)
+    base64_message = base64_bytes.decode(UTF_8)
+    return base64_message
+
+
+def process_custom_cookie_header_data(data: str) -> Dict:
+    values: Dict = dict()
+
+    if data is not None:
+        dataModified = data.replace('[', Constants.EMPTY_STRING).replace(']', Constants.EMPTY_STRING)
+        for value in dataModified.split(','):
+            dict_key, dict_value = value.split(':')
+            values[dict_key] = dict_value
+
+    return values
+
+
+def read_file(file_path):
+    with open(file=file_path, mode=Constants.FILE_READ_MODE, encoding=Constants.UTF_8_ENCODING) as file:
+        return file.read()
+
+
+def write_file(file_path, file_content):
+    with open(file=file_path, mode=Constants.FILE_WRITE_MODE, encoding=Constants.UTF_8_ENCODING) as file:
+        file.write(file_content)
+        file.close()

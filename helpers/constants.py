@@ -11,7 +11,8 @@ DEFAULT_INTEGRATION_TYPE: str = "Script"
 DEFAULT_DAST_TOOL: str = "zap"
 SERVER_ERROR_CODES = range(500, 599)
 RETRY_DELAY = 3  # seconds
-REQUEST_TIMEOUT = 5
+REQUEST_TIMEOUT = 10  # seconds
+EMPTY_STRING = ''
 
 # SCAN MODES
 BASELINE = 'baseline'
@@ -27,6 +28,7 @@ ANALYSIS_ID_PLACEHOLDER = "{soos_analysis_id}"
 
 # FILE PROCESSING
 FILE_READ_MODE = "r"
+FILE_WRITE_MODE = "x"
 UTF_8_ENCODING = "utf-8"
 
 
@@ -47,11 +49,25 @@ ZAP_DEBUG_OPTION = "-d"
 ZAP_AJAX_SPIDER_OPTION = "-j"
 ZAP_FORMAT_OPTION = "-f"
 ZAP_JSON_REPORT_OPTION = "-J"
+ZAP_OTHER_OPTIONS = "-z"
+ZAP_HOOK_OPTION = "--hook"
 URI_START_DAST_ANALYSIS_TEMPLATE = (
     "{soos_base_uri}clients/{soos_client_id}/dast-tools/{soos_dast_tool}/analysis"
 )
+URI_START_DAST_ANALYSIS_TEMPLATE_v2 = (
+    "{soos_base_uri}clients/{soos_client_id}/scan-types/dast/scans"
+)
 URI_UPLOAD_DAST_RESULTS_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/dast-tools/{soos_dast_tool}/analysis/{soos_analysis_id}"
+
+URI_UPLOAD_DAST_RESULTS_TEMPLATE_v2 = "{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/branches/{soos_branch_hash}/scan-types/dast/scans/{soos_analysis_id}"
+
+URI_PROJECT_DETAILS_TEMPLATE = "{soos_base_uri}projects/{soos_project_id}/details"
 
 # LOGS
 LOG_FORMAT = "%(asctime)s %(message)s"
 LOG_DATE_FORMAT = "%m/%d/%Y %I:%M:%S %p %Z"
+
+
+# ZAP SCRIPTS
+ZAP_ACTIVE_SCAN_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP_D/scripts/scripts/active/"
+ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP_D/scripts/scripts/httpsender/"

@@ -2,25 +2,37 @@ import json
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from typing import List, Optional, Any
+from datetime import datetime
+from typing import List, Optional, Any, Dict, NoReturn
 
 import yaml
-from bleach import clean
 from requests import Response, put, post
 
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
-    check_site_is_available
+    check_site_is_available, log_error, unescape_string, read_file, convert_string_to_b64
 from model.log_level import LogLevel
+
+SCRIPT_VERSION = "alpha"
+
+param_mapper = {}
 
 
 class DASTStartAnalysisResponse:
     def __init__(self, dast_analysis_api_response):
-        self.analysis_id = dast_analysis_api_response["analysisId"]
-        if dast_analysis_api_response["projectId"] is not None:
-            self.project_id = dast_analysis_api_response["projectId"]
-        elif dast_analysis_api_response["projectHash"] is not None:
-            self.project_id = dast_analysis_api_response["projectHash"]
+        self.analysis_id = dast_analysis_api_response[
+            "analysisId"] if "analysisId" in dast_analysis_api_response else None
+        self.branch_hash = dast_analysis_api_response[
+            "branchHash"] if "branchHash" in dast_analysis_api_response else None
+        self.scan_type = dast_analysis_api_response["scanType"] if "scanType" in dast_analysis_api_response else None
+        self.scan_url = dast_analysis_api_response["scanUrl"] if "scanUrl" in dast_analysis_api_response else None
+        self.scan_status_url = dast_analysis_api_response[
+            "scanStatusUrl"] if "scanStatusUrl" in dast_analysis_api_response else None
+        self.errors = dast_analysis_api_response["errors"] if "errors" in dast_analysis_api_response else None
+        self.project_id = dast_analysis_api_response["projectId"] if "projectId" in dast_analysis_api_response else None
+        if self.project_id is None:
+            self.project_id = dast_analysis_api_response[
+                "projectHash"] if "projectHash" in dast_analysis_api_response else None
 
 
 class SOOSDASTAnalysis:
@@ -50,24 +62,39 @@ class SOOSDASTAnalysis:
         self.build_uri: Optional[str] = None
         self.operating_environment: Optional[str] = None
         self.log_level: Optional[str] = None
+        self.zap_options: Optional[str] = None
+        self.request_cookies: Optional[str] = None
+        self.request_header: Optional[str] = None
         self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
 
         # INTENTIONALLY HARDCODED
         self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
 
-        self.scan_mode_map: dict = {
+        # Auth Options
+        self.auth_auto: Optional[str] = '0'
+        self.auth_loginUrl: Optional[str] = None
+        self.auth_username: Optional[str] = Constants.EMPTY_STRING
+        self.auth_password: Optional[str] = Constants.EMPTY_STRING
+        self.auth_username_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_password_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_submit_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_first_submit_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_excludeUrls: Optional[str] = Constants.EMPTY_STRING
+        self.auth_display: bool = False
+
+        self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
             Constants.FULL_SCAN: self.full_scan,
             Constants.API_SCAN: self.api_scan
         }
 
-    def parse_configuration(self, configuration: dict, target_url: str):
-        log(f"Configuration: {str(configuration)}")
+    def parse_configuration(self, configuration: Dict, target_url: str):
         valid_required("Target URL", target_url)
         self.target_url = target_url
-
+        log(f"Configuration", log_level=LogLevel.DEBUG)
         for key, value in configuration.items():
+            log(f"{key}={value}", log_level=LogLevel.DEBUG)
             if key == "clientId":
                 if value is None:
                     try:
@@ -95,7 +122,7 @@ class SOOSDASTAnalysis:
                     self.base_uri = value
             elif key == "projectName":
                 valid_required(key, value)
-                self.project_name = value
+                self.project_name = unescape_string(value)
             elif key == "scanMode":
                 valid_required(key, value)
                 self.scan_mode = value
@@ -137,54 +164,101 @@ class SOOSDASTAnalysis:
                 self.operating_environment = value
             elif key == "integrationName":
                 self.integration_name = value
+            elif key == "integrationType":
+                self.integration_type = value
+            elif key == 'authAuto':
+                self.auth_auto = '1'
+            elif key == 'authDisplay':
+                self.auth_display = True
+            elif key == 'authUsername':
+                self.auth_username = value
+            elif key == 'authPassword':
+                self.auth_password = value
+            elif key == 'authLoginURL':
+                self.auth_loginUrl = value
+            elif key == 'authUsernameField':
+                self.auth_username_field_name = value
+            elif key == 'authPasswordField':
+                self.auth_password_field_name = value
+            elif key == 'authSubmitField':
+                self.auth_submit_field_name = value
+            elif key == 'authFirstSubmitField':
+                self.auth_first_submit_field_name = value
             elif key == "level":
                 self.log_level = value
+            elif key == "zapOptions":
+                self.zap_options = value
+            elif key == "requestCookies":
+                self.request_cookies = value
+            elif key == "requestHeader":
+                self.request_header = value
 
-    def __add_target_url_option__(self, args: List[str]) -> None:
+    def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
             args.append(Constants.ZAP_TARGET_URL_OPTION)
             args.append(self.target_url)
         else:
             exit_app("Target url is required.")
 
-    def __add_rules_file_option__(self, args: List[str]) -> None:
+    def __add_rules_file_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.rules_file):
             args.append(Constants.ZAP_RULES_FILE_OPTION)
             args.append(self.rules_file)
 
-    def __add_context_file_option__(self, args: List[str]) -> None:
+    def __add_context_file_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.context_file):
             args.append(Constants.ZAP_CONTEXT_FILE_OPTION)
             args.append(self.context_file)
 
-    def __add_debug_option__(self, args: List[str]) -> None:
+    def __add_debug_option__(self, args: List[str]) -> NoReturn:
         if is_true(self.debug_mode):
             args.append(Constants.ZAP_DEBUG_OPTION)
 
-    def __add_ajax_spider_scan_option__(self, args: List[str]) -> None:
+    def __add_ajax_spider_scan_option__(self, args: List[str]) -> NoReturn:
         if is_true(self.ajax_spider_scan):
             args.append(Constants.ZAP_AJAX_SPIDER_OPTION)
 
-    def __add_minutes_delay_option__(self, args: List[str]) -> None:
+    def __add_minutes_delay_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.minutes_delay):
             args.append(Constants.ZAP_MINUTES_DELAY_OPTION)
             args.append(self.minutes_delay)
 
-    def __add_format_option__(self, args: List[str]) -> None:
+    def __add_format_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.api_scan_format):
             args.append(Constants.ZAP_FORMAT_OPTION)
             args.append(self.api_scan_format)
         elif self.scan_mode == Constants.API_SCAN:
             exit_app("Format is required for apiscan mode.")
 
-    def __add_log_level_option__(self, args: List[str]) -> None:
+    def __add_log_level_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.log_level):
             args.append(Constants.ZAP_MINIMUM_LEVEL_OPTION)
             args.append(self.log_level)
 
-    def __add_report_file__(self, args: List[str]) -> None:
+    def __add_report_file__(self, args: List[str]) -> NoReturn:
         args.append(Constants.ZAP_JSON_REPORT_OPTION)
         args.append(Constants.REPORT_SCAN_RESULT_FILENAME)
+
+    def __add_zap_options__(self, args: List[str]) -> NoReturn:
+        log(f"Adding Zap Options")
+        args.append(Constants.ZAP_OTHER_OPTIONS)
+
+        zap_options: List[str] = list()
+        if self.auth_loginUrl is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.loginurl", value=self.auth_loginUrl))
+        if self.request_cookies is not None:
+            zap_options.append(self.__add_custom_option__(label="request.custom_cookies", value=self.request_cookies))
+        if self.request_header is not None:
+            zap_options.append(self.__add_custom_option__(label="request.custom_header", value=self.request_header))
+
+        args.append(" ".join(zap_options))
+
+    def __add_custom_option__(self, label, value) -> str:
+        return f"{label}=\"{value}\""
+
+    def __add_hook_option__(self, args: List[str]) -> NoReturn:
+        args.append(Constants.ZAP_HOOK_OPTION)
+        args.append('/zap/hooks/soos_dast_hook.py')
 
     def __generate_command__(self, args: List[str]) -> str:
         self.__add_debug_option__(args)
@@ -192,6 +266,14 @@ class SOOSDASTAnalysis:
         self.__add_context_file_option__(args)
         self.__add_ajax_spider_scan_option__(args)
         self.__add_minutes_delay_option__(args)
+        log(f"Add ZAP Options?")
+        log(f"Auth Login: {str(self.auth_loginUrl)}")
+        log(f"Zap Options: {str(self.zap_options)}")
+        log(f"Cookies : {str(self.request_cookies)}")
+        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None:
+            self.__add_zap_options__(args)
+
+        self.__add_hook_option__(args)
 
         self.__add_report_file__(args)
 
@@ -205,7 +287,7 @@ class SOOSDASTAnalysis:
         return self.__generate_command__(args)
 
     def full_scan(self) -> str:
-        args: List[str] = [Constants.PY_CMD, Constants.BASE_LINE_SCRIPT]
+        args: List[str] = [Constants.PY_CMD, Constants.FULL_SCAN_SCRIPT]
 
         self.__add_target_url_option__(args)
 
@@ -221,27 +303,25 @@ class SOOSDASTAnalysis:
         return self.__generate_command__(args)
 
     def open_zap_results_file(self):
-        with open(
-                Constants.REPORT_SCAN_RESULT_FILE, mode=Constants.FILE_READ_MODE, encoding=Constants.UTF_8_ENCODING
-        ) as file:
-            return file.read()
+        return read_file(file_path=Constants.REPORT_SCAN_RESULT_FILE)
 
     def __generate_start_dast_analysis_url__(self) -> str:
-        url = Constants.URI_START_DAST_ANALYSIS_TEMPLATE
-        url = url.replace(Constants.BASE_URI_PLACEHOLDER, self.base_uri)
-        url = url.replace(Constants.CLIENT_ID_PLACEHOLDER, self.client_id)
-        url = url.replace(Constants.DAST_TOOL_PLACEHOLDER, self.dast_analysis_tool)
+        url = Constants.URI_START_DAST_ANALYSIS_TEMPLATE_v2.format(soos_base_uri=self.base_uri,
+                                                                   soos_client_id=self.client_id)
 
         return url
 
-    def __generate_upload_results_url__(self, project_id: str, analysis_id: str) -> str:
-        url = Constants.URI_UPLOAD_DAST_RESULTS_TEMPLATE
-        url = url.replace(Constants.BASE_URI_PLACEHOLDER, self.base_uri)
-        url = url.replace(Constants.CLIENT_ID_PLACEHOLDER, self.client_id)
-        url = url.replace(Constants.PROJECT_ID_PLACEHOLDER, project_id)
-        url = url.replace(Constants.DAST_TOOL_PLACEHOLDER, self.dast_analysis_tool)
-        url = url.replace(Constants.ANALYSIS_ID_PLACEHOLDER, analysis_id)
+    def __generate_upload_results_url__(self, project_id: str, branch_hash: str, analysis_id: str) -> str:
+        url = Constants.URI_UPLOAD_DAST_RESULTS_TEMPLATE_v2.format(soos_base_uri=self.base_uri,
+                                                                   soos_client_id=self.client_id,
+                                                                   soos_project_id=project_id,
+                                                                   soos_branch_hash=branch_hash,
+                                                                   soos_analysis_id=analysis_id)
+        return url
 
+    def __generate_project_details_url__(self, project_id: str) -> str:
+        url = Constants.URI_PROJECT_DETAILS_TEMPLATE.format(soos_base_uri=self.base_uri,
+                                                            soos_project_id=project_id)
         return url
 
     def __make_soos_start_analysis_request__(self) -> DASTStartAnalysisResponse:
@@ -263,43 +343,45 @@ class SOOSDASTAnalysis:
 
             param_values: dict = dict(
                 projectName=self.project_name,
-                commitHast=self.commit_hash,
+                name=datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+                integrationType=self.integration_type,
+                scriptVersion=SCRIPT_VERSION,
+                toolName=self.dast_analysis_tool,
+                commitHash=self.commit_hash,
                 branch=self.branch_name,
+                branchUri=self.branch_uri,
                 buildVersion=self.build_version,
                 buildUri=self.build_uri,
-                branchUri=self.branch_uri,
                 operationEnvironment=self.operating_environment,
                 integrationName=self.integration_name,
-                integrationType=self.integration_type,
-                mode=self.scan_mode,
             )
 
             # Clean up None values
             request_body = {k: v for k, v in param_values.items() if v is not None}
 
-            attempt: int = 1
             error_response: Optional[Any] = None
 
-            while attempt <= Constants.MAX_RETRY_COUNT:
+            attempt = 0
+
+            data = json.dumps(request_body)
+
+            for attempt in range(0, Constants.MAX_RETRY_COUNT):
                 api_response: Response = post(
                     url=api_url,
-                    data=json.dumps(request_body),
-                    headers={
-                        "x-soos-apikey": self.api_key,
-                        "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE,
-                    },
+                    data=data,
+                    headers={"x-soos-apikey": self.api_key, "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE}
                 )
 
                 if api_response.ok:
                     return DASTStartAnalysisResponse(api_response.json())
                 else:
+                    log_error(api_response)
                     error_response = api_response
                     log(
                         "An error has occurred performing the request. Retrying Request: "
-                        + str(attempt)
+                        + str(attempt + 1)
                         + "Attempts"
                     )
-                    attempt = attempt + 1
 
             if attempt > Constants.MAX_RETRY_COUNT and error_response is not None:
                 error_response = error_response.json()
@@ -312,7 +394,7 @@ class SOOSDASTAnalysis:
         exit_app(message)
 
     def __make_upload_dast_results_request__(
-            self, project_id: str, analysis_id: str
+            self, project_id: str, branch_hash: str, analysis_id: str
     ) -> bool:
         error_response = None
         error_message: Optional[str] = None
@@ -320,14 +402,12 @@ class SOOSDASTAnalysis:
             log("Starting report results processing")
             zap_report = self.open_zap_results_file()
             log("Making request to SOOS")
-            api_url: str = self.__generate_upload_results_url__(project_id, analysis_id)
+            api_url: str = self.__generate_upload_results_url__(project_id, branch_hash, analysis_id)
             log("SOOS URL Upload Results Endpoint: " + api_url)
             results_json = json.loads(zap_report)
-            files = {
-                "manifest": clean(
-                    str(results_json).replace("<script ", "_script ").replace("<script>", "_script_").replace("</script>", "_script_")
-                )
-            }
+
+            zap_report_encoded = convert_string_to_b64(json.dumps(results_json))
+            files = {"base64Manifest": zap_report_encoded}
 
             attempt: int = 1
 
@@ -347,6 +427,7 @@ class SOOSDASTAnalysis:
                     return True
                 else:
                     error_response = api_response
+                    log_error(error_response)
                     log(
                         f"An error has occurred performing the request. Retrying Request: {str(attempt)} attempts"
                     )
@@ -361,16 +442,19 @@ class SOOSDASTAnalysis:
 
         exit_app(error_message)
 
-    def publish_results_to_soos(self, project_id: str, analysis_id: str) -> None:
+    def publish_results_to_soos(self, project_id: str, branch_hash: str, analysis_id: str, report_url: str) -> None:
         try:
-            self.__make_upload_dast_results_request__(project_id, analysis_id)
+            self.__make_upload_dast_results_request__(project_id=project_id, branch_hash=branch_hash,
+                                                      analysis_id=analysis_id)
 
             print_line_separator()
             log("Report processed successfully")
-            log("Project Id: " + project_id)
-            log("Analysis Id: " + analysis_id)
+            log(f"Project Id: {project_id}")
+            log(f"Analysis Id: {analysis_id}")
+            log(f"Branch Hash: {branch_hash}")
             print_line_separator()
             log("SOOS DAST Analysis successful")
+            log(f"Project URL: {report_url}")
             print_line_separator()
             sys.exit(0)
 
@@ -400,7 +484,7 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--apiURL",
             help="SOOS API URL",
-            default="https://app.soos.io/api/",
+            default="https://api.soos.io/api/",
             required=False,
         )
         parser.add_argument(
@@ -446,19 +530,114 @@ class SOOSDASTAnalysis:
             help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
             required=False,
         )
+        parser.add_argument(
+            "--integrationName",
+            help="Integration Name (e.g. Provider)",
+            required=False,
+        )
+        parser.add_argument(
+            "--authDisplay",
+            help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            required=False,
+        )
+        parser.add_argument(
+            "--authUsername",
+            help="Username to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authPassword",
+            help="Password to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authLoginURL",
+            help="login url to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authUsernameField",
+            help="Username input id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authPasswordField",
+            help="Password input id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authSubmitField",
+            help="Submit button id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authFirstSubmitField",
+            help="First submit button id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--zapOptions",
+            help="ZAP Additional Options",
+            required=False,
+        )
+        parser.add_argument(
+            "--requestCookies",
+            help="Set Cookie values for the requests to the target URL",
+            required=False,
+        )
+        parser.add_argument(
+            "--requestHeader",
+            help="Set extra Header requests",
+            required=False,
+        )
+        parser.add_argument(
+            "--commitHash",
+            help="Set the commit hash value",
+            type=str,
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--branchName",
+            help="Set the branch name",
+            type=str,
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--branchURI",
+            help="Set the branch URI",
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--buildVersion",
+            help="Set the build version",
+            type=str,
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--buildURI",
+            help="Set the build URI",
+            type=str,
+            default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--operatingEnvironment",
+            help="Set the Operating Environment",
+            type=str,
+            default=None,
+            required=False,
+        )
 
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
-            log("Reading config file: " + args.configFile)
-            with open(
-                    Constants.CONFIG_FILE_FOLDER + args.configFile,
-                    mode="r",
-                    encoding="utf-8",
-            ) as file:
-                # The FullLoader parameter handles the conversion from YAML
-                # scalar values to Python the dictionary format
-                configuration = yaml.load(file, Loader=yaml.FullLoader)
-                self.parse_configuration(configuration["config"], args.targetURL)
+            log(f"Reading config file: {args.configFile}", log_level=LogLevel.DEBUG)
+            file = read_file(file_path=Constants.CONFIG_FILE_FOLDER + args.configFile)
+            configuration = yaml.load(file, Loader=yaml.FullLoader)
+            self.parse_configuration(configuration["config"], args.targetURL)
         else:
             self.parse_configuration(vars(args), args.targetURL)
 
@@ -495,6 +674,8 @@ class SOOSDASTAnalysis:
 
             command: str = scan_function()
 
+            log(f"Command to be executed: {command}")
+
             os.system(command)
 
             run_success = os.path.exists(Constants.REPORT_SCAN_RESULT_FILE)
@@ -505,7 +686,9 @@ class SOOSDASTAnalysis:
 
             self.publish_results_to_soos(
                 project_id=soos_dast_start_response.project_id,
+                branch_hash=soos_dast_start_response.branch_hash,
                 analysis_id=soos_dast_start_response.analysis_id,
+                report_url=soos_dast_start_response.scan_url,
             )
         except Exception as e:
             exit_app(e)
