@@ -12,13 +12,25 @@ The **SOOS-DAST-Python** is the **DAST** solution provided by **SOOS** (Supporte
 ## How to Use
 To execute the script you need to run this command from a terminal:
 ``` shell
-docker run -it --rm [-v <path_with_config_files>:/zap/config/] soos/dast:x.y.z [--configFile CONFIGFILE] [--clientId CLIENTID]
+docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID]
                [--apiKey APIKEY] [--projectName PROJECTNAME]
-               [--scanMode SCANMODE] [--apiURL APIURL] [--debug]
-               [--ajaxSpider] [--rules RULES]
+               [--scanMode SCANMODE] [--apiURL APIURL] [--debug DEBUG]
+               [--ajaxSpider AJAXSPIDER] [--rules RULES]
                [--contextFile CONTEXTFILE] [--contextUser CONTEXTUSER]
                [--fullScanMinutes FULLSCANMINUTES]
                [--apiScanFormat APISCANFORMAT] [--level LEVEL]
+               [--integrationName INTEGRATIONNAME] [--authDisplay AUTHDISPLAY]
+               [--authUsername AUTHUSERNAME] [--authPassword AUTHPASSWORD]
+               [--authLoginURL AUTHLOGINURL]
+               [--authUsernameField AUTHUSERNAMEFIELD]
+               [--authPasswordField AUTHPASSWORDFIELD]
+               [--authSubmitField AUTHSUBMITFIELD]
+               [--authFirstSubmitField AUTHFIRSTSUBMITFIELD]
+               [--zapOptions ZAPOPTIONS] [--requestCookies REQUESTCOOKIES]
+               [--requestHeader REQUESTHEADER] [--commitHash COMMITHASH]
+               [--branchName BRANCHNAME] [--branchURI BRANCHURI]
+               [--buildVersion BUILDVERSION] [--buildURI BUILDURI]
+               [--operatingEnvironment OPERATINGENVIRONMENT]
                targetURL
 ```
 
