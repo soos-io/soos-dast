@@ -10,7 +10,7 @@ from requests import Response, put, post
 
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
-    check_site_is_available, log_error, unescape_string, encode_report, read_file, convert_string_to_b64, write_file
+    check_site_is_available, log_error, unescape_string, read_file, convert_string_to_b64
 from model.log_level import LogLevel
 
 SCRIPT_VERSION = "alpha"

@@ -1,9 +1,9 @@
-# Stack-Aware
+# SOOS-DAST-Python
 
 ## DAST Analysis Tool
 A **Dynamic Analysis Security Testing**, or **DAST**, tool is a security solution application that can help find certain vulnerabilities in web applications while they are running in production.
 
-The **Stack-Aware** is the **DAST** solution provided by **SOOS** (Supported by [OWASP ZAP](https://owasp.org/www-project-zap/)) to get the analysis results for your web applications into the **SOOS** Application.
+The **SOOS-DAST-Python** is the **DAST** solution provided by **SOOS** (Supported by [OWASP ZAP](https://owasp.org/www-project-zap/)) to get the analysis results for your web applications into the **SOOS** Application.
 
 ## Requirements
 - [Docker](https://www.docker.com/get-started)
@@ -12,15 +12,25 @@ The **Stack-Aware** is the **DAST** solution provided by **SOOS** (Supported by 
 ## How to Use
 To execute the script you need to run this command from a terminal:
 ``` shell
-docker run -it --rm [-v <path_with_config_files>:/zap/config/] soos/dast:x.y.z [--configFile CONFIGFILE] [--clientId CLIENTID]
+docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID]
                [--apiKey APIKEY] [--projectName PROJECTNAME]
-               [--scanMode SCANMODE] [--apiURL APIURL] [--debug]
-               [--ajaxSpider] [--rules RULES]
+               [--scanMode SCANMODE] [--apiURL APIURL] [--debug DEBUG]
+               [--ajaxSpider AJAXSPIDER] [--rules RULES]
                [--contextFile CONTEXTFILE] [--contextUser CONTEXTUSER]
                [--fullScanMinutes FULLSCANMINUTES]
                [--apiScanFormat APISCANFORMAT] [--level LEVEL]
+               [--integrationName INTEGRATIONNAME] [--authDisplay AUTHDISPLAY]
+               [--authUsername AUTHUSERNAME] [--authPassword AUTHPASSWORD]
+               [--authLoginURL AUTHLOGINURL]
+               [--authUsernameField AUTHUSERNAMEFIELD]
+               [--authPasswordField AUTHPASSWORDFIELD]
+               [--authSubmitField AUTHSUBMITFIELD]
+               [--authFirstSubmitField AUTHFIRSTSUBMITFIELD]
                [--zapOptions ZAPOPTIONS] [--requestCookies REQUESTCOOKIES]
-               [--requestHeader REQUESTHEADER]
+               [--requestHeader REQUESTHEADER] [--commitHash COMMITHASH]
+               [--branchName BRANCHNAME] [--branchURI BRANCHURI]
+               [--buildVersion BUILDVERSION] [--buildURI BUILDURI]
+               [--operatingEnvironment OPERATINGENVIRONMENT]
                targetURL
 ```
 
