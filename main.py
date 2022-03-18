@@ -801,12 +801,6 @@ class SOOSSARIFReport:
                 github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=analysis.project_name)
                 headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {analysis.github_pat}"}
 
-                log("GitHub URL")
-                log(str(github_sarif_url))
-
-                log("GitHub Body Request")
-                log(str(github_body_request))
-
                 sarif_github_response = requests.post(url=github_sarif_url, data=json.dumps(github_body_request),
                                                       headers=headers)
 
@@ -816,19 +810,16 @@ class SOOSSARIFReport:
                 else:
                     sarif_github_json_response = sarif_github_response.json()
                     sarif_url = sarif_github_json_response["url"]
-                    log(f"SARIF URL: {sarif_url}")
                     sarif_github_status_response = requests.get(url=sarif_url,
                                                                  headers=headers)
 
-                    log(f"SARIF STATUS: {sarif_github_status_response.status_code}")
-                    log(f"SARIF RESPONSE: {str(sarif_github_status_response.json())}")
                     if sarif_github_status_response.status_code >= 400:
                         SOOSSARIFReport.handle_github_sarif_error(status=sarif_github_status_response.status_code,
                                                                   json_response=sarif_github_status_response.json())
                     else:
                         status_json_response = sarif_github_status_response.json()
                         processing_status = status_json_response["processing_status"]
-                        log("SARIF Report uploaded to GitHub successful")
+                        log("SARIF Report uploaded to GitHub")
                         log(f"Processing Status: {processing_status}")
 
         except Exception as sarif_exception:
