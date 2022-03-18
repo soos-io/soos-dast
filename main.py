@@ -9,7 +9,7 @@ from typing import List, Optional, Any, Dict, NoReturn
 
 import requests
 import yaml
-from requests import Response, put, post
+from requests import Response, put, post, patch
 
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
@@ -406,6 +406,57 @@ class SOOSDASTAnalysis:
 
         exit_app(message)
 
+    def __make_soos_scan_status_request__(self, project_id: str, branch_hash: str,
+                                          analysis_id: str, status: str,
+                                          status_message: Optional[str]) -> bool:
+        message: str = "An error has occurred Starting the Analysis"
+        try:
+            log("Making request to SOOS")
+            api_url: str = self.__generate_upload_results_url__(project_id, branch_hash, analysis_id)
+            log(f"SOOS URL Endpoint: {api_url}")
+
+            param_values: dict = dict(
+                status=status,
+                message=status_message
+            )
+
+            # Clean up None values
+            request_body = {k: v for k, v in param_values.items() if v is not None}
+
+            error_response: Optional[Any] = None
+
+            attempt = 0
+
+            data = json.dumps(request_body)
+
+            for attempt in range(0, Constants.MAX_RETRY_COUNT):
+                api_response: Response = patch(
+                    url=api_url,
+                    data=data,
+                    headers={"x-soos-apikey": self.api_key, "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE}
+                )
+
+                if api_response.ok:
+                    return True
+                else:
+                    log_error(api_response)
+                    error_response = api_response
+                    log(
+                        "An error has occurred performing the request. Retrying Request: "
+                        + str(attempt + 1)
+                        + "Attempts"
+                    )
+
+            if attempt > Constants.MAX_RETRY_COUNT and error_response is not None:
+                error_response = error_response.json()
+                message = error_response["message"]
+
+        except Exception as e:
+            log("ERROR:" + str(e))
+            message = "An error has occurred Starting the Analysis"
+
+        exit_app(message)
+
     def __make_upload_dast_results_request__(
             self, project_id: str, branch_hash: str, analysis_id: str
     ) -> bool:
@@ -453,6 +504,12 @@ class SOOSDASTAnalysis:
         except Exception as e:
             log(str(e))
 
+        self.__make_soos_scan_status_request__(project_id=project_id,
+                                               branch_hash=branch_hash,
+                                               analysis_id=analysis_id,
+                                               status="Error",
+                                               status_message=error_message
+                                               )
         exit_app(error_message)
 
     def publish_results_to_soos(self, project_id: str, branch_hash: str, analysis_id: str, report_url: str) -> None:
@@ -463,14 +520,20 @@ class SOOSDASTAnalysis:
             print_line_separator()
             log("Report processed successfully")
             log(f"Project Id: {project_id}")
-            log(f"Analysis Id: {analysis_id}")
             log(f"Branch Hash: {branch_hash}")
+            log(f"Analysis Id: {analysis_id}")
             print_line_separator()
             log("SOOS DAST Analysis successful")
             log(f"Project URL: {report_url}")
             print_line_separator()
 
         except Exception as e:
+            self.__make_soos_scan_status_request__(project_id=project_id,
+                                                   branch_hash=branch_hash,
+                                                   analysis_id=analysis_id,
+                                                   status="Error",
+                                                   status_message="An Unexpected error has occurred uploading ZAP Report Results"
+                                                   )
             exit_app(e)
 
     def parse_args(self) -> None:
@@ -701,6 +764,11 @@ class SOOSDASTAnalysis:
             command: str = scan_function()
 
             log(f"Command to be executed: {command}")
+            self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
+                                                   branch_hash=soos_dast_start_response.branch_hash,
+                                                   analysis_id=soos_dast_start_response.analysis_id,
+                                                   status="Running"
+                                                   )
 
             os.system(command)
 
@@ -708,6 +776,12 @@ class SOOSDASTAnalysis:
 
             print_line_separator()
             if run_success is False:
+                self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
+                                                       branch_hash=soos_dast_start_response.branch_hash,
+                                                       analysis_id=soos_dast_start_response.analysis_id,
+                                                       status="Error",
+                                                       status_message=f"An Unexpected error has occurred running the {self.scan_mode} scan"
+                                                       )
                 raise Exception(f"An Unexpected error has occurred running the {self.scan_mode} scan")
 
             self.publish_results_to_soos(
@@ -721,6 +795,12 @@ class SOOSDASTAnalysis:
                                  project_hash=soos_dast_start_response.project_id,
                                  branch_hash=soos_dast_start_response.branch_hash,
                                  scan_id=soos_dast_start_response.analysis_id)
+
+            self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
+                                                   branch_hash=soos_dast_start_response.branch_hash,
+                                                   analysis_id=soos_dast_start_response.analysis_id,
+                                                   status="Finished",
+                                                   )
 
             sys.exit(0)
 
@@ -811,7 +891,7 @@ class SOOSSARIFReport:
                     sarif_github_json_response = sarif_github_response.json()
                     sarif_url = sarif_github_json_response["url"]
                     sarif_github_status_response = requests.get(url=sarif_url,
-                                                                 headers=headers)
+                                                                headers=headers)
 
                     if sarif_github_status_response.status_code >= 400:
                         SOOSSARIFReport.handle_github_sarif_error(status=sarif_github_status_response.status_code,
