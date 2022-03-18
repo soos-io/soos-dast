@@ -1,3 +1,5 @@
+import base64
+import gzip
 import json
 import os
 import sys
@@ -5,12 +7,14 @@ from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from typing import List, Optional, Any, Dict, NoReturn
 
+import requests
 import yaml
 from requests import Response, put, post
 
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
-    check_site_is_available, log_error, unescape_string, read_file, convert_string_to_b64
+    check_site_is_available, log_error, unescape_string, read_file, convert_string_to_b64, generate_header, \
+    handle_response, ErrorAPIResponse, raise_max_retry_exception
 from model.log_level import LogLevel
 
 SCRIPT_VERSION = "alpha"
@@ -82,6 +86,9 @@ class SOOSDASTAnalysis:
         self.auth_first_submit_field_name: Optional[str] = Constants.EMPTY_STRING
         self.auth_excludeUrls: Optional[str] = Constants.EMPTY_STRING
         self.auth_display: bool = False
+
+        self.generate_sarif_report: bool = False
+        self.github_pat: Optional[str] = None
 
         self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
@@ -192,6 +199,11 @@ class SOOSDASTAnalysis:
                 self.request_cookies = value
             elif key == "requestHeader":
                 self.request_header = value
+            elif key == "sarif":
+                self.generate_sarif_report = value
+            elif key == "gpat":
+                self.github_pat = value
+                log("GITHUB PAT: " + self.github_pat)
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -269,7 +281,8 @@ class SOOSDASTAnalysis:
         log(f"Add ZAP Options?")
         log(f"Auth Login: {str(self.auth_loginUrl)}")
         log(f"Zap Options: {str(self.zap_options)}")
-        log(f"Cookies : {str(self.request_cookies)}")
+        log(f"Cookies: {str(self.request_cookies)}")
+        log(f"Github PAT: {str(self.github_pat)}")
         if self.auth_loginUrl or self.zap_options or self.request_cookies is not None:
             self.__add_zap_options__(args)
 
@@ -456,7 +469,6 @@ class SOOSDASTAnalysis:
             log("SOOS DAST Analysis successful")
             log(f"Project URL: {report_url}")
             print_line_separator()
-            sys.exit(0)
 
         except Exception as e:
             exit_app(e)
@@ -632,6 +644,20 @@ class SOOSDASTAnalysis:
             required=False,
         )
 
+        parser.add_argument("--sarif",
+                            help="Upload SARIF Report to GitHub",
+                            type=bool,
+                            default=False,
+                            required=False
+                            )
+
+        parser.add_argument("--gpat",
+                            help="GitHub Personal Authorization Token",
+                            type=str,
+                            default=False,
+                            required=False
+                            )
+
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
             log(f"Reading config file: {args.configFile}", log_level=LogLevel.DEBUG)
@@ -690,8 +716,124 @@ class SOOSDASTAnalysis:
                 analysis_id=soos_dast_start_response.analysis_id,
                 report_url=soos_dast_start_response.scan_url,
             )
+
+            SOOSSARIFReport.exec(analysis=self,
+                                 project_hash=soos_dast_start_response.project_id,
+                                 branch_hash=soos_dast_start_response.branch_hash,
+                                 scan_id=soos_dast_start_response.analysis_id)
+
+            sys.exit(0)
+
         except Exception as e:
             exit_app(e)
+
+
+class SOOSSARIFReport:
+    API_RETRY_COUNT = 3
+
+    URL_TEMPLATE = '{soos_base_uri}clients/{clientHash}/projects/{projectHash}/branches/{branchHash}/scan-types/dast/scans/{scanId}/formats/sarif'
+    GITHUB_URL_TEMPLATE = 'https://api.github.com/repos/{project_name}/code-scanning/sarifs'
+
+    errors_dict = {
+        400: "Github: The sarif report is invalid",
+        403: "Github: The repository is archived or if github advanced security is not enabled for this repository",
+        404: "Github: Resource not found",
+        413: "Github: The sarif report is too large",
+        503: "Github: Service Unavailable"
+    }
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def generate_soos_sarif_url(base_uri: str, client_id: str, project_hash: str, branch_hash: str,
+                                scan_id: str) -> str:
+        return SOOSSARIFReport.URL_TEMPLATE.format(soos_base_uri=base_uri,
+                                                   clientHash=client_id,
+                                                   projectHash=project_hash,
+                                                   branchHash=branch_hash,
+                                                   scanId=scan_id)
+
+    @staticmethod
+    def generate_github_sarif_url(project_name: str) -> str:
+        return SOOSSARIFReport.GITHUB_URL_TEMPLATE.format(project_name=project_name)
+
+    @staticmethod
+    def exec(analysis: SOOSDASTAnalysis, project_hash: str, branch_hash: str,
+             scan_id: str) -> NoReturn:
+        try:
+            log("Uploading SARIF Response")
+            url = SOOSSARIFReport.generate_soos_sarif_url(base_uri=analysis.base_uri,
+                                                          client_id=analysis.client_id,
+                                                          project_hash=project_hash,
+                                                          branch_hash=branch_hash,
+                                                          scan_id=scan_id)
+
+            headers = generate_header(api_key=analysis.api_key, content_type="application/json")
+            attempt = 0
+            sarif_json_response = None
+
+            for attempt in range(0, SOOSSARIFReport.API_RETRY_COUNT):
+                api_response: requests.Response = requests.get(url=url, headers=headers)
+                sarif_json_response = handle_response(api_response)
+                if type(sarif_json_response) is ErrorAPIResponse:
+                    error_message = f"A Generate SARIF Report API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSSARIFReport.API_RETRY_COUNT)}"
+                    log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
+                else:
+                    log("SARIF Report")
+                    log(str(sarif_json_response))
+                    break
+
+            raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
+
+            if sarif_json_response is None:
+                raise Exception("An Error has occurred generating SARIF Response")
+            else:
+                sarif_report_str = json.dumps(sarif_json_response)
+                compressed_sarif_response = base64.b64encode(gzip.compress(bytes(sarif_report_str, 'UTF-8')))
+
+                github_body_request = {
+                    "commit_sha": analysis.commit_hash,
+                    "ref": analysis.branch_name,
+                    "sarif": compressed_sarif_response.decode(encoding='UTF-8'),
+                }
+
+                github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=analysis.project_name)
+                headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {analysis.github_pat}"}
+
+                sarif_github_response = requests.post(url=github_sarif_url, data=json.dumps(github_body_request),
+                                                      headers=headers)
+
+                if sarif_github_response.status_code >= 400:
+                    SOOSSARIFReport.handle_github_sarif_error(status=sarif_github_response.status_code,
+                                                              json_response=sarif_github_response.json())
+                else:
+                    sarif_github_json_response = sarif_github_response.json()
+                    sarif_url = sarif_github_json_response["url"]
+                    sarif_github_status_response = requests.get(url=sarif_url,
+                                                                 headers=headers)
+
+                    if sarif_github_status_response.status_code >= 400:
+                        SOOSSARIFReport.handle_github_sarif_error(status=sarif_github_status_response.status_code,
+                                                                  json_response=sarif_github_status_response.json())
+                    else:
+                        status_json_response = sarif_github_status_response.json()
+                        processing_status = status_json_response["processing_status"]
+                        log("SARIF Report uploaded to GitHub")
+                        log(f"Processing Status: {processing_status}")
+
+        except Exception as sarif_exception:
+            log(f"ERROR: {str(sarif_exception)}")
+
+    @staticmethod
+    def handle_github_sarif_error(status, json_response):
+
+        error_message = json_response["message"] if json_response is not None and json_response[
+            "message"] is not None else SOOSSARIFReport.errors_dict[status]
+        if error_message is None:
+            error_message = "An unexpected error has occurred uploading the sarif report to GitHub"
+
+        log(f"ERROR: {error_message}")
 
 
 if __name__ == "__main__":
