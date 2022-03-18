@@ -402,7 +402,7 @@ class SOOSDASTAnalysis:
 
         except Exception as e:
             log("ERROR:" + str(e))
-            message = "An error has occurred Starting the Analysis"
+            message = message if message is not None else "An error has occurred Starting the Analysis"
 
         exit_app(message)
 
@@ -453,7 +453,13 @@ class SOOSDASTAnalysis:
 
         except Exception as e:
             log("ERROR:" + str(e))
-            message = "An error has occurred Starting the Analysis"
+            message = message if message is not None else "An error has occurred setting the scan status"
+            self.__make_soos_scan_status_request__(project_id=project_id,
+                                                   branch_hash=branch_hash,
+                                                   analysis_id=analysis_id,
+                                                   status="Error",
+                                                   status_message=message
+                                                   )
 
         exit_app(message)
 
