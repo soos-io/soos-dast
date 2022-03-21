@@ -99,9 +99,9 @@ class SOOSDASTAnalysis:
     def parse_configuration(self, configuration: Dict, target_url: str):
         valid_required("Target URL", target_url)
         self.target_url = target_url
-        log(f"Configuration", log_level=LogLevel.DEBUG)
+        log(f"Configuration")
         for key, value in configuration.items():
-            log(f"{key}={value}", log_level=LogLevel.DEBUG)
+            log(f"{key}={value}")
             if key == "clientId":
                 if value is None:
                     try:
@@ -203,7 +203,6 @@ class SOOSDASTAnalysis:
                 self.generate_sarif_report = value
             elif key == "gpat":
                 self.github_pat = value
-                log("GITHUB PAT: " + self.github_pat)
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -723,10 +722,11 @@ class SOOSDASTAnalysis:
         parser.add_argument("--gpat",
                             help="GitHub Personal Authorization Token",
                             type=str,
-                            default=False,
+                            default=None,
                             required=False
                             )
 
+        log(f"Parsing Arguments")
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
             log(f"Reading config file: {args.configFile}", log_level=LogLevel.DEBUG)
@@ -773,7 +773,8 @@ class SOOSDASTAnalysis:
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,
-                                                   status="Running"
+                                                   status="Running",
+                                                   status_message=None
                                                    )
 
             os.system(command)
@@ -797,15 +798,17 @@ class SOOSDASTAnalysis:
                 report_url=soos_dast_start_response.scan_url,
             )
 
-            SOOSSARIFReport.exec(analysis=self,
-                                 project_hash=soos_dast_start_response.project_id,
-                                 branch_hash=soos_dast_start_response.branch_hash,
-                                 scan_id=soos_dast_start_response.analysis_id)
+            if self.generate_sarif_report is True and self.github_pat is not None:
+                SOOSSARIFReport.exec(analysis=self,
+                                     project_hash=soos_dast_start_response.project_id,
+                                     branch_hash=soos_dast_start_response.branch_hash,
+                                     scan_id=soos_dast_start_response.analysis_id)
 
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,
                                                    status="Finished",
+                                                   status_message=None
                                                    )
 
             sys.exit(0)
