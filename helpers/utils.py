@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from html import unescape
 from sys import exit
 from time import sleep
-from typing import Optional, Any, NoReturn, Dict
+from typing import Optional, Any, NoReturn, Dict, Iterable
 from urllib.parse import unquote
 
 from requests import Response, get
@@ -229,3 +229,11 @@ def generate_header(api_key: str, content_type: str):
 def raise_max_retry_exception(attempt: int, retry_count: int):
     if attempt >= retry_count:
         raise Exception("The maximum retries allowed were reached")
+
+
+def array_to_str(array: Iterable[str]):
+
+    if array is None or sum(1 for element in array) == 0:
+        return None
+
+    return ' '.join(array)

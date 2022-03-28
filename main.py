@@ -14,7 +14,7 @@ from requests import Response, put, post, patch
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
     check_site_is_available, log_error, unescape_string, read_file, convert_string_to_b64, generate_header, \
-    handle_response, ErrorAPIResponse, raise_max_retry_exception
+    handle_response, ErrorAPIResponse, raise_max_retry_exception, array_to_str
 from model.log_level import LogLevel
 
 SCRIPT_VERSION = "alpha"
@@ -99,9 +99,7 @@ class SOOSDASTAnalysis:
     def parse_configuration(self, configuration: Dict, target_url: str):
         valid_required("Target URL", target_url)
         self.target_url = target_url
-        log(f"Configuration")
         for key, value in configuration.items():
-            log(f"{key}={value}")
             if key == "clientId":
                 if value is None:
                     try:
@@ -129,6 +127,7 @@ class SOOSDASTAnalysis:
                     self.base_uri = value
             elif key == "projectName":
                 valid_required(key, value)
+                value = array_to_str(value)
                 self.project_name = unescape_string(value)
             elif key == "scanMode":
                 valid_required(key, value)
@@ -160,6 +159,7 @@ class SOOSDASTAnalysis:
             elif key == "commitHash":
                 self.commit_hash = value
             elif key == "branchName":
+                value = array_to_str(value)
                 self.branch_name = value
             elif key == "buildVersion":
                 self.build_version = value
@@ -168,10 +168,13 @@ class SOOSDASTAnalysis:
             elif key == "buildURI":
                 self.build_uri = value
             elif key == "operatingEnvironment":
+                value = array_to_str(value)
                 self.operating_environment = value
             elif key == "integrationName":
+                value = array_to_str(value)
                 self.integration_name = value
             elif key == "integrationType":
+                value = array_to_str(value)
                 self.integration_type = value
             elif key == 'authAuto':
                 self.auth_auto = '1'
@@ -194,10 +197,13 @@ class SOOSDASTAnalysis:
             elif key == "level":
                 self.log_level = value
             elif key == "zapOptions":
+                value = array_to_str(value)
                 self.zap_options = value
             elif key == "requestCookies":
+                value = array_to_str(value)
                 self.request_cookies = value
             elif key == "requestHeader":
+                value = array_to_str(value)
                 self.request_header = value
             elif key == "sarif":
                 self.generate_sarif_report = value
@@ -554,7 +560,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument("--clientId", help="SOOS Client Id", required=False)
         parser.add_argument("--apiKey", help="SOOS API Key", required=False)
-        parser.add_argument("--projectName", help="SOOS project name", required=False)
+        parser.add_argument("--projectName", help="SOOS project name", nargs="+", required=False)
         parser.add_argument(
             "--scanMode",
             help="SOOS DAST scan mode. Values available: baseline, fullscan, apiscan, and activescan",
@@ -583,21 +589,24 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--rules",
             help="rules file to use to INFO, IGNORE or FAIL warnings",
+            nargs="*",
             required=False,
         )
         parser.add_argument(
             "--contextFile",
             help="context file which will be loaded prior to scanning the target",
+            nargs="*",
             required=False,
         )
         parser.add_argument(
             "--contextUser",
             help="username to use for authenticated scans - must be defined in the given context file",
+            nargs="*",
             required=False,
         )
         parser.add_argument(
             "--fullScanMinutes",
-            help="Project Name to be displayed in the SOOS Application",
+            help="",
             required=False,
         )
         parser.add_argument(
@@ -613,6 +622,8 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--integrationName",
             help="Integration Name (e.g. Provider)",
+            type=str,
+            nargs="*",
             required=False,
         )
         parser.add_argument(
@@ -658,16 +669,24 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--zapOptions",
             help="ZAP Additional Options",
+            type=str,
+            nargs="*",
             required=False,
         )
         parser.add_argument(
             "--requestCookies",
             help="Set Cookie values for the requests to the target URL",
+            type=str,
+            nargs="*",
+            default=None,
             required=False,
         )
         parser.add_argument(
             "--requestHeader",
             help="Set extra Header requests",
+            type=str,
+            nargs="*",
+            default=None,
             required=False,
         )
         parser.add_argument(
@@ -682,6 +701,7 @@ class SOOSDASTAnalysis:
             help="Set the branch name",
             type=str,
             default=None,
+            nargs="*",
             required=False,
         )
         parser.add_argument(
@@ -709,22 +729,25 @@ class SOOSDASTAnalysis:
             help="Set the Operating Environment",
             type=str,
             default=None,
+            nargs="*",
             required=False,
         )
 
-        parser.add_argument("--sarif",
-                            help="Upload SARIF Report to GitHub",
-                            type=bool,
-                            default=False,
-                            required=False
-                            )
+        parser.add_argument(
+            "--sarif",
+            help="Upload SARIF Report to GitHub",
+            type=bool,
+            default=False,
+            required=False
+        )
 
-        parser.add_argument("--gpat",
-                            help="GitHub Personal Authorization Token",
-                            type=str,
-                            default=None,
-                            required=False
-                            )
+        parser.add_argument(
+            "--gpat",
+            help="GitHub Personal Authorization Token",
+            type=str,
+            default=None,
+            required=False
+        )
 
         log(f"Parsing Arguments")
         args: Namespace = parser.parse_args()
@@ -769,7 +792,7 @@ class SOOSDASTAnalysis:
 
             command: str = scan_function()
 
-            log(f"Command to be executed: {command}")
+            log(f"Command to be executed: {command}", log_level=LogLevel.DEBUG)
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,
@@ -889,6 +912,11 @@ class SOOSSARIFReport:
 
                 github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=analysis.project_name)
                 headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {analysis.github_pat}"}
+
+                log(f"GitHub SARIF URL: {github_sarif_url}")
+                log(f"GitHub SARIF Header: {str(headers)}")
+                log(f"GitHub SARIF Body Request")
+                log(str(json.dumps(github_body_request)))
 
                 sarif_github_response = requests.post(url=github_sarif_url, data=json.dumps(github_body_request),
                                                       headers=headers)
