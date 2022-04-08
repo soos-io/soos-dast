@@ -1,9 +1,14 @@
 # SOOS-DAST-Python
 
 ## DAST Analysis Tool
-A **Dynamic Analysis Security Testing**, or **DAST**, tool is a security solution application that can help find certain vulnerabilities in web applications while they are running in production.
+The affordable no limit web vulnerability scanner.
 
-The **SOOS-DAST-Python** is the **DAST** solution provided by **SOOS** (Supported by [OWASP ZAP](https://owasp.org/www-project-zap/)) to get the analysis results for your web applications into the **SOOS** Application.
+Use **SOOS DAST** to:
+
+1. Scan web apps and APIs defined by **OpenAPI**, **SOAP**, or **GraphQL**
+2. Containerized solution runs in your environment
+3. Manage issues via single-pane web dashboard shared with [SOOS SCA](https://github.com/marketplace/actions/soos-sca-github-action)
+4. Track tickets in Jira or GitHub Issues
 
 ## Requirements
 - [Docker](https://www.docker.com/get-started)
@@ -36,9 +41,9 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID]
 
 ### Script Arguments
 
-| Name        | Required | Description                                                   |
-|-------------|----------|---------------------------------------------------------------|
-| `targetURL` | Yes      | target URL including the protocol, eg https://www.example.com |
+| Name        | Required | Description                                                                                   |
+|-------------|----------|-----------------------------------------------------------------------------------------------|
+| `targetURL` | Yes      | target URL including the protocol, eg https://www.example.com. A `https` protocol is required |
 
 ### Script Parameters
 
@@ -62,6 +67,15 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID]
 | `zapOptions`                               |                                            | add zap options                                                                                                  |
 | `requestCookies`                           |                                            | add custom cookies to the requests                                                                               |
 | `requestHeaders`                           |                                            | add custom headers to the requests                                                                               |
+| `commit_hash`                      | [none]                     | The commit hash value from the SCM System. Required for SARIF Report                                                                                                                                                                          |
+| `branch_name`                      | [none]                     | The name of the branch from the SCM System. Required for SARIF Report                                                                                                                                                                         |
+| `branch_uri`                       | [none]                     | The URI to the branch from the SCM System                                                                                                                                                                                                    |
+| `build_version`                    | [none]                     | Version of application build artifacts                                                                                                                                                                                                        |
+| `build_uri`                        | [none]                     | URI to CI build info                                                                                                                                                                                                                          |
+| `operating_environment`            | [none]                     | System info regarding operating system, etc.                                                                                                                                                                                                  |
+| `sarif`                            | false                      | Enable Uploading the SARIF Report to GitHub.                                                                                                                                                                                                  |
+| `gpat`                             | [none]                     | GitHub Personal Access Token. Required to upload SARIF Report                                                                                                                                                                                |
+
 
 
 #### Config File Definition
