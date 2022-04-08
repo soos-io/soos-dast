@@ -17,25 +17,16 @@ Use **SOOS DAST** to:
 ## How to Use
 To execute the script you need to run this command from a terminal:
 ``` shell
-docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID]
-               [--apiKey APIKEY] [--projectName PROJECTNAME]
-               [--scanMode SCANMODE] [--apiURL APIURL] [--debug DEBUG]
-               [--ajaxSpider AJAXSPIDER] [--rules RULES]
-               [--contextFile CONTEXTFILE] [--contextUser CONTEXTUSER]
-               [--fullScanMinutes FULLSCANMINUTES]
-               [--apiScanFormat APISCANFORMAT] [--level LEVEL]
-               [--integrationName INTEGRATIONNAME] [--authDisplay AUTHDISPLAY]
-               [--authUsername AUTHUSERNAME] [--authPassword AUTHPASSWORD]
-               [--authLoginURL AUTHLOGINURL]
-               [--authUsernameField AUTHUSERNAMEFIELD]
-               [--authPasswordField AUTHPASSWORDFIELD]
-               [--authSubmitField AUTHSUBMITFIELD]
-               [--authFirstSubmitField AUTHFIRSTSUBMITFIELD]
-               [--zapOptions ZAPOPTIONS] [--requestCookies REQUESTCOOKIES]
-               [--requestHeader REQUESTHEADER] [--commitHash COMMITHASH]
-               [--branchName BRANCHNAME] [--branchURI BRANCHURI]
-               [--buildVersion BUILDVERSION] [--buildURI BUILDURI]
-               [--operatingEnvironment OPERATINGENVIRONMENT]
+docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] [--apiKey APIKEY] [--projectName PROJECTNAME [PROJECTNAME ...]]
+               [--scanMode SCANMODE] [--apiURL APIURL] [--debug DEBUG] [--ajaxSpider AJAXSPIDER] [--rules [RULES [RULES ...]]]
+               [--contextFile [CONTEXTFILE [CONTEXTFILE ...]]] [--contextUser [CONTEXTUSER [CONTEXTUSER ...]]] [--fullScanMinutes FULLSCANMINUTES]
+               [--apiScanFormat APISCANFORMAT] [--level LEVEL] [--integrationName [INTEGRATIONNAME [INTEGRATIONNAME ...]]] [--authDisplay AUTHDISPLAY]
+               [--authUsername AUTHUSERNAME] [--authPassword AUTHPASSWORD] [--authLoginURL AUTHLOGINURL] [--authUsernameField AUTHUSERNAMEFIELD]
+               [--authPasswordField AUTHPASSWORDFIELD] [--authSubmitField AUTHSUBMITFIELD] [--authFirstSubmitField AUTHFIRSTSUBMITFIELD]
+               [--zapOptions [ZAPOPTIONS [ZAPOPTIONS ...]]] [--requestCookies [REQUESTCOOKIES [REQUESTCOOKIES ...]]]
+               [--requestHeader [REQUESTHEADER [REQUESTHEADER ...]]] [--commitHash COMMITHASH] [--branchName [BRANCHNAME [BRANCHNAME ...]]]
+               [--branchURI BRANCHURI] [--buildVersion BUILDVERSION] [--buildURI BUILDURI]
+               [--operatingEnvironment [OPERATINGENVIRONMENT [OPERATINGENVIRONMENT ...]]] [--sarif SARIF] [--gpat GPAT]
                targetURL
 ```
 
