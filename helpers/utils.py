@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from html import unescape
 from sys import exit
 from time import sleep
-from typing import Optional, Any, NoReturn, Dict
+from typing import Optional, Any, NoReturn, Dict, Iterable
 from urllib.parse import unquote
 
 from requests import Response, get
@@ -17,6 +17,18 @@ from model.log_level import LogLevel, loggerFunc
 from model.target_availability_check import TargetAvailabilityCheck
 
 UTF_8: str = 'utf-8'
+
+
+class ErrorAPIResponse:
+    code: Optional[str] = None
+    message: Optional[str] = None
+
+    def __init__(self, api_response):
+        for key in api_response:
+            self.__setattr__(key, api_response[key])
+
+        self.code = api_response["code"] if "code" in api_response else None
+        self.message = api_response["message"] if "message" in api_response else None
 
 
 def log(message: str, log_level: LogLevel = LogLevel.INFO) -> NoReturn:
@@ -196,3 +208,32 @@ def write_file(file_path, file_content):
     with open(file=file_path, mode=Constants.FILE_WRITE_MODE, encoding=Constants.UTF_8_ENCODING) as file:
         file.write(file_content)
         file.close()
+
+
+def handle_response(api_response):
+    if api_response.status_code in range(400, 600):
+        return ErrorAPIResponse(api_response.json())
+    else:
+        return api_response.json()
+
+
+def handle_error(error: ErrorAPIResponse, api: str, attempt: int, max_retry: int):
+    error_message = f"{api} has an error. Attempt {str(attempt)} of {str(max_retry)}"
+    raise Exception(f"{error_message}\n{error.code}-{error.message}")
+
+
+def generate_header(api_key: str, content_type: str):
+    return {'x-soos-apikey': api_key, 'Content-Type': content_type}
+
+
+def raise_max_retry_exception(attempt: int, retry_count: int):
+    if attempt >= retry_count:
+        raise Exception("The maximum retries allowed were reached")
+
+
+def array_to_str(array: Iterable[str]):
+
+    if array is None or sum(1 for element in array) == 0:
+        return None
+
+    return ' '.join(array)
