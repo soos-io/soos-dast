@@ -18,6 +18,7 @@ from helpers.utils import log, valid_required, has_value, exit_app, is_true, pri
 from model.log_level import LogLevel
 
 SCRIPT_VERSION = "alpha"
+ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 param_mapper = {}
 
@@ -908,6 +909,8 @@ class SOOSSARIFReport:
                     "commit_sha": analysis.commit_hash,
                     "ref": analysis.branch_name,
                     "sarif": compressed_sarif_response.decode(encoding='UTF-8'),
+                    "started_at": ANALYSIS_START_TIME,
+                    "tool_name": "SOOS DAST"
                 }
 
                 github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=analysis.project_name)
