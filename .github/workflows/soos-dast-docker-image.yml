@@ -36,5 +36,5 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: soosio/dast:alpha
           labels: ${{ steps.meta.outputs.labels }}
