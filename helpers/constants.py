@@ -13,6 +13,7 @@ SERVER_ERROR_CODES = range(500, 599)
 RETRY_DELAY = 3  # seconds
 REQUEST_TIMEOUT = 10  # seconds
 EMPTY_STRING = ''
+SCRIPT_VERSION = "alpha"
 
 # SCAN MODES
 BASELINE = 'baseline'
