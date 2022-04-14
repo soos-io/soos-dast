@@ -71,7 +71,6 @@ class SOOSDASTAnalysis:
         self.request_header: Optional[str] = None
         self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
         self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
-        self.script_version: str = Constants.SCRIPT_VERSION
 
         # INTENTIONALLY HARDCODED
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
@@ -184,9 +183,6 @@ class SOOSDASTAnalysis:
                     value = array_to_str(value)
                     self.integration_type = value
             elif key == "scriptVersion":
-                if value is None:
-                    self.script_version = Constants.SCRIPT_VERSION
-                else:
                     value = array_to_str(value)
                     self.script_version = value
             elif key == 'authAuto':
