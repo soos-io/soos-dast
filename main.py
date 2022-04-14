@@ -630,21 +630,21 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--integrationName",
-            help="Integration Name. Do not assign any value internal use only",
+            help="Integration Name. Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
         )
         parser.add_argument(
             "--integrationType",
-            help="Integration Type. Do not assign any value internal use only",
+            help="Integration Type. Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
         )
         parser.add_argument(
             "--scriptVersion",
-            help="Script Version. Do not assign any value internal use only",
+            help="Script Version. Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
