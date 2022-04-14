@@ -71,9 +71,9 @@ class SOOSDASTAnalysis:
         self.request_cookies: Optional[str] = None
         self.request_header: Optional[str] = None
         self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
+        self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
 
         # INTENTIONALLY HARDCODED
-        self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
 
         # Auth Options
@@ -172,11 +172,20 @@ class SOOSDASTAnalysis:
                 value = array_to_str(value)
                 self.operating_environment = value
             elif key == "integrationName":
-                value = array_to_str(value)
-                self.integration_name = value
+                if value is None:
+                    self.integration_name = Constants.DEFAULT_INTEGRATION_NAME
+                else:
+                    value = array_to_str(value)
+                    self.integration_name = value
             elif key == "integrationType":
-                value = array_to_str(value)
-                self.integration_type = value
+                if value is None:
+                    self.integration_type = Constants.DEFAULT_INTEGRATION_TYPE
+                else:
+                    value = array_to_str(value)
+                    self.integration_type = value
+            elif key == "scriptVersion":
+                    value = array_to_str(value)
+                    self.script_version = value
             elif key == 'authAuto':
                 self.auth_auto = '1'
             elif key == 'authDisplay':
@@ -364,7 +373,7 @@ class SOOSDASTAnalysis:
                 projectName=self.project_name,
                 name=datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
                 integrationType=self.integration_type,
-                scriptVersion=SCRIPT_VERSION,
+                scriptVersion=self.script_version,
                 toolName=self.dast_analysis_tool,
                 commitHash=self.commit_hash,
                 branch=self.branch_name,
@@ -622,7 +631,21 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--integrationName",
-            help="Integration Name (e.g. Provider)",
+            help="Integration Name. Intended for internal use only.",
+            type=str,
+            nargs="*",
+            required=False,
+        )
+        parser.add_argument(
+            "--integrationType",
+            help="Integration Type. Intended for internal use only.",
+            type=str,
+            nargs="*",
+            required=False,
+        )
+        parser.add_argument(
+            "--scriptVersion",
+            help="Script Version. Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
