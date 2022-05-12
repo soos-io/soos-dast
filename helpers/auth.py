@@ -6,11 +6,11 @@ from traceback import print_exc
 from pyotp import TOTP
 from requests import post
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
 from helpers.localstorage import LocalStorage
 from helpers.utils import log
 from model.log_level import LogLevel
@@ -54,23 +54,19 @@ class DASTAuth:
             zap.context.exclude_from_context(context_name, exclude)
             log(f"Excluded {exclude}")
 
-    def setup_webdriver(self):
+    def setup_webdriver(self, zap):
         log('Start webdriver')
 
-        environ['MOZ_HEADLESS_WIDTH'] = '1920'
-        environ['MOZ_HEADLESS_HEIGHT'] = '1080'
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
 
-        profile = webdriver.FirefoxProfile()
-        profile.accept_untrusted_certs = True
-        profile.set_preference("security.tls.version.min", 1)
-
-        options = webdriver.FirefoxOptions()
-        options.headless = not self.config.auth_display
-
-        self.driver = webdriver.Firefox(
-            firefox_profile=profile, firefox_options=options)
+        self.driver = webdriver.Chrome(options=options)
         self.driver.set_window_size(1920, 1080)
         self.driver.maximize_window()
+        #log(f"Location of webdriver: {zap.selenium.option_firefox_driver_path}")
 
     def authenticate(self, zap, target):
         try:
@@ -81,8 +77,8 @@ class DASTAuth:
             # perform authentication using selenium
             if self.config.auth_login_url:
                 # setup the webdriver
-                self.setup_webdriver()
-
+                self.setup_webdriver(zap)
+                log("trying to log in")
                 # login to the application
                 self.login()
 
@@ -197,12 +193,12 @@ class DASTAuth:
 
                 # if the OTP field was not found, we probably need to submit to go to the OTP page
                 # login flow: username -> next -> password -> next -> otp -> submit
-                self.submit_form(self.config.auth_submitaction,
+                self.submit_form(self.config.auth_submit_action,
                                  self.config.auth_submit_field_name, username_element)
                 self.fill_otp()
 
         # submit
-        self.submit_form(self.config.auth_submitaction,
+        self.submit_form(self.config.auth_submit_action,
                          self.config.auth_submit_field_name, username_element)
 
         # wait for the page to load
@@ -218,9 +214,11 @@ class DASTAuth:
 
     def submit_form(self, submit_action, submit_field_name, username_element):
         if submit_action == "click":
+            log('Clicking submit button')
             element = self.find_element(
                 submit_field_name, "submit", "//*[@type='submit' or @type='button' or button]")
-            element.click()
+            actions = ActionChains(self.driver)
+            actions.move_to_element(element).click().perform()
             log(f"Clicked the {submit_field_name} element")
         elif username_element:
             username_element.submit()

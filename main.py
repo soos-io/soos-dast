@@ -87,6 +87,7 @@ class SOOSDASTAnalysis:
         self.auth_first_submit_field_name: Optional[str] = Constants.EMPTY_STRING
         self.auth_excludeUrls: Optional[str] = Constants.EMPTY_STRING
         self.auth_display: bool = False
+        self.auth_bearer_token: Optional[str] = None
 
         self.generate_sarif_report: bool = False
         self.github_pat: Optional[str] = None
@@ -189,7 +190,7 @@ class SOOSDASTAnalysis:
             elif key == 'authAuto':
                 self.auth_auto = '1'
             elif key == 'authDisplay':
-                self.auth_display = True
+                self.auth_display = value
             elif key == 'authUsername':
                 self.auth_username = value
             elif key == 'authPassword':
@@ -219,6 +220,8 @@ class SOOSDASTAnalysis:
                 self.generate_sarif_report = value
             elif key == "gpat":
                 self.github_pat = value
+            elif key =="bearerToken":
+                self.auth_bearer_token = value
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -273,10 +276,31 @@ class SOOSDASTAnalysis:
         zap_options: List[str] = list()
         if self.auth_loginUrl is not None:
             zap_options.append(self.__add_custom_option__(label="auth.loginurl", value=self.auth_loginUrl))
+        if self.auth_username is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.username", value=self.auth_username))
+        if self.auth_password is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.password", value=self.auth_password))
         if self.request_cookies is not None:
             zap_options.append(self.__add_custom_option__(label="request.custom_cookies", value=self.request_cookies))
         if self.request_header is not None:
             zap_options.append(self.__add_custom_option__(label="request.custom_header", value=self.request_header))
+        if self.auth_bearer_token is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.bearer_token", value=self.auth_bearer_token))
+        if self.auth_display is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.display", value=self.auth_display))
+        if self.auth_submit_field_name is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.submit_field", value=self.auth_submit_field_name))
+        if self.auth_username_field_name is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.username_field", value=self.auth_username_field_name))
+        if self.auth_password_field_name is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.password_field", value=self.auth_password_field_name))
+        
+        # ZAP options should be wrapped with ""
+        if len(zap_options) > 0:
+            zap_options.insert(0, "\"")
+            zap_options.append("\"")
+            
+
 
         args.append(" ".join(zap_options))
 
@@ -298,13 +322,13 @@ class SOOSDASTAnalysis:
         log(f"Zap Options: {str(self.zap_options)}")
         log(f"Cookies: {str(self.request_cookies)}")
         log(f"Github PAT: {str(self.github_pat)}")
-        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None:
+        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None or self.request_header is not None or self.auth_bearer_token is not None:
             self.__add_zap_options__(args)
 
         self.__add_hook_option__(args)
 
         self.__add_report_file__(args)
-
+       
         return " ".join(args)
 
     def baseline_scan(self) -> str:
@@ -773,6 +797,14 @@ class SOOSDASTAnalysis:
             required=False
         )
 
+        parser.add_argument(
+            "--bearerToken",
+            help="Bearer token to authenticate",
+            type=str,
+            default=None,
+            required=False
+        )
+
         log(f"Parsing Arguments")
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
@@ -799,7 +831,8 @@ class SOOSDASTAnalysis:
             log(f"Target URL: {self.target_url}")
             print_line_separator()
 
-            check: bool = check_site_is_available(self.target_url)
+            check = True
+            # bool = check_site_is_available(self.target_url)
 
             if check is False:
                 exit_app(f"The URL {self.target_url} is not available")
@@ -816,7 +849,7 @@ class SOOSDASTAnalysis:
 
             command: str = scan_function()
 
-            log(f"Command to be executed: {command}", log_level=LogLevel.DEBUG)
+            log(f"Command to be executed: {command}")
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,
