@@ -214,7 +214,10 @@ def handle_response(api_response):
     if api_response.status_code in range(400, 600):
         return ErrorAPIResponse(api_response.json())
     else:
-        return api_response.json()
+        if api_response.reason == "No Content":
+            return None
+        else:
+            return api_response.json()
 
 
 def handle_error(error: ErrorAPIResponse, api: str, attempt: int, max_retry: int):

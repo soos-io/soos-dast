@@ -845,18 +845,18 @@ class SOOSDASTAnalysis:
                 report_url=soos_dast_start_response.scan_url,
             )
 
-            if self.generate_sarif_report is True and self.github_pat is not None:
-                SOOSSARIFReport.exec(analysis=self,
-                                     project_hash=soos_dast_start_response.project_id,
-                                     branch_hash=soos_dast_start_response.branch_hash,
-                                     scan_id=soos_dast_start_response.analysis_id)
-
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,
                                                    status="Finished",
                                                    status_message=None
                                                    )
+
+            if self.generate_sarif_report is True and self.github_pat is not None:
+                SOOSSARIFReport.exec(analysis=self,
+                                     project_hash=soos_dast_start_response.project_id,
+                                     branch_hash=soos_dast_start_response.branch_hash,
+                                     scan_id=soos_dast_start_response.analysis_id)
 
             sys.exit(0)
 
@@ -923,7 +923,8 @@ class SOOSSARIFReport:
             raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
 
             if sarif_json_response is None:
-                raise Exception("An Error has occurred generating SARIF Response")
+                SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
+                return
             else:
                 sarif_report_str = json.dumps(sarif_json_response)
                 compressed_sarif_response = base64.b64encode(gzip.compress(bytes(sarif_report_str, 'UTF-8')))
