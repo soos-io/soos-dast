@@ -78,7 +78,7 @@ class DASTAuth:
             if self.config.auth_login_url:
                 # setup the webdriver
                 self.setup_webdriver()
-                log("trying to log in")
+
                 # login to the application
                 self.login()
 

@@ -861,7 +861,7 @@ class SOOSDASTAnalysis:
 
             command: str = scan_function()
 
-            log(f"Command to be executed: {command}")
+            log(f"Command to be executed: {command}", log_level=LogLevel.DEBUG)
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,

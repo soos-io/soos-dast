@@ -23,7 +23,7 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
                [--apiScanFormat APISCANFORMAT] [--level LEVEL] [--integrationName [INTEGRATIONNAME [INTEGRATIONNAME ...]]] [--authDisplay AUTHDISPLAY]
                [--authUsername AUTHUSERNAME] [--authPassword AUTHPASSWORD] [--authLoginURL AUTHLOGINURL] [--authUsernameField AUTHUSERNAMEFIELD]
                [--authPasswordField AUTHPASSWORDFIELD] [--authSubmitField AUTHSUBMITFIELD] [--authFirstSubmitField AUTHFIRSTSUBMITFIELD]
-               [--zapOptions [ZAPOPTIONS [ZAPOPTIONS ...]]] [--requestCookies [REQUESTCOOKIES [REQUESTCOOKIES ...]]]
+               [--bearerToken BEARERTOKEN] [--zapOptions [ZAPOPTIONS [ZAPOPTIONS ...]]] [--requestCookies [REQUESTCOOKIES [REQUESTCOOKIES ...]]]
                [--requestHeader [REQUESTHEADER [REQUESTHEADER ...]]] [--commitHash COMMITHASH] [--branchName [BRANCHNAME [BRANCHNAME ...]]]
                [--branchURI BRANCHURI] [--buildVersion BUILDVERSION] [--buildURI BUILDURI]
                [--operatingEnvironment [OPERATINGENVIRONMENT [OPERATINGENVIRONMENT ...]]] [--sarif SARIF] [--gpat GPAT]
@@ -66,6 +66,14 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
 | `operatingEnvironment`            | [none]                     | System info regarding operating system, etc.                                                                                                                                                                                                  |
 | `sarif`                            | false                      | Enable Uploading the SARIF Report to GitHub.                                                                                                                                                                                                  |
 | `gpat`                             | [none]                     | GitHub Personal Access Token. Required to upload SARIF Report                                                                                                                                                                                |
+| `bearerToken`                             | [none]                     | A Bearer token to use in the authorization header for each request.                                                                                                          |
+| `authLoginUrl`                             | [none]                     | Url to perform automatic login request.                                                                                                          |
+| `authUserName`                             | [none]                     | Username to fill automatic login.                                                                                                           |
+| `authUserNameField`                             | [none]                     | The HTML name or id attribute of the username field.                                                                                                          |
+| `authPassword`                             | [none]                     | Password to fill automatic login.                                                                                                          |
+| `authPasswordField`                             | [none]                     | The HTML name or id attribute of the password field.                                                                                                          |
+| `authSubmitField`                             | [none]                     | The HTML name or id attribute of the submit field.                                                                                                        |
+| `authSubmitAction`                             | [none]                     | Default action to perform on form completion (click or submit, click is by default)                                                                                                          |
 
 
 
