@@ -85,6 +85,7 @@ class SOOSDASTAnalysis:
         self.auth_password_field_name: Optional[str] = Constants.EMPTY_STRING
         self.auth_submit_field_name: Optional[str] = Constants.EMPTY_STRING
         self.auth_first_submit_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_submit_action: Optional[str] = Constants.EMPTY_STRING
         self.auth_excludeUrls: Optional[str] = Constants.EMPTY_STRING
         self.auth_display: bool = False
         self.auth_bearer_token: Optional[str] = None
@@ -205,6 +206,8 @@ class SOOSDASTAnalysis:
                 self.auth_submit_field_name = value
             elif key == 'authFirstSubmitField':
                 self.auth_first_submit_field_name = value
+            elif key == 'authSubmitAction':
+                self.auth_submit_action = value
             elif key == "level":
                 self.log_level = value
             elif key == "zapOptions":
@@ -290,6 +293,8 @@ class SOOSDASTAnalysis:
             zap_options.append(self.__add_custom_option__(label="auth.display", value=self.auth_display))
         if self.auth_submit_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.submit_field", value=self.auth_submit_field_name))
+        if self.auth_submit_action is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.submit_action", value=self.auth_submit_action))
         if self.auth_username_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.username_field", value=self.auth_username_field_name))
         if self.auth_password_field_name is not None:
@@ -712,6 +717,13 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--authFirstSubmitField",
             help="First submit button id to use in auth apps",
+            required=False,
+        )
+        parser.add_argument(
+            "--authSubmitAction",
+            help="Submit action to perform on form filled, click or submit",
+            type=str,
+            nargs="*",
             required=False,
         )
         parser.add_argument(
