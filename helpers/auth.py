@@ -233,8 +233,8 @@ class DASTAuth:
             actions = ActionChains(self.driver)
             actions.move_to_element(element).click().perform()
             log(f"Clicked the {submit_field_name} element")
-        elif password_field_name:
-            self.find_element(password_field_name,"password","//input[@type='password' or contains(@name,'ass')]",)
+        else:
+            self.find_element(password_field_name,"password","//input[@type='password' or contains(@name,'ass')]").submit()
             log('Submitted the form')
 
     def fill_username(self):
