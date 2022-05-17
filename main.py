@@ -723,7 +723,6 @@ class SOOSDASTAnalysis:
             "--authSubmitAction",
             help="Submit action to perform on form filled, click or submit",
             type=str,
-            nargs="*",
             required=False,
         )
         parser.add_argument(
@@ -843,8 +842,7 @@ class SOOSDASTAnalysis:
             log(f"Target URL: {self.target_url}")
             print_line_separator()
 
-            check = True
-            # bool = check_site_is_available(self.target_url)
+            check: bool = check_site_is_available(self.target_url)
 
             if check is False:
                 exit_app(f"The URL {self.target_url} is not available")
