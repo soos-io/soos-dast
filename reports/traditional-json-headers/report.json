@@ -21,13 +21,12 @@
 						{
 							"uri": "[(${helper.legacyEscapeText(instance.uri, true)})]",
 							"method": "[(${helper.legacyEscapeText(instance.method, true)})]",
+							"status-code": [(${instance.message.responseHeader.statusCode})],
 							"param": "[(${helper.legacyEscapeText(instance.param, true)})]",
 							"attack": "[(${helper.legacyEscapeText(instance.attack, true)})]",
 							"evidence": "[(${helper.legacyEscapeText(instance.evidence, true)})]",
 							"request-header": "[(${helper.legacyEscapeText(instance.message.requestHeader, true)})]",
-							"request-body": "[(${helper.legacyEscapeText(instance.message.requestBody, true)})]",
-							"response-header": "[(${helper.legacyEscapeText(instance.message.responseHeader, true)})]",
-							"response-body": "[(${helper.legacyEscapeText(instance.message.responseBody, true)})]"
+							"response-header": "[(${helper.legacyEscapeText(instance.message.responseHeader, true)})]"
 						}[/th:block]
 					],
 					"count": "[(${instances.size})]",

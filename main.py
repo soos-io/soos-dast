@@ -58,7 +58,7 @@ class SOOSDASTAnalysis:
         self.ajax_spider_scan: bool = False
         self.spider: bool = False
         self.minutes_delay: Optional[str] = None
-        self.report_full_requests: bool = False
+        self.report_request_headers: bool = False
 
         # Special Context - loads from script arguments only
         self.commit_hash: Optional[str] = None
@@ -220,8 +220,8 @@ class SOOSDASTAnalysis:
                 self.generate_sarif_report = value
             elif key == "gpat":
                 self.github_pat = value
-            elif key == "reportFullRequests":
-                self.report_full_requests = value
+            elif key == "reportRequestHeaders":
+                self.report_request_headers = value
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -760,8 +760,8 @@ class SOOSDASTAnalysis:
             required=False,
         )
         parser.add_argument(
-            "--reportFullRequests",
-            help="Include full request/response details in report.",
+            "--reportRequestHeaders",
+            help="Include request/response headers in report.",
             type=bool,
             default=False,
             required=False
@@ -824,12 +824,12 @@ class SOOSDASTAnalysis:
                 exit_app(f"The scan mode {self.scan_mode} is invalid.")
                 return None
 
-            log(f"Copying report templates. Include full request details: {self.report_full_requests}", log_level=LogLevel.DEBUG)
+            log(f"Copying report templates. Include request headers: {self.report_request_headers}", log_level=LogLevel.DEBUG)
             os.system("mkdir -p ~/.ZAP_D/reports")
             os.system("mkdir -p /root/.ZAP_D/reports")
-            if self.report_full_requests is True:
-                os.system("cp -R /zap/reports/traditional-json-plus ~/.ZAP_D/reports/traditional-json")
-                os.system("cp -R /zap/reports/traditional-json-plus /root/.ZAP_D/reports/traditional-json")
+            if self.report_request_headers is True:
+                os.system("cp -R /zap/reports/traditional-json-headers ~/.ZAP_D/reports/traditional-json")
+                os.system("cp -R /zap/reports/traditional-json-headers /root/.ZAP_D/reports/traditional-json")
             else:
                 os.system("cp -R /zap/reports/traditional-json ~/.ZAP_D/reports/traditional-json")
                 os.system("cp -R /zap/reports/traditional-json /root/.ZAP_D/reports/traditional-json")
