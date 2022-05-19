@@ -216,7 +216,7 @@ class SOOSDASTAnalysis:
             elif key == "requestCookies":
                 value = array_to_str(value)
                 self.request_cookies = value
-            elif key == "requestHeader":
+            elif key == "requestHeaders":
                 value = array_to_str(value)
                 self.request_header = value
             elif key == "sarif":
@@ -741,7 +741,7 @@ class SOOSDASTAnalysis:
             required=False,
         )
         parser.add_argument(
-            "--requestHeader",
+            "--requestHeaders",
             help="Set extra Header requests",
             type=str,
             nargs="*",

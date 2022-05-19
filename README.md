@@ -24,7 +24,7 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
                [--authUsername AUTHUSERNAME] [--authPassword AUTHPASSWORD] [--authLoginURL AUTHLOGINURL] [--authUsernameField AUTHUSERNAMEFIELD]
                [--authPasswordField AUTHPASSWORDFIELD] [--authSubmitField AUTHSUBMITFIELD] [--authFirstSubmitField AUTHFIRSTSUBMITFIELD]
                [--bearerToken BEARERTOKEN] [--zapOptions [ZAPOPTIONS [ZAPOPTIONS ...]]] [--requestCookies [REQUESTCOOKIES [REQUESTCOOKIES ...]]]
-               [--requestHeader [REQUESTHEADER [REQUESTHEADER ...]]] [--commitHash COMMITHASH] [--branchName [BRANCHNAME [BRANCHNAME ...]]]
+               [--requestHeaders [REQUESTHEADERS [REQUESTHEADERS ...]]] [--commitHash COMMITHASH] [--branchName [BRANCHNAME [BRANCHNAME ...]]]
                [--branchURI BRANCHURI] [--buildVersion BUILDVERSION] [--buildURI BUILDURI]
                [--operatingEnvironment [OPERATINGENVIRONMENT [OPERATINGENVIRONMENT ...]]] [--sarif SARIF] [--gpat GPAT]
                targetURL
@@ -57,7 +57,7 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
 | `level`                                    |                                            | minimum level to show: `PASS`, `IGNORE`, `INFO`, `WARN` or `FAIL`                                                |
 | `zapOptions`                               |                                            | add zap options                                                                                                  |
 | `requestCookies`                           |                                            | comma separated list of custom cookies to be added to the request eg: `--requestCookies="'token: value, user: usernName'"`                                                                               |
-| `requestHeader`                           |                                            | custom header to be sent on every request eg:  `--requestHeader="'authorization:Bearer tokenValue'"`                                                                               |
+| `requestHeaders`                           |                                            | comma separated list of custom headers to be sent on every request eg:  `--requestHeaders="'authorization:Bearer tokenValue'"`                                                                               |
 | `commitHash`                      | [none]                     | The commit hash value from the SCM System. Required for SARIF Report                                                                                                                                                                          |
 | `branchName`                      | [none]                     | The name of the branch from the SCM System. Required for SARIF Report                                                                                                                                                                         |
 | `branchURI`                       | [none]                     | The URI to the branch from the SCM System                                                                                                                                                                                                    |
