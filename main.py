@@ -300,8 +300,8 @@ class SOOSDASTAnalysis:
         if self.auth_password_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.password_field", value=self.auth_password_field_name))
         
-        # ZAP options should be wrapped with ""
-        if len(zap_options) > 0:
+        # ZAP options should be wrapped with "" when automatic auth is enabled
+        if len(zap_options) > 0 and self.auth_loginUrl is not None:
             zap_options.insert(0, "\"")
             zap_options.append("\"")
             
