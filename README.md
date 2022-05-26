@@ -23,8 +23,8 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
                [--apiScanFormat APISCANFORMAT] [--level LEVEL] [--integrationName [INTEGRATIONNAME [INTEGRATIONNAME ...]]] [--authDisplay AUTHDISPLAY]
                [--authUsername AUTHUSERNAME] [--authPassword AUTHPASSWORD] [--authLoginURL AUTHLOGINURL] [--authUsernameField AUTHUSERNAMEFIELD]
                [--authPasswordField AUTHPASSWORDFIELD] [--authSubmitField AUTHSUBMITFIELD] [--authFirstSubmitField AUTHFIRSTSUBMITFIELD]
-               [--zapOptions [ZAPOPTIONS [ZAPOPTIONS ...]]] [--requestCookies [REQUESTCOOKIES [REQUESTCOOKIES ...]]]
-               [--requestHeader [REQUESTHEADER [REQUESTHEADER ...]]] [--commitHash COMMITHASH] [--branchName [BRANCHNAME [BRANCHNAME ...]]]
+               [--bearerToken BEARERTOKEN] [--zapOptions [ZAPOPTIONS [ZAPOPTIONS ...]]] [--requestCookies [REQUESTCOOKIES [REQUESTCOOKIES ...]]]
+               [--requestHeaders [REQUESTHEADERS [REQUESTHEADERS ...]]] [--commitHash COMMITHASH] [--branchName [BRANCHNAME [BRANCHNAME ...]]]
                [--branchURI BRANCHURI] [--buildVersion BUILDVERSION] [--buildURI BUILDURI]
                [--operatingEnvironment [OPERATINGENVIRONMENT [OPERATINGENVIRONMENT ...]]] [--sarif SARIF] [--gpat GPAT]
                targetURL
@@ -56,8 +56,8 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
 | `apiScanFormat`                            | Yes - if `scanMode` is `apiscan`           | target API format: `openapi`, `soap`, or `graphql`                                                               |
 | `level`                                    |                                            | minimum level to show: `PASS`, `IGNORE`, `INFO`, `WARN` or `FAIL`                                                |
 | `zapOptions`                               |                                            | add zap options                                                                                                  |
-| `requestCookies`                           |                                            | add custom cookies to the requests                                                                               |
-| `requestHeaders`                           |                                            | add custom headers to the requests                                                                               |
+| `requestCookies`                           |                                            | comma separated list of custom cookies to be added to the request eg: `--requestCookies="'token: value, user: usernName'"`                                                                               |
+| `requestHeaders`                           |                                            | comma separated list of custom headers to be sent on every request eg:  `--requestHeaders="'authorization:Bearer tokenValue'"`                                                                               |
 | `commitHash`                      | [none]                     | The commit hash value from the SCM System. Required for SARIF Report                                                                                                                                                                          |
 | `branchName`                      | [none]                     | The name of the branch from the SCM System. Required for SARIF Report                                                                                                                                                                         |
 | `branchURI`                       | [none]                     | The URI to the branch from the SCM System                                                                                                                                                                                                    |
@@ -66,6 +66,14 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
 | `operatingEnvironment`            | [none]                     | System info regarding operating system, etc.                                                                                                                                                                                                  |
 | `sarif`                            | false                      | Enable Uploading the SARIF Report to GitHub.                                                                                                                                                                                                  |
 | `gpat`                             | [none]                     | GitHub Personal Access Token. Required to upload SARIF Report                                                                                                                                                                                |
+| `bearerToken`                             | [none]                     | A Bearer token to use in the authorization header for each request. (Do not include Bearer Keyword on parameter)                                                                                                          |
+| `authLoginUrl`                             | [none]                     | Url to perform automatic login request.                                                                                                          |
+| `authUserName`                             | [none]                     | Username to fill automatic login.                                                                                                           |
+| `authUserNameField`                             | [none]                     | The HTML name or id attribute of the username field.                                                                                                          |
+| `authPassword`                             | [none]                     | Password to fill automatic login.                                                                                                          |
+| `authPasswordField`                             | [none]                     | The HTML name or id attribute of the password field.                                                                                                          |
+| `authSubmitField`                             | [none]                     | The HTML name or id attribute of the submit field.                                                                                                        |
+| `authSubmitAction`                             | [none]                     | Default action to perform on form completion (click or submit, click is by default)                                                                                                          |
 
 
 

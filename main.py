@@ -86,8 +86,10 @@ class SOOSDASTAnalysis:
         self.auth_password_field_name: Optional[str] = Constants.EMPTY_STRING
         self.auth_submit_field_name: Optional[str] = Constants.EMPTY_STRING
         self.auth_first_submit_field_name: Optional[str] = Constants.EMPTY_STRING
+        self.auth_submit_action: Optional[str] = Constants.EMPTY_STRING
         self.auth_excludeUrls: Optional[str] = Constants.EMPTY_STRING
         self.auth_display: bool = False
+        self.auth_bearer_token: Optional[str] = None
 
         self.generate_sarif_report: bool = False
         self.github_pat: Optional[str] = None
@@ -190,7 +192,7 @@ class SOOSDASTAnalysis:
             elif key == 'authAuto':
                 self.auth_auto = '1'
             elif key == 'authDisplay':
-                self.auth_display = True
+                self.auth_display = value
             elif key == 'authUsername':
                 self.auth_username = value
             elif key == 'authPassword':
@@ -205,6 +207,8 @@ class SOOSDASTAnalysis:
                 self.auth_submit_field_name = value
             elif key == 'authFirstSubmitField':
                 self.auth_first_submit_field_name = value
+            elif key == 'authSubmitAction':
+                self.auth_submit_action = value
             elif key == "level":
                 self.log_level = value
             elif key == "zapOptions":
@@ -213,13 +217,15 @@ class SOOSDASTAnalysis:
             elif key == "requestCookies":
                 value = array_to_str(value)
                 self.request_cookies = value
-            elif key == "requestHeader":
+            elif key == "requestHeaders":
                 value = array_to_str(value)
                 self.request_header = value
             elif key == "sarif":
                 self.generate_sarif_report = value
             elif key == "gpat":
                 self.github_pat = value
+            elif key =="bearerToken":
+                self.auth_bearer_token = value
             elif key == "reportRequestHeaders":
                 self.report_request_headers = value
 
@@ -276,10 +282,33 @@ class SOOSDASTAnalysis:
         zap_options: List[str] = list()
         if self.auth_loginUrl is not None:
             zap_options.append(self.__add_custom_option__(label="auth.loginurl", value=self.auth_loginUrl))
+        if self.auth_username is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.username", value=self.auth_username))
+        if self.auth_password is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.password", value=self.auth_password))
         if self.request_cookies is not None:
             zap_options.append(self.__add_custom_option__(label="request.custom_cookies", value=self.request_cookies))
         if self.request_header is not None:
             zap_options.append(self.__add_custom_option__(label="request.custom_header", value=self.request_header))
+        if self.auth_bearer_token is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.bearer_token", value=self.auth_bearer_token))
+        if self.auth_display is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.display", value=self.auth_display))
+        if self.auth_submit_field_name is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.submit_field", value=self.auth_submit_field_name))
+        if self.auth_submit_action is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.submit_action", value=self.auth_submit_action))
+        if self.auth_username_field_name is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.username_field", value=self.auth_username_field_name))
+        if self.auth_password_field_name is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.password_field", value=self.auth_password_field_name))
+        
+        # ZAP options should be wrapped with "" when automatic auth is enabled
+        if len(zap_options) > 0 and self.auth_loginUrl is not None:
+            zap_options.insert(0, "\"")
+            zap_options.append("\"")
+            
+
 
         args.append(" ".join(zap_options))
 
@@ -301,13 +330,13 @@ class SOOSDASTAnalysis:
         log(f"Zap Options: {str(self.zap_options)}")
         log(f"Cookies: {str(self.request_cookies)}")
         log(f"Github PAT: {str(self.github_pat)}")
-        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None:
+        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None or self.request_header is not None or self.auth_bearer_token is not None:
             self.__add_zap_options__(args)
 
         self.__add_hook_option__(args)
 
         self.__add_report_file__(args)
-
+       
         return " ".join(args)
 
     def baseline_scan(self) -> str:
@@ -694,6 +723,12 @@ class SOOSDASTAnalysis:
             required=False,
         )
         parser.add_argument(
+            "--authSubmitAction",
+            help="Submit action to perform on form filled, click or submit",
+            type=str,
+            required=False,
+        )
+        parser.add_argument(
             "--zapOptions",
             help="ZAP Additional Options",
             type=str,
@@ -709,7 +744,7 @@ class SOOSDASTAnalysis:
             required=False,
         )
         parser.add_argument(
-            "--requestHeader",
+            "--requestHeaders",
             help="Set extra Header requests",
             type=str,
             nargs="*",
@@ -778,6 +813,14 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--gpat",
             help="GitHub Personal Authorization Token",
+            type=str,
+            default=None,
+            required=False
+        )
+
+        parser.add_argument(
+            "--bearerToken",
+            help="Bearer token to authenticate",
             type=str,
             default=None,
             required=False

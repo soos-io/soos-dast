@@ -6,12 +6,12 @@ from traceback import print_exc
 from pyotp import TOTP
 from requests import post
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
-from helpers.localstorage import LocalStorage
+from helpers.browserstorage import BrowserStorage
 from helpers.utils import log
 from model.log_level import LogLevel
 
@@ -57,25 +57,21 @@ class DASTAuth:
     def setup_webdriver(self):
         log('Start webdriver')
 
-        environ['MOZ_HEADLESS_WIDTH'] = '1920'
-        environ['MOZ_HEADLESS_HEIGHT'] = '1080'
+        options = webdriver.ChromeOptions()
+        if not self.config.auth_display:
+            options.add_argument('--headless')
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
 
-        profile = webdriver.FirefoxProfile()
-        profile.accept_untrusted_certs = True
-        profile.set_preference("security.tls.version.min", 1)
-
-        options = webdriver.FirefoxOptions()
-        options.headless = not self.config.auth_display
-
-        self.driver = webdriver.Firefox(
-            firefox_profile=profile, firefox_options=options)
+        self.driver = webdriver.Chrome(options=options)
         self.driver.set_window_size(1920, 1080)
         self.driver.maximize_window()
 
     def authenticate(self, zap, target):
         try:
             # setup the zap context
-            if zap:
+            if zap is not None:
                 self.setup_context(zap, target)
 
             # perform authentication using selenium
@@ -108,34 +104,48 @@ class DASTAuth:
 
     def set_authentication(self, zap, target):
         log('Finding authentication cookies')
-
         # Create an empty session for session cookies
-        if zap:
+        if zap is not None:
             zap.httpsessions.add_session_token(target, 'session_token')
             zap.httpsessions.create_empty_session(target, 'auth-session')
 
         # add all found cookies as session cookies
         for cookie in self.driver.get_cookies():
-            if zap:
+            if zap is not None:
                 zap.httpsessions.set_session_token_value(
                     target, 'auth-session', cookie['name'], cookie['value'])
             log(f"Cookie added: {cookie['name']}={cookie['value']}")
 
+        # add token from cookies if exists
+        self.add_token_from_cookie(zap, self.driver.get_cookies())
+
         # Mark the session as active
-        if zap:
+        if zap is not None:
             zap.httpsessions.set_active_session(target, 'auth-session')
             log(f"Active session: {zap.httpsessions.active_session(target)}")
 
         log('Finding authentication headers')
 
-        # try to find JWT tokens in LocalStorage and add them as Authorization header
-        storage = LocalStorage(self.driver)
-        for key in storage.items():
-            log(f"Found storage item: {key}: {storage.get(key)[:50]}")
-            match = search('(eyJ[^"]*)', storage.get(key))
+        # try to find JWT tokens in Local Storage and Session Storage and add them as Authorization header
+        localStorage = BrowserStorage(self.driver, 'localStorage')
+        sessionStorage = BrowserStorage(self.driver, 'sessionStorage')
+        self.add_token_from_browser_storage(zap, localStorage)
+        self.add_token_from_browser_storage(zap, sessionStorage)
+
+    def add_token_from_browser_storage(self, zap, browserStorage):
+        for key in browserStorage:
+            log(f"Found key: {key}")
+            match = search('(eyJ[^"]*)', browserStorage.get(key))
             if match:
-                auth_header = f"Bearer {match.group()}"
+                auth_header = "Bearer " + match.group()
                 self.add_authorization_header(zap, auth_header)
+
+    def add_token_from_cookie(self, zap, cookies):
+        for cookie in cookies:
+            if cookie['name'] == 'token':
+                auth_header = "Bearer " + cookie['value']
+                self.add_authorization_header(zap, auth_header)
+        
 
     def login_from_token_endpoint(self, zap):
         log('Fetching authentication token from endpoint')
@@ -154,7 +164,7 @@ class DASTAuth:
             self.add_authorization_header(zap, auth_header)
 
     def add_authorization_header(self, zap, auth_token):
-        if zap:
+        if zap is not None:
             zap.replacer.add_rule(description='AuthHeader', enabled=True, matchtype='REQ_HEADER',
                                   matchregex=False, matchstring='Authorization', replacement=auth_token)
         log(f"Authorization header added: {auth_token}")
@@ -197,13 +207,13 @@ class DASTAuth:
 
                 # if the OTP field was not found, we probably need to submit to go to the OTP page
                 # login flow: username -> next -> password -> next -> otp -> submit
-                self.submit_form(self.config.auth_submitaction,
-                                 self.config.auth_submit_field_name, username_element)
+                self.submit_form(self.config.auth_submit_action,
+                                 self.config.auth_submit_field_name, self.config.auth_password_field_name)
                 self.fill_otp()
 
         # submit
-        self.submit_form(self.config.auth_submitaction,
-                         self.config.auth_submit_field_name, username_element)
+        self.submit_form(self.config.auth_submit_action,
+                         self.config.auth_submit_field_name, self.config.auth_password_field_name)
 
         # wait for the page to load
         if self.config.auth_check_element:
@@ -216,14 +226,15 @@ class DASTAuth:
         else:
             sleep(self.config.auth_check_delay)
 
-    def submit_form(self, submit_action, submit_field_name, username_element):
+    def submit_form(self, submit_action, submit_field_name, password_field_name):
         if submit_action == "click":
             element = self.find_element(
                 submit_field_name, "submit", "//*[@type='submit' or @type='button' or button]")
-            element.click()
+            actions = ActionChains(self.driver)
+            actions.move_to_element(element).click().perform()
             log(f"Clicked the {submit_field_name} element")
-        elif username_element:
-            username_element.submit()
+        else:
+            self.find_element(password_field_name,"password","//input[@type='password' or contains(@name,'ass')]").submit()
             log('Submitted the form')
 
     def fill_username(self):
