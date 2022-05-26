@@ -1,4 +1,4 @@
-FROM owasp/zap2docker-stable as base
+FROM owasp/zap2docker-weekly:w2022-05-16 as base
 
 USER root
 
@@ -8,6 +8,11 @@ COPY ./hooks hooks/
 COPY ./model model/
 COPY ./scripts/httpsender /home/zap/.ZAP_D/scripts/scripts/httpsender/
 RUN chmod 777 /home/zap/.ZAP_D/scripts/scripts/httpsender/
+
+COPY ./reports/traditional-json /zap/reports/traditional-json
+COPY ./reports/traditional-json-headers /zap/reports/traditional-json-headers
+RUN chmod -R 444 /zap/reports/traditional-json
+RUN chmod -R 444 /zap/reports/traditional-json-headers
 
 RUN pip3 install -r requirements.txt && mkdir /zap/wrk && cd /opt \
 	&& wget -qO- -O geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz \

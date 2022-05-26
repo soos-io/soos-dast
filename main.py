@@ -58,6 +58,7 @@ class SOOSDASTAnalysis:
         self.ajax_spider_scan: bool = False
         self.spider: bool = False
         self.minutes_delay: Optional[str] = None
+        self.report_request_headers: bool = False
 
         # Special Context - loads from script arguments only
         self.commit_hash: Optional[str] = None
@@ -225,6 +226,8 @@ class SOOSDASTAnalysis:
                 self.github_pat = value
             elif key =="bearerToken":
                 self.auth_bearer_token = value
+            elif key == "reportRequestHeaders":
+                self.report_request_headers = value
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -791,6 +794,13 @@ class SOOSDASTAnalysis:
             nargs="*",
             required=False,
         )
+        parser.add_argument(
+            "--reportRequestHeaders",
+            help="Include request/response headers in report.",
+            type=bool,
+            default=False,
+            required=False
+        )
 
         parser.add_argument(
             "--sarif",
@@ -857,6 +867,16 @@ class SOOSDASTAnalysis:
                 exit_app(f"The scan mode {self.scan_mode} is invalid.")
                 return None
 
+            log(f"Copying report templates. Include request headers: {self.report_request_headers}", log_level=LogLevel.DEBUG)
+            os.system("mkdir -p ~/.ZAP_D/reports")
+            os.system("mkdir -p /root/.ZAP_D/reports")
+            if self.report_request_headers is True:
+                os.system("cp -R /zap/reports/traditional-json-headers ~/.ZAP_D/reports/traditional-json")
+                os.system("cp -R /zap/reports/traditional-json-headers /root/.ZAP_D/reports/traditional-json")
+            else:
+                os.system("cp -R /zap/reports/traditional-json ~/.ZAP_D/reports/traditional-json")
+                os.system("cp -R /zap/reports/traditional-json /root/.ZAP_D/reports/traditional-json")
+
             command: str = scan_function()
 
             log(f"Command to be executed: {command}", log_level=LogLevel.DEBUG)
@@ -888,18 +908,18 @@ class SOOSDASTAnalysis:
                 report_url=soos_dast_start_response.scan_url,
             )
 
-            if self.generate_sarif_report is True and self.github_pat is not None:
-                SOOSSARIFReport.exec(analysis=self,
-                                     project_hash=soos_dast_start_response.project_id,
-                                     branch_hash=soos_dast_start_response.branch_hash,
-                                     scan_id=soos_dast_start_response.analysis_id)
-
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,
                                                    status="Finished",
                                                    status_message=None
                                                    )
+
+            if self.generate_sarif_report is True and self.github_pat is not None:
+                SOOSSARIFReport.exec(analysis=self,
+                                     project_hash=soos_dast_start_response.project_id,
+                                     branch_hash=soos_dast_start_response.branch_hash,
+                                     scan_id=soos_dast_start_response.analysis_id)
 
             sys.exit(0)
 
@@ -966,7 +986,8 @@ class SOOSSARIFReport:
             raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
 
             if sarif_json_response is None:
-                raise Exception("An Error has occurred generating SARIF Response")
+                SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
+                return
             else:
                 sarif_report_str = json.dumps(sarif_json_response)
                 compressed_sarif_response = base64.b64encode(gzip.compress(bytes(sarif_report_str, 'UTF-8')))
