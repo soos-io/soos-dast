@@ -605,7 +605,7 @@ class SOOSDASTAnalysis:
         parser.add_argument("--projectName", help="SOOS project name", nargs="+", required=False)
         parser.add_argument(
             "--scanMode",
-            help="SOOS DAST scan mode. Values available: baseline, fullscan, apiscan, and activescan",
+            help="SOOS DAST scan mode. Values available: baseline, fullscan, and apiscan",
             default="baseline",
             required=False,
         )

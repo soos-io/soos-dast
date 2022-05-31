@@ -45,7 +45,7 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
 | `clientId`                                 | Yes - if `configFile` param is not defined | SOOS client id                                                                                                   |
 | `apiKey`                                   | Yes - if `configFile` param is not defined | SOOS API key                                                                                                     |
 | `projectName`                              | Yes - if `configFile` param is not defined | SOOS project name                                                                                                |
-| `scanMode`                                 | Yes - if `configFile` param is not defined | SOOS DAST scan mode. Values: `baseline` (Default), `fullscan`, `apiscan`, or `activescan`                        |
+| `scanMode`                                 | Yes - if `configFile` param is not defined | SOOS DAST scan mode. Values: `baseline` (Default), `fullscan`, or `apiscan`                        |
 | `apiURL`                                   | Yes - if `configFile` param is not defined | SOOS API URL. By Default: `https://app.soos.io/api/`                                                             |
 | `debug`                                    |                                            | show debug messages                                                                                              |
 | `ajaxSpider`                               |                                            | use the Ajax spider in addition to the traditional one                                                           |
@@ -83,7 +83,7 @@ config:
   clientId: 'SOOS_CLIENT_ID' # Required - SOOS Client Id provided by the Application
   apiKey: 'SOOS_API_KEY' # Required - SOOS API Key provided by the Application
   projectName: 'Project Name' # Required
-  scanMode: 'activescan' # Required - DAST Scan mode. Values available: baseline, fullscan, apiscan, and activescan
+  scanMode: 'baseline' # Required - DAST Scan mode. Values available: baseline, fullscan, and apiscan
   apiURL: 'https://app.soos.io/api/' # Required - The SOOS API URL
   debug: true # Optional - Enable console log debugging. Default: false 
   ajaxSpider: false # Optional - Enable Ajax Spider scanning - Useful for Modern Web Apps
@@ -112,9 +112,9 @@ This mode is intended to be ideal to run in a `CI/CD` environment, even against 
 
 ### Full Scan
 
-It runs the [ZAP](https://www.zaproxy.org/) spider against the specified target (by default with no time limit) followed by an optional ajax spider scan and then a full active scan before reporting the results.
+It runs the [ZAP](https://www.zaproxy.org/) spider against the specified target (by default with no time limit) followed by an optional ajax spider scan and then a full `Active Scan` before reporting the results.
 
-This means that the script does perform actual ‘attacks’ and can potentially run for a long period of time.
+This means that the script does perform actual ‘attacks’ and can potentially run for a long period of time. You should NOT use it on web applications that you do not own. `Active Scan` can only find certain types of vulnerabilities. Logical vulnerabilities, such as broken access control, will not be found by any active or automated vulnerability scanning. Manual penetration testing should always be performed in addition to active scanning to find all types of vulnerabilities.
 
 By default, it reports all alerts as WARNings but you can specify a config file which can change any rules to FAIL or IGNORE. The configuration works in a very similar way as the [Baseline Mode](#baseline)
 
@@ -127,16 +127,6 @@ It imports the definition that you specify and then runs an `Active Scan` agains
 It also includes 2 scripts that:
 - Raise alerts for any HTTP Server Error response codes
 - Raise alerts for any URLs that return content types that are not usually associated with APIs
-
-### Active Scan
-
-It attempts to find potential vulnerabilities by using known attacks against the selected targets. `Active Scan` is an attack on those targets. You should NOT use it on web applications that you do not own.
-
-`Active Scan` can only find certain types of vulnerabilities.
-
-Logical vulnerabilities, such as broken access control, will not be found by any active or automated vulnerability scanning.
-
-Manual penetration testing should always be performed in addition to active scanning to find all types of vulnerabilities.
 
 ## References
  - [ZAP](https://www.zaproxy.org/)
