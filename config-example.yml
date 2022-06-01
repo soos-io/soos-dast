@@ -15,5 +15,3 @@ config:
     minutes: ''
   apiScan:
     format: 'openapi'
-  activeScan:
-
