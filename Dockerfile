@@ -1,4 +1,4 @@
-FROM owasp/zap2docker-weekly:w2022-05-16 as base
+FROM owasp/zap2docker-stable as base
 
 USER root
 
