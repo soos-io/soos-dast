@@ -25,9 +25,14 @@ RUN pip3 install -r requirements.txt && mkdir /zap/wrk && cd /opt \
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
 
-# Update the package list and install chrome
-RUN apt-get update -y
-RUN apt-get install -y google-chrome-stable
+# Set up Chrome version to be used
+ARG CHROME_VERSION="100.0.4896.88-1"
+
+# Set up the Chrome PPA
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \ 
+  && apt-get update \
+  && apt install -y /tmp/chrome.deb \
+  && rm /tmp/chrome.deb
 
 # Set up Chromedriver Environment variables
 ENV CHROMEDRIVER_VERSION 100.0.4896.20
