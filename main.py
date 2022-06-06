@@ -93,6 +93,7 @@ class SOOSDASTAnalysis:
 
         self.generate_sarif_report: bool = False
         self.github_pat: Optional[str] = None
+        self.checkout_dir: Optional[str] = None
 
         self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
@@ -228,6 +229,8 @@ class SOOSDASTAnalysis:
                 self.auth_bearer_token = value
             elif key == "reportRequestHeaders":
                 self.report_request_headers = value
+            elif key == "checkoutDir":
+                self.checkout_dir = value
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -826,6 +829,14 @@ class SOOSDASTAnalysis:
             required=False
         )
 
+        parser.add_argument(
+            "--checkoutDir",
+            help="Checkout Dir to locate sarif report",
+            type=str,
+            default=None,
+            required=False
+        )
+
         log(f"Parsing Arguments")
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
@@ -915,7 +926,7 @@ class SOOSDASTAnalysis:
                                                    status_message=None
                                                    )
 
-            if self.generate_sarif_report is True and self.github_pat is not None:
+            if self.generate_sarif_report is True:
                 SOOSSARIFReport.exec(analysis=self,
                                      project_hash=soos_dast_start_response.project_id,
                                      branch_hash=soos_dast_start_response.branch_hash,
@@ -988,7 +999,7 @@ class SOOSSARIFReport:
             if sarif_json_response is None:
                 SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
                 return
-            else:
+            if analysis.github_pat is not None:
                 sarif_report_str = json.dumps(sarif_json_response)
                 compressed_sarif_response = base64.b64encode(gzip.compress(bytes(sarif_report_str, 'UTF-8')))
 
@@ -1028,6 +1039,12 @@ class SOOSSARIFReport:
                         processing_status = status_json_response["processing_status"]
                         log("SARIF Report uploaded to GitHub")
                         log(f"Processing Status: {processing_status}")
+            else:
+                log("Writing sarif file")
+                sarif_file = open(os.path.join(analysis.checkout_dir, "results.sarif"), "w")
+                sarif_file.write(json.dumps(sarif_json_response))
+                sarif_file.close()
+
 
         except Exception as sarif_exception:
             log(f"ERROR: {str(sarif_exception)}")
