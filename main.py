@@ -91,9 +91,10 @@ class SOOSDASTAnalysis:
         self.auth_display: bool = False
         self.auth_bearer_token: Optional[str] = None
 
-        self.generate_sarif_report: bool = False
+        self.outputFormat: Optional[str] = None
         self.github_pat: Optional[str] = None
         self.checkout_dir: Optional[str] = None
+        self.sarif_destination: Optional[str] = None
 
         self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
@@ -221,8 +222,8 @@ class SOOSDASTAnalysis:
             elif key == "requestHeaders":
                 value = array_to_str(value)
                 self.request_header = value
-            elif key == "sarif":
-                self.generate_sarif_report = value
+            elif key == "outputFormat":
+                self.outputFormat = value
             elif key == "gpat":
                 self.github_pat = value
             elif key =="bearerToken":
@@ -231,6 +232,8 @@ class SOOSDASTAnalysis:
                 self.report_request_headers = value
             elif key == "checkoutDir":
                 self.checkout_dir = value
+            elif key == "sarifDestination":
+                self.sarif_destination = value
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -806,9 +809,9 @@ class SOOSDASTAnalysis:
         )
 
         parser.add_argument(
-            "--sarif",
-            help="Upload SARIF Report to GitHub",
-            type=bool,
+            "--outputFormat",
+            help="Output format for vulnerabilities: only the value sarif is available at the moment. ",
+            type=str,
             default=False,
             required=False
         )
@@ -832,6 +835,14 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--checkoutDir",
             help="Checkout Dir to locate sarif report",
+            type=str,
+            default=None,
+            required=False
+        )
+
+        parser.add_argument(
+            "--sarifDestination",
+            help="Sarif destination to upload report in the form of <repoowner>/<reponame>",
             type=str,
             default=None,
             required=False
@@ -926,7 +937,7 @@ class SOOSDASTAnalysis:
                                                    status_message=None
                                                    )
 
-            if self.generate_sarif_report is True:
+            if self.outputFormat == "sarif":
                 SOOSSARIFReport.exec(analysis=self,
                                      project_hash=soos_dast_start_response.project_id,
                                      branch_hash=soos_dast_start_response.branch_hash,
@@ -942,7 +953,7 @@ class SOOSSARIFReport:
     API_RETRY_COUNT = 3
 
     URL_TEMPLATE = '{soos_base_uri}clients/{clientHash}/projects/{projectHash}/branches/{branchHash}/scan-types/dast/scans/{scanId}/formats/sarif'
-    GITHUB_URL_TEMPLATE = 'https://api.github.com/repos/{project_name}/code-scanning/sarifs'
+    GITHUB_URL_TEMPLATE = 'https://api.github.com/repos/{sarif_destination}/code-scanning/sarifs'
 
     errors_dict = {
         400: "Github: The sarif report is invalid",
@@ -965,14 +976,13 @@ class SOOSSARIFReport:
                                                    scanId=scan_id)
 
     @staticmethod
-    def generate_github_sarif_url(project_name: str) -> str:
-        return SOOSSARIFReport.GITHUB_URL_TEMPLATE.format(project_name=project_name)
+    def generate_github_sarif_url(sarif_destination: str) -> str:
+        return SOOSSARIFReport.GITHUB_URL_TEMPLATE.format(sarif_destination=sarif_destination)
 
     @staticmethod
     def exec(analysis: SOOSDASTAnalysis, project_hash: str, branch_hash: str,
              scan_id: str) -> NoReturn:
         try:
-            log("Uploading SARIF Response")
             url = SOOSSARIFReport.generate_soos_sarif_url(base_uri=analysis.base_uri,
                                                           client_id=analysis.client_id,
                                                           project_hash=project_hash,
@@ -1011,14 +1021,14 @@ class SOOSSARIFReport:
                     "tool_name": "SOOS DAST"
                 }
 
-                github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=analysis.project_name)
+                github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(sarif_destination=analysis.sarif_destination)
                 headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {analysis.github_pat}"}
 
                 log(f"GitHub SARIF URL: {github_sarif_url}")
                 log(f"GitHub SARIF Header: {str(headers)}")
                 log(f"GitHub SARIF Body Request")
                 log(str(json.dumps(github_body_request)))
-
+                log("Uploading SARIF Response")
                 sarif_github_response = requests.post(url=github_sarif_url, data=json.dumps(github_body_request),
                                                       headers=headers)
 
@@ -1039,7 +1049,7 @@ class SOOSSARIFReport:
                         processing_status = status_json_response["processing_status"]
                         log("SARIF Report uploaded to GitHub")
                         log(f"Processing Status: {processing_status}")
-            else:
+            if analysis.checkout_dir is not None:
                 log("Writing sarif file")
                 sarif_file = open(os.path.join(analysis.checkout_dir, "results.sarif"), "w")
                 sarif_file.write(json.dumps(sarif_json_response))
