@@ -812,7 +812,7 @@ class SOOSDASTAnalysis:
             "--outputFormat",
             help="Output format for vulnerabilities: only the value sarif is available at the moment. ",
             type=str,
-            default=False,
+            default=None,
             required=False
         )
 
