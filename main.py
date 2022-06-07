@@ -415,6 +415,7 @@ class SOOSDASTAnalysis:
                 scriptVersion=self.script_version,
                 toolName=self.dast_analysis_tool,
                 toolVersion=self.dast_analysis_tool_version,
+                scanMode=self.scan_mode,
                 commitHash=self.commit_hash,
                 branch=self.branch_name,
                 branchUri=self.branch_uri,
