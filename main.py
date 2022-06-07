@@ -76,6 +76,7 @@ class SOOSDASTAnalysis:
 
         # INTENTIONALLY HARDCODED
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
+        self.dast_analysis_tool_version: str = Constants.DEFAULT_DAST_TOOL_VERSION
 
         # Auth Options
         self.auth_auto: Optional[str] = '0'
@@ -413,6 +414,7 @@ class SOOSDASTAnalysis:
                 integrationType=self.integration_type,
                 scriptVersion=self.script_version,
                 toolName=self.dast_analysis_tool,
+                toolVersion=self.dast_analysis_tool_version,
                 commitHash=self.commit_hash,
                 branch=self.branch_name,
                 branchUri=self.branch_uri,
