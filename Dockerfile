@@ -3,7 +3,7 @@ FROM owasp/zap2docker-stable as base
 
 USER root
 
-COPY ./main.py ./requirements.txt ./
+COPY ./main.py ./requirements.txt ./VERSION.txt ./
 COPY ./helpers helpers/
 COPY ./hooks hooks/
 COPY ./model model/
