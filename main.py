@@ -56,6 +56,7 @@ class SOOSDASTAnalysis:
         self.user_context: Optional[str] = None
         self.api_scan_format: Optional[str] = None
         self.debug_mode: bool = False
+        self.app_version: Optional[str] = None
         self.ajax_spider_scan: bool = False
         self.spider: bool = False
         self.minutes_delay: Optional[str] = None
@@ -190,6 +191,9 @@ class SOOSDASTAnalysis:
                 else:
                     value = array_to_str(value)
                     self.integration_type = value
+            elif key == "appVersion":
+                value = array_to_str(value)
+                self.app_version = value
             elif key == 'authAuto':
                 self.auth_auto = '1'
             elif key == 'authDisplay':
@@ -411,6 +415,7 @@ class SOOSDASTAnalysis:
                 name=datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
                 integrationType=self.integration_type,
                 scriptVersion=SCRIPT_VERSION,
+                appVersion=self.app_version,
                 toolName=self.dast_analysis_tool,
                 toolVersion=self.dast_analysis_tool_version,
                 scanMode=self.scan_mode,
@@ -685,6 +690,13 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--scriptVersion",
             help="Script Version. Intended for internal use only.",
+            type=str,
+            nargs="*",
+            required=False,
+        )
+        parser.add_argument(
+            "--appVersion",
+            help="App Version. Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
