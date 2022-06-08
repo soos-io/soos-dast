@@ -2,6 +2,7 @@ import base64
 import gzip
 import json
 import os
+import platform
 import sys
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
@@ -17,11 +18,11 @@ from helpers.utils import log, valid_required, has_value, exit_app, is_true, pri
     handle_response, ErrorAPIResponse, raise_max_retry_exception, array_to_str
 from model.log_level import LogLevel
 
-SCRIPT_VERSION = "alpha"
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+OPERATING_ENVIRONMENT = '{system} {release} {architecture}'.format(system=platform.system(), release=platform.release(), architecture=platform.architecture()[0])
 
-param_mapper = {}
-
+with open(os.path.join(os.path.dirname(__file__), "VERSION.txt")) as version_file:
+  SCRIPT_VERSION = version_file.read().strip()
 
 class DASTStartAnalysisResponse:
     def __init__(self, dast_analysis_api_response):
@@ -189,9 +190,6 @@ class SOOSDASTAnalysis:
                 else:
                     value = array_to_str(value)
                     self.integration_type = value
-            elif key == "scriptVersion":
-                    value = array_to_str(value)
-                    self.script_version = value
             elif key == 'authAuto':
                 self.auth_auto = '1'
             elif key == 'authDisplay':
@@ -412,7 +410,7 @@ class SOOSDASTAnalysis:
                 projectName=self.project_name,
                 name=datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
                 integrationType=self.integration_type,
-                scriptVersion=self.script_version,
+                scriptVersion=SCRIPT_VERSION,
                 toolName=self.dast_analysis_tool,
                 toolVersion=self.dast_analysis_tool_version,
                 scanMode=self.scan_mode,
@@ -421,7 +419,7 @@ class SOOSDASTAnalysis:
                 branchUri=self.branch_uri,
                 buildVersion=self.build_version,
                 buildUri=self.build_uri,
-                operationEnvironment=self.operating_environment,
+                operationEnvironment=self.operating_environment or OPERATING_ENVIRONMENT,
                 integrationName=self.integration_name,
             )
 
