@@ -238,7 +238,7 @@ class SOOSDASTAnalysis:
             elif key == "sarifDestination":
                 self.sarif_destination = value
             elif key == "sarif":
-                log("SARIF is deprecated, please use outPutFormat='sarif' instead")
+                log("Argument 'sarif' is deprecated. Please use --outputFormat='sarif' instead.")
                 sys.exit(1)
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
