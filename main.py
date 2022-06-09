@@ -237,7 +237,7 @@ class SOOSDASTAnalysis:
                 self.checkout_dir = value
             elif key == "sarifDestination":
                 self.sarif_destination = value
-            elif key == "sarif":
+            elif key == "sarif" and value is not None:
                 log("Argument 'sarif' is deprecated. Please use --outputFormat='sarif' instead.")
                 sys.exit(1)
 
