@@ -237,6 +237,9 @@ class SOOSDASTAnalysis:
                 self.checkout_dir = value
             elif key == "sarifDestination":
                 self.sarif_destination = value
+            elif key == "sarif":
+                log("SARIF is deprecated, please use outPutFormat='sarif' instead")
+                sys.exit(1)
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -857,6 +860,14 @@ class SOOSDASTAnalysis:
             "--sarifDestination",
             help="Sarif destination to upload report in the form of <repoowner>/<reponame>",
             type=str,
+            default=None,
+            required=False
+        )
+
+        parser.add_argument(
+            "--sarif",
+            help="DEPRECATED sarif is currently deprecated, for same functionality as before please use --outPutFormat='sarif'",
+            type=bool,
             default=None,
             required=False
         )
