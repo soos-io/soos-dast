@@ -99,9 +99,6 @@ class SOOSDASTAnalysis:
         self.checkout_dir: Optional[str] = None
         self.sarif_destination: Optional[str] = None
 
-        # Deprecated options
-        self.generate_sarif_report: bool = False
-
         self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
             Constants.FULL_SCAN: self.full_scan,
