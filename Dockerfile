@@ -1,5 +1,5 @@
 # if the image or tag changes, make sure to update the scan structure tool name and version
-FROM owasp/zap2docker-stable as base
+FROM owasp/zap2docker-weekly:w2022-06-27 as base
 
 USER root
 
