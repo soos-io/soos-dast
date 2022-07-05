@@ -30,6 +30,10 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
                targetURL
 ```
 
+A simple scan using all parameters that are mandatory would look like:
+
+`docker run -it --rm soosio/dast --clientId=<YOUR_CLIENTID> --apiKey=<YOUR_APIKEY> --projectName="<YOUR_PROJECT_NAME>" <YOUR_TARGET_URL>`
+
 ### Script Arguments
 
 | Name        | Required | Description                                                                                   |
