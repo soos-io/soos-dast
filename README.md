@@ -30,6 +30,10 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
                targetURL
 ```
 
+The basic command to run a baseline scan would look like:
+
+`docker run -it --rm soosio/dast --clientId=<YOUR_CLIENTID> --apiKey=<YOUR_APIKEY> --projectName="<YOUR_PROJECT_NAME>" <YOUR_TARGET_URL>`
+
 ### Script Arguments
 
 | Name        | Required | Description                                                                                   |
