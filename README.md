@@ -33,7 +33,6 @@ docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] 
 The basic command to run a baseline scan would look like:
 
 `docker run -it --rm soosio/dast --clientId=<YOUR_CLIENTID> --apiKey=<YOUR_APIKEY> --projectName="<YOUR_PROJECT_NAME>" <YOUR_TARGET_URL>`
-
 ### Script Arguments
 
 | Name        | Required | Description                                                                                   |
@@ -42,42 +41,53 @@ The basic command to run a baseline scan would look like:
 
 ### Script Parameters
 
-| Name                                       | Required                                   | Description                                                                                                      |
-|--------------------------------------------|--------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `configFile`                               |                                            | SOOS YAML file with all the configurations for the DAST Analysis. See [config file definition](#config-file-definition) |
-| `-v <path_with_config_files>:/zap/config/` | Yes - if `configFile` param is defined     |                                                                                                                  |
-| `clientId`                                 | Yes - if `configFile` param is not defined | SOOS client id                                                                                                   |
-| `apiKey`                                   | Yes - if `configFile` param is not defined | SOOS API key                                                                                                     |
-| `projectName`                              | Yes - if `configFile` param is not defined | SOOS project name                                                                                                |
-| `scanMode`                                 | Yes - if `configFile` param is not defined | SOOS DAST scan mode. Values: `baseline` (Default), `fullscan`, or `apiscan`                        |
-| `apiURL`                                   | Yes - if `configFile` param is not defined | SOOS API URL. By Default: `https://app.soos.io/api/`                                                             |
-| `debug`                                    |                                            | show debug messages                                                                                              |
-| `ajaxSpider`                               |                                            | use the Ajax spider in addition to the traditional one                                                           |
-| `rules`                                    |                                            | rules file to use for `INFO`, `IGNORE` or `FAIL` warnings                                                        |
-| `contextFile`                              |                                            | context file which will be loaded prior to scanning the target. Required for authenticated URLs                  |
-| `contextUser`                              |                                            | username to use for authenticated scans - must be defined in the given context file                              |
-| `fullScanMinutes`                          | Yes - if `scanMode` is `fullscan`          | the number of minutes for spider to run                                                                          |
-| `apiScanFormat`                            | Yes - if `scanMode` is `apiscan`           | target API format: `openapi`, `soap`, or `graphql`                                                               |
-| `level`                                    |                                            | minimum level to show: `PASS`, `IGNORE`, `INFO`, `WARN` or `FAIL`                                                |
-| `zapOptions`                               |                                            | add zap options                                                                                                  |
-| `requestCookies`                           |                                            | comma separated list of custom cookies to be added to the request eg: `--requestCookies="'token: value, user: usernName'"`                                                                               |
-| `requestHeaders`                           |                                            | comma separated list of custom headers to be sent on every request eg:  `--requestHeaders="'authorization:Bearer tokenValue'"`                                                                               |
-| `commitHash`                      | [none]                     | The commit hash value from the SCM System. Required for SARIF Report                                                                                                                                                                          |
-| `branchName`                      | [none]                     | The name of the branch from the SCM System. Required for SARIF Report                                                                                                                                                                         |
-| `branchURI`                       | [none]                     | The URI to the branch from the SCM System                                                                                                                                                                                                    |
-| `buildVersion`                    | [none]                     | Version of application build artifacts                                                                                                                                                                                                        |
-| `buildURI`                        | [none]                     | URI to CI build info                                                                                                                                                                                                                          |
-| `operatingEnvironment`            | [none]                     | System info regarding operating system, etc.                                                                                                                                                                                                  |
-| `sarif`                            | false                      | Enable Uploading the SARIF Report to GitHub.                                                                                                                                                                                                  |
-| `gpat`                             | [none]                     | GitHub Personal Access Token. Required to upload SARIF Report                                                                                                                                                                                |
-| `bearerToken`                             | [none]                     | A Bearer token to use in the authorization header for each request. (Do not include Bearer Keyword on parameter)                                                                                                          |
-| `authLoginUrl`                             | [none]                     | Url to perform automatic login request.                                                                                                          |
-| `authUserName`                             | [none]                     | Username to fill automatic login.                                                                                                           |
-| `authUserNameField`                             | [none]                     | The HTML name or id attribute of the username field.                                                                                                          |
-| `authPassword`                             | [none]                     | Password to fill automatic login. Note that if you want to use an illegal character like `$` you should wrap the entire parameter in single quotes `'` eg --authPassword="'sample$password'"                                                                                                          |
-| `authPasswordField`                             | [none]                     | The HTML name or id attribute of the password field.                                                                                                          |
-| `authSubmitField`                             | [none]                     | The HTML name or id attribute of the submit field.                                                                                                        |
-| `authSubmitAction`                             | [none]                     | Default action to perform on form completion (click or submit, click is by default)                                                                                                          |
+| Argument | Default | Description |
+| --- | --- | --- |
+| -h, --help | ==SUPPRESS== | show this help message and exit |
+| -hf, --helpFormatted | False | Print the --help command in markdown table format |
+| --configFile | None | SOOS yaml file with all the configuration for the DAST Analysis (See https://github.com/soos-io/soos-dast#config-file-definition) |
+| --clientId | None | SOOS Client ID get yours from https://app.soos.io/integrate/sca |
+| --apiKey | None | SOOS API Key get yours from https://app.soos.io/integrate/sca |
+| --projectName | None | Project name (this will be the one used inside of the SOOS App) |
+| --scanMode | baseline | SOOS DAST scan mode. Values available: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
+| --apiURL | https://api.soos.io/api/ | SOOS API URL, internal use only, do not modify. |
+| --debug | False | Show debug messages |
+| --ajaxSpider | None | Use the Ajax spider in addition to the traditional one (About AjaxSpider https://www.zaproxy.org/docs/desktop/addons/ajax-spider/) |
+| --rules | None | Rules file to use to INFO, IGNORE or FAIL warnings |
+| --contextFile | None | Context file which will be loaded prior to scanning the target |
+| --contextUser | None | Username to use for authenticated scans - must be defined in the given context file |
+| --fullScanMinutes | None | The number of minutes for spider to run |
+| --apiScanFormat | None | Target API format: OpenAPI, SOAP, or GraphQL |
+| --level | None | minimum level to show: PASS, IGNORE, INFO, WARN or FAIL |
+| --integrationName | None | Integration Name. Intended for internal use only. |
+| --integrationType | None | Integration Type. Intended for internal use only. |
+| --scriptVersion | None | Script Version. Intended for internal use only. |
+| --appVersion | None | App Version. Intended for internal use only. |
+| --authDisplay | None | Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL |
+| --authUsername | None | Username to use in auth apps |
+| --authPassword | None | Password to use in auth apps |
+| --authLoginURL | None | Login url to use in auth apps |
+| --authUsernameField | None | Username input id to use in auth apps |
+| --authPasswordField | None | Password input id to use in auth apps |
+| --authSubmitField | None | Submit button id to use in auth apps |
+| --authFirstSubmitField | None | First submit button id to use in auth apps |
+| --authSubmitAction | None | Submit action to perform on form filled, click or submit |
+| --zapOptions | None | ZAP Additional Options |
+| --requestCookies | None | Set Cookie values for the requests to the target URL |
+| --requestHeaders | None | Set extra Header requests |
+| --commitHash | None | The commit hash value from the SCM System |
+| --branchName | None | The name of the branch from the SCM System |
+| --branchURI | None | The URI to the branch from the SCM System |
+| --buildVersion | None | Version of application build artifacts |
+| --buildURI | None | URI to CI build info |
+| --operatingEnvironment | None | Set Operating environment for information porpuses only |
+| --reportRequestHeaders | False | Include request/response headers data in report |
+| --outputFormat | None | Output format for vulnerabilities: only the value sarif is available at the moment |
+| --gpat | None | GitHub Personal Authorization Token |
+| --bearerToken | None | Bearer token to authenticate |
+| --checkoutDir | None | Checkout Dir to locate sarif report |
+| --sarifDestination | None | Sarif destination to upload report in the form of <repoowner>/<reponame> |
+| --sarif | None | DEPRECATED sarif parameter is currently deprecated, for same functionality as before please use --outPutFormat='sarif' |
 
 
 

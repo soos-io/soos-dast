@@ -7,6 +7,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from typing import List, Optional, Any, Dict, NoReturn
+from collections import OrderedDict
 
 import requests
 import yaml
@@ -606,69 +607,80 @@ class SOOSDASTAnalysis:
 
     def parse_args(self) -> None:
         parser = ArgumentParser(description="SOOS DAST Analysis Script")
+
+        # DOCUMENTATION
+
+        parser.add_argument('-hf', "--helpFormatted", dest="help_formatted",
+                            help="Print the --help command in markdown table format",
+                            action="store_true",
+                            default=False,
+                            required=False)
+
+        # SCRIPT PARAMETERS
+
         parser.add_argument(
             "targetURL",
             help="target URL including the protocol, eg https://www.example.com",
         )
         parser.add_argument(
             "--configFile",
-            help="SOOS yaml file with all the configuration for the DAST Analysis",
+            help="SOOS yaml file with all the configuration for the DAST Analysis (See https://github.com/soos-io/soos-dast#config-file-definition)",
             required=False,
         )
-        parser.add_argument("--clientId", help="SOOS Client Id", required=False)
-        parser.add_argument("--apiKey", help="SOOS API Key", required=False)
-        parser.add_argument("--projectName", help="SOOS project name", nargs="+", required=False)
+        parser.add_argument("--clientId", help="SOOS Client ID get yours from https://app.soos.io/integrate/sca", required=False)
+        parser.add_argument("--apiKey", help="SOOS API Key get yours from https://app.soos.io/integrate/sca", required=False)
+        parser.add_argument("--projectName", help="Project name (this will be the one used inside of the SOOS App)", nargs="+", required=False)
         parser.add_argument(
             "--scanMode",
-            help="SOOS DAST scan mode. Values available: baseline, fullscan, and apiscan",
+            help="SOOS DAST scan mode. Values available: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
             default="baseline",
             required=False,
         )
         parser.add_argument(
             "--apiURL",
-            help="SOOS API URL",
+            help="SOOS API URL, internal use only, do not modify.",
             default="https://api.soos.io/api/",
             required=False,
         )
         parser.add_argument(
             "--debug",
-            help="show debug messages",
+            help="Show debug messages",
             default=False,
             type=bool,
             required=False,
         )
         parser.add_argument(
             "--ajaxSpider",
-            help="use the Ajax spider in addition to the traditional one",
+            help="Use the Ajax spider in addition to the traditional one (About AjaxSpider https://www.zaproxy.org/docs/desktop/addons/ajax-spider/)",
             type=bool,
             required=False,
         )
         parser.add_argument(
             "--rules",
-            help="rules file to use to INFO, IGNORE or FAIL warnings",
+            help="Rules file to use to INFO, IGNORE or FAIL warnings",
             nargs="*",
             required=False,
         )
         parser.add_argument(
             "--contextFile",
-            help="context file which will be loaded prior to scanning the target",
+            help="Context file which will be loaded prior to scanning the target",
             nargs="*",
             required=False,
         )
         parser.add_argument(
             "--contextUser",
-            help="username to use for authenticated scans - must be defined in the given context file",
+            help="Username to use for authenticated scans - must be defined in the given context file",
             nargs="*",
             required=False,
         )
         parser.add_argument(
             "--fullScanMinutes",
-            help="",
+            help="The number of minutes for spider to run",
             required=False,
         )
         parser.add_argument(
             "--apiScanFormat",
-            help="target API format: openapi, soap, or graphql",
+            help="Target API format: OpenAPI, SOAP, or GraphQL",
             required=False,
         )
         parser.add_argument(
@@ -706,7 +718,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--authDisplay",
-            help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            help="Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
             required=False,
         )
         parser.add_argument(
@@ -721,7 +733,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--authLoginURL",
-            help="login url to use in auth apps",
+            help="Login url to use in auth apps",
             required=False,
         )
         parser.add_argument(
@@ -775,14 +787,14 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--commitHash",
-            help="Set the commit hash value",
+            help="The commit hash value from the SCM System",
             type=str,
             default=None,
             required=False,
         )
         parser.add_argument(
             "--branchName",
-            help="Set the branch name",
+            help="The name of the branch from the SCM System",
             type=str,
             default=None,
             nargs="*",
@@ -790,27 +802,27 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--branchURI",
-            help="Set the branch URI",
+            help="The URI to the branch from the SCM System",
             default=None,
             required=False,
         )
         parser.add_argument(
             "--buildVersion",
-            help="Set the build version",
+            help="Version of application build artifacts",
             type=str,
             default=None,
             required=False,
         )
         parser.add_argument(
             "--buildURI",
-            help="Set the build URI",
+            help="URI to CI build info",
             type=str,
             default=None,
             required=False,
         )
         parser.add_argument(
             "--operatingEnvironment",
-            help="Set the Operating Environment",
+            help="Set Operating environment for information porpuses only",
             type=str,
             default=None,
             nargs="*",
@@ -818,7 +830,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--reportRequestHeaders",
-            help="Include request/response headers in report.",
+            help="Include request/response headers data in report",
             type=bool,
             default=False,
             required=False
@@ -826,7 +838,7 @@ class SOOSDASTAnalysis:
 
         parser.add_argument(
             "--outputFormat",
-            help="Output format for vulnerabilities: only the value sarif is available at the moment. ",
+            help="Output format for vulnerabilities: only the value sarif is available at the moment",
             type=str,
             default=None,
             required=False
@@ -866,12 +878,20 @@ class SOOSDASTAnalysis:
 
         parser.add_argument(
             "--sarif",
-            help="DEPRECATED sarif is currently deprecated, for same functionality as before please use --outPutFormat='sarif'",
+            help="DEPRECATED sarif parameter is currently deprecated, for same functionality as before please use --outPutFormat='sarif'",
             type=bool,
             default=None,
             required=False
         )
 
+        
+
+        
+        # parse help argument
+        help: Namespace = parser.parse_args(["-hf", "[--helpFormatted]"])
+        if help.help_formatted:
+            self.print_help_formatted(parser)
+            sys.exit(1)
         log(f"Parsing Arguments")
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
@@ -881,6 +901,18 @@ class SOOSDASTAnalysis:
             self.parse_configuration(configuration["config"], args.targetURL)
         else:
             self.parse_configuration(vars(args), args.targetURL)
+    
+    def print_help_formatted(self, parser):
+        print("| Argument | Default | Description |")
+        print("| --- | --- | --- |")
+        allRows = []
+        for arg, options in parser._option_string_actions.items():
+            defaultValue = options.default
+            descriptionText = options.help.replace('\n', '<br>')
+            allRows.append(f"| {', '.join(options.option_strings)} | {defaultValue} | {descriptionText} |")
+        # remove duplicates
+        for row in list(OrderedDict.fromkeys(allRows)):
+            print(row)
 
     def run_analysis(self) -> None:
         try:
