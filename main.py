@@ -7,6 +7,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from typing import List, Optional, Any, Dict, NoReturn
+from collections import OrderedDict
 
 import requests
 import yaml
@@ -605,17 +606,25 @@ class SOOSDASTAnalysis:
             exit_app(e)
 
     def parse_args(self) -> None:
-        parser = ArgumentParser(description="SOOS DAST Analysis Script", add_help=False)
-        parser.add_argument(
-            "-h", "--help", action='store_true', help="Show this help message and exit"
-        )
+        parser = ArgumentParser(description="SOOS DAST Analysis Script")
+
+        # DOCUMENTATION
+
+        parser.add_argument('-hf', "--helpFormatted", dest="help_formatted",
+                            help="Print the --help command in markdown table format",
+                            action="store_true",
+                            default=False,
+                            required=False)
+
+        # SCRIPT PARAMETERS
+
         parser.add_argument(
             "targetURL",
             help="target URL including the protocol, eg https://www.example.com",
         )
         parser.add_argument(
             "--configFile",
-            help="SOOS yaml file with all the configuration for the DAST Analysis",
+            help="SOOS yaml file with all the configuration for the DAST Analysis (See https://github.com/soos-io/soos-dast#config-file-definition)",
             required=False,
         )
         parser.add_argument("--clientId", help="SOOS Client ID get yours from https://app.soos.io/integrate/sca", required=False)
@@ -813,7 +822,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--operatingEnvironment",
-            help="Operating environment for information porpuses only",
+            help="Set Operating environment for information porpuses only",
             type=str,
             default=None,
             nargs="*",
@@ -877,12 +886,13 @@ class SOOSDASTAnalysis:
 
         
 
-        log(f"Parsing Arguments")
+        
         # parse help argument
-        help: Namespace = parser.parse_args(["-h", "[--help]"])
-        if help.help:
+        help: Namespace = parser.parse_args(["-hf", "[--helpFormatted]"])
+        if help.help_formatted:
             self.print_help_formatted(parser)
-            sys.exit(0)
+            sys.exit(1)
+        log(f"Parsing Arguments")
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
             log(f"Reading config file: {args.configFile}", log_level=LogLevel.DEBUG)
@@ -893,19 +903,16 @@ class SOOSDASTAnalysis:
             self.parse_configuration(vars(args), args.targetURL)
     
     def print_help_formatted(self, parser):
-        print("| Argument | Description |")
-        print("| --- | --- |")
-
-        argsPerHelpText = []
-        lastHelpText = list(parser._option_string_actions.values())[0]
-        for arg, helpText in parser._option_string_actions.items():
-            if(lastHelpText != helpText):
-                descriptionText = lastHelpText.help.replace('\n', '<br>')
-                print(f"| {', '.join(argsPerHelpText)} | {descriptionText} |")
-                argsPerHelpText.clear()
-
-            argsPerHelpText.append(arg)
-            lastHelpText = helpText
+        print("| Argument | Default | Description |")
+        print("| --- | --- | --- |")
+        allRows = []
+        for arg, options in parser._option_string_actions.items():
+            defaultValue = options.default
+            descriptionText = options.help.replace('\n', '<br>')
+            allRows.append(f"| {', '.join(options.option_strings)} | {defaultValue} | {descriptionText} |")
+        # remove duplicates
+        for row in list(OrderedDict.fromkeys(allRows)):
+            print(row)
 
     def run_analysis(self) -> None:
         try:
