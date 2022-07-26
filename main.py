@@ -891,7 +891,7 @@ class SOOSDASTAnalysis:
         help: Namespace = parser.parse_args(["-hf", "[--helpFormatted]"])
         if help.help_formatted:
             self.print_help_formatted(parser)
-            sys.exit(1)
+            sys.exit(0)
         log(f"Parsing Arguments")
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
@@ -908,7 +908,7 @@ class SOOSDASTAnalysis:
         allRows = []
         for arg, options in parser._option_string_actions.items():
             defaultValue = options.default
-            descriptionText = options.help.replace('\n', '<br>')
+            descriptionText = options.help
             allRows.append(f"| {', '.join(options.option_strings)} | {defaultValue} | {descriptionText} |")
         # remove duplicates
         for row in list(OrderedDict.fromkeys(allRows)):
