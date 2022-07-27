@@ -612,7 +612,7 @@ class SOOSDASTAnalysis:
 
         parser.add_argument('-hf', "--helpFormatted", dest="help_formatted",
                             help="Print the --help command in markdown table format",
-                            action="store_true",
+                            action="store_false",
                             default=False,
                             required=False)
 
@@ -888,8 +888,7 @@ class SOOSDASTAnalysis:
 
         
         # parse help argument
-        help: Namespace = parser.parse_args(["-hf", "[--helpFormatted]"])
-        if help.help_formatted:
+        if "-hf" in sys.argv or "--helpFormatted" in sys.argv:
             self.print_help_formatted(parser)
             sys.exit(0)
         log(f"Parsing Arguments")
