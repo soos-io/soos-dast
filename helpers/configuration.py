@@ -28,6 +28,8 @@ class DASTConfig:
     xss_collector: Optional[str] = None
     cookies: Optional[str] = None
     header: Optional[str] = None
+    oauth_token_url: Optional[str] = None
+    oauth_parameters: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
@@ -58,6 +60,8 @@ class DASTConfig:
             self.xss_collector = self._get_zap_param('xss.collector') or EMPTY_STRING
             self.cookies = self._get_zap_param('request.custom_cookies') or EMPTY_STRING
             self.header = self._get_zap_param('request.custom_header') or EMPTY_STRING
+            self.oauth_token_url = self._get_zap_param('oauth.token_url') or EMPTY_STRING   
+            self.oauth_parameters = self._get_zap_param('oauth.parameters') or EMPTY_STRING
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)
