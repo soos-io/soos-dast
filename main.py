@@ -325,6 +325,7 @@ class SOOSDASTAnalysis:
         if self.oauth_token_url is not None:
             zap_options.append(self.__add_custom_option__(label="oauth.token_url", value=self.oauth_token_url))
         if self.oauth_parameters is not None:
+            print(f"oauth parameters beign added {self.oauth_parameters}")
             zap_options.append(self.__add_custom_option__(label="oauth.parameters", value=self.oauth_parameters))
         
         # ZAP options should be wrapped with "" when auth or oauth is enabled

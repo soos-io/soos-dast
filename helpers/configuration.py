@@ -61,7 +61,7 @@ class DASTConfig:
             self.cookies = self._get_zap_param('request.custom_cookies') or EMPTY_STRING
             self.header = self._get_zap_param('request.custom_header') or EMPTY_STRING
             self.oauth_token_url = self._get_zap_param('oauth.token_url') or EMPTY_STRING   
-            self.oauth_parameters = self._get_zap_param('oauth.parameters') or EMPTY_STRING
+            self.oauth_parameters = self._get_zap_param_list('oauth.parameters') or EMPTY_STRING
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)

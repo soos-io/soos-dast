@@ -169,12 +169,18 @@ class DASTAuth:
     def login_from_oauth_token_url(self, zap):
         log('Making request to oauth token url')
         log(f"Oauth parameters values {self.config.oauth_parameters}")
-        response = post(self.config.oauth_token_url, data={self.config.oauth_parameters})
+        body = []
+        for key_value in self.config.oauth_parameters:
+            print(key_value)
+            key, value = key_value.split(':', 1)
+            body.append((key, value))
+        response = post(self.config.oauth_token_url, data=body)
         data = response.json()
         auth_header = None
         if "token" in data:
             auth_header = f"Bearer {data['token']}"
         elif "access_token" in data:
+            log(f"setting access_token {data['access_token']} ")
             auth_header = f"Bearer {data['access_token']}"
 
     def add_authorization_header(self, zap, auth_token):
