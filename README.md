@@ -78,8 +78,8 @@ The basic command to run a baseline scan would look like:
 | --checkoutDir | None | Checkout Dir to locate sarif report |
 | --sarifDestination | None | Sarif destination to upload report in the form of <repoowner>/<reponame> |
 | --sarif | None | DEPRECATED sarif parameter is currently deprecated, for same functionality as before please use --outPutFormat='sarif' |
-| --oauthTokenUrl | None | Url to authenticate that grants the access_token. |
-| --oauthParameters | None | Parameters to be added to the oauth token request. (eg grant_type). |
+| --oauthTokenUrl | None | The fully qualified authentication URL that grants the access_token. |
+| --oauthParameters | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
 
 
 

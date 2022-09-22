@@ -897,7 +897,7 @@ class SOOSDASTAnalysis:
 
         parser.add_argument(
             "--oauthTokenUrl",
-            help="Url to authenticate that grants the access_token.",
+            help="The fully qualified authentication URL that grants the access_token.",
             type=str,
             default=None,
             required=False
@@ -905,7 +905,7 @@ class SOOSDASTAnalysis:
 
         parser.add_argument(
             "--oauthParameters",
-            help="Parameters to be added to the oauth token request. (eg grant_type).",
+            help="Parameters to be added to the oauth token request. (eg --oauthParameters=\"client_id:clientID, client_secret:clientSecret, grant_type:client_credentials\")",
             type=str,
             nargs="*",
             default=None,
