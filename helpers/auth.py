@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from helpers.browserstorage import BrowserStorage
-from helpers.utils import log
+from helpers.utils import array_to_dict, log
 from model.log_level import LogLevel
 
 
@@ -168,19 +168,14 @@ class DASTAuth:
 
     def login_from_oauth_token_url(self, zap):
         log('Making request to oauth token url')
-        log(f"Oauth parameters values {self.config.oauth_parameters}")
-        body = []
-        for key_value in self.config.oauth_parameters:
-            print(key_value)
-            key, value = key_value.split(':', 1)
-            body.append((key, value))
+        body = array_to_dict(self.config.oauth_parameters)
         response = post(self.config.oauth_token_url, data=body)
         data = response.json()
         auth_header = None
         if "token" in data:
             auth_header = f"Bearer {data['token']}"
         elif "access_token" in data:
-            log(f"setting access_token {data['access_token']} ")
+            log(f"setting access_token from oauth response")
             auth_header = f"Bearer {data['access_token']}"
 
     def add_authorization_header(self, zap, auth_token):

@@ -79,7 +79,7 @@ class DASTConfig:
             if param.find(key) > -1:
                 value = list(filter(None, param[len(key) + 1:].split(',')))
                 log(f"_get_zap_param_list {key}: {value}")
-                return value
+                return [s.strip() for s in value]
 
     def _get_zap_param_boolean(self, key):
         for param in self.extra_zap_params:
