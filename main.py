@@ -337,7 +337,7 @@ class SOOSDASTAnalysis:
         args.append(" ".join(zap_options))
 
     def __add_custom_option__(self, label, value) -> str:
-        return f"{label}='{value}'"    
+        return f"{label}='{value}'"
 
     def __add_hook_option__(self, args: List[str]) -> NoReturn:
         args.append(Constants.ZAP_HOOK_OPTION)
