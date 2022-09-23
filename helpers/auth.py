@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from helpers.browserstorage import BrowserStorage
-from helpers.utils import log
+from helpers.utils import array_to_dict, log
 from model.log_level import LogLevel
 
 
@@ -91,6 +91,9 @@ class DASTAuth:
             # perform authentication using a simple token endpoint
             elif self.config.auth_token_endpoint:
                 self.login_from_token_endpoint(zap)
+            # perform authentication to url that grant access_token for oauth
+            elif self.config.oauth_token_url:
+                self.login_from_oauth_token_url(zap)
             else:
                 log(
                     'No login URL, Token Endpoint or Bearer token provided - skipping authentication',
@@ -162,6 +165,18 @@ class DASTAuth:
 
         if auth_header:
             self.add_authorization_header(zap, auth_header)
+
+    def login_from_oauth_token_url(self, zap):
+        log('Making request to oauth token url')
+        body = array_to_dict(self.config.oauth_parameters)
+        response = post(self.config.oauth_token_url, data=body)
+        data = response.json()
+        auth_header = None
+        if "token" in data:
+            auth_header = f"Bearer {data['token']}"
+        elif "access_token" in data:
+            log(f"setting access_token from oauth response")
+            auth_header = f"Bearer {data['access_token']}"
 
     def add_authorization_header(self, zap, auth_token):
         if zap is not None:
