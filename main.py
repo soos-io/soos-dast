@@ -84,16 +84,18 @@ class SOOSDASTAnalysis:
         # Auth Options
         self.auth_auto: Optional[str] = '0'
         self.auth_loginUrl: Optional[str] = None
-        self.auth_username: Optional[str] = Constants.EMPTY_STRING
-        self.auth_password: Optional[str] = Constants.EMPTY_STRING
-        self.auth_username_field_name: Optional[str] = Constants.EMPTY_STRING
-        self.auth_password_field_name: Optional[str] = Constants.EMPTY_STRING
-        self.auth_submit_field_name: Optional[str] = Constants.EMPTY_STRING
-        self.auth_first_submit_field_name: Optional[str] = Constants.EMPTY_STRING
-        self.auth_submit_action: Optional[str] = Constants.EMPTY_STRING
-        self.auth_excludeUrls: Optional[str] = Constants.EMPTY_STRING
+        self.auth_username: Optional[str] = None
+        self.auth_password: Optional[str] = None
+        self.auth_username_field_name: Optional[str] = None
+        self.auth_password_field_name: Optional[str] = None
+        self.auth_submit_field_name: Optional[str] = None
+        self.auth_first_submit_field_name: Optional[str] = None
+        self.auth_submit_action: Optional[str] = None
+        self.auth_excludeUrls: Optional[str] = None
         self.auth_display: bool = False
         self.auth_bearer_token: Optional[str] = None
+        self.oauth_token_url: Optional[str] = None
+        self.oauth_parameters: Optional[str] = None
 
         self.outputFormat: Optional[str] = None
         self.github_pat: Optional[str] = None
@@ -238,6 +240,11 @@ class SOOSDASTAnalysis:
                 self.checkout_dir = value
             elif key == "sarifDestination":
                 self.sarif_destination = value
+            elif key == "oauthTokenUrl":
+                self.oauth_token_url = value
+            elif key == "oauthParameters":
+                value = array_to_str(value)
+                self.oauth_parameters = value
             elif key == "sarif" and value is not None:
                 log("Argument 'sarif' is deprecated. Please use --outputFormat='sarif' instead.")
                 sys.exit(1)
@@ -315,9 +322,13 @@ class SOOSDASTAnalysis:
             zap_options.append(self.__add_custom_option__(label="auth.username_field", value=self.auth_username_field_name))
         if self.auth_password_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.password_field", value=self.auth_password_field_name))
+        if self.oauth_token_url is not None:
+            zap_options.append(self.__add_custom_option__(label="oauth.token_url", value=self.oauth_token_url))
+        if self.oauth_parameters is not None:
+            zap_options.append(self.__add_custom_option__(label="oauth.parameters", value=self.oauth_parameters))
         
-        # ZAP options should be wrapped with "" when automatic auth is enabled
-        if len(zap_options) > 0 and self.auth_loginUrl is not None:
+        # ZAP options should be wrapped with "" when auth or oauth is enabled
+        if len(zap_options) > 0 and (self.auth_loginUrl is not None or self.oauth_token_url is not None):
             zap_options.insert(0, "\"")
             zap_options.append("\"")
             
@@ -326,7 +337,7 @@ class SOOSDASTAnalysis:
         args.append(" ".join(zap_options))
 
     def __add_custom_option__(self, label, value) -> str:
-        return f"{label}=\"{value}\""
+        return f"{label}='{value}'"
 
     def __add_hook_option__(self, args: List[str]) -> NoReturn:
         args.append(Constants.ZAP_HOOK_OPTION)
@@ -343,7 +354,7 @@ class SOOSDASTAnalysis:
         log(f"Zap Options: {str(self.zap_options)}")
         log(f"Cookies: {str(self.request_cookies)}")
         log(f"Github PAT: {str(self.github_pat)}")
-        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None or self.request_header is not None or self.auth_bearer_token is not None:
+        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None or self.request_header is not None or self.auth_bearer_token is not None or self.oauth_token_url is not None:
             self.__add_zap_options__(args)
 
         self.__add_hook_option__(args)
@@ -882,6 +893,23 @@ class SOOSDASTAnalysis:
             type=bool,
             default=None,
             required=False
+        )
+
+        parser.add_argument(
+            "--oauthTokenUrl",
+            help="The fully qualified authentication URL that grants the access_token.",
+            type=str,
+            default=None,
+            required=False
+        )
+
+        parser.add_argument(
+            "--oauthParameters",
+            help="Parameters to be added to the oauth token request. (eg --oauthParameters=\"client_id:clientID, client_secret:clientSecret, grant_type:client_credentials\")",
+            type=str,
+            nargs="*",
+            default=None,
+            required=False,
         )
 
         

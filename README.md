@@ -17,17 +17,7 @@ Use **SOOS DAST** to:
 ## How to Use
 To execute the script you need to run this command from a terminal:
 ``` shell
-docker run -it --rm soosio/dast [--configFile CONFIGFILE] [--clientId CLIENTID] [--apiKey APIKEY] [--projectName PROJECTNAME [PROJECTNAME ...]]
-               [--scanMode SCANMODE] [--apiURL APIURL] [--debug DEBUG] [--ajaxSpider AJAXSPIDER] [--rules [RULES [RULES ...]]]
-               [--contextFile [CONTEXTFILE [CONTEXTFILE ...]]] [--contextUser [CONTEXTUSER [CONTEXTUSER ...]]] [--fullScanMinutes FULLSCANMINUTES]
-               [--apiScanFormat APISCANFORMAT] [--level LEVEL] [--integrationName [INTEGRATIONNAME [INTEGRATIONNAME ...]]] [--authDisplay AUTHDISPLAY]
-               [--authUsername AUTHUSERNAME] [--authPassword AUTHPASSWORD] [--authLoginURL AUTHLOGINURL] [--authUsernameField AUTHUSERNAMEFIELD]
-               [--authPasswordField AUTHPASSWORDFIELD] [--authSubmitField AUTHSUBMITFIELD] [--authFirstSubmitField AUTHFIRSTSUBMITFIELD]
-               [--bearerToken BEARERTOKEN] [--zapOptions [ZAPOPTIONS [ZAPOPTIONS ...]]] [--requestCookies [REQUESTCOOKIES [REQUESTCOOKIES ...]]]
-               [--requestHeaders [REQUESTHEADERS [REQUESTHEADERS ...]]] [--commitHash COMMITHASH] [--branchName [BRANCHNAME [BRANCHNAME ...]]]
-               [--branchURI BRANCHURI] [--buildVersion BUILDVERSION] [--buildURI BUILDURI]
-               [--operatingEnvironment [OPERATINGENVIRONMENT [OPERATINGENVIRONMENT ...]]] [--sarif SARIF] [--gpat GPAT]
-               targetURL
+docker run -it --rm soosio/dast <parameters>
 ```
 
 The basic command to run a baseline scan would look like:
@@ -88,6 +78,8 @@ The basic command to run a baseline scan would look like:
 | --checkoutDir | None | Checkout Dir to locate sarif report |
 | --sarifDestination | None | Sarif destination to upload report in the form of <repoowner>/<reponame> |
 | --sarif | None | DEPRECATED sarif parameter is currently deprecated, for same functionality as before please use --outPutFormat='sarif' |
+| --oauthTokenUrl | None | The fully qualified authentication URL that grants the access_token. |
+| --oauthParameters | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
 
 
 
