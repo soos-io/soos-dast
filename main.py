@@ -928,12 +928,13 @@ class SOOSDASTAnalysis:
             log(f"API URL: {self.base_uri}")
             log(f"Target URL: {self.target_url}")
             print_line_separator()
+            
+            if self.scan_mode != Constants.API_SCAN:
+                check: bool = check_site_is_available(self.target_url)
 
-            check: bool = check_site_is_available(self.target_url)
-
-            if check is False:
-                exit_app(f"The URL {self.target_url} is not available")
-                return None
+                if check is False:
+                    exit_app(f"The URL {self.target_url} is not available")
+                    return None
 
             log(f"Executing {self.scan_mode} scan")
             soos_dast_start_response = self.__make_soos_start_analysis_request__()
