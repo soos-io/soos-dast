@@ -47,7 +47,7 @@ The basic command to run a baseline scan would look like:
 | --contextFile | None | Context file which will be loaded prior to scanning the target |
 | --contextUser | None | Username to use for authenticated scans - must be defined in the given context file |
 | --fullScanMinutes | None | The number of minutes for spider to run |
-| --apiScanFormat | None | Target API format: OpenAPI, SOAP, or GraphQL |
+| --apiScanFormat | None | Target API format: openapi, soap, or graphql |
 | --level | None | minimum level to show: PASS, IGNORE, INFO, WARN or FAIL |
 | --integrationName | None | Integration Name. Intended for internal use only. |
 | --integrationType | None | Integration Type. Intended for internal use only. |
@@ -126,7 +126,7 @@ By default, it reports all alerts as WARNings but you can specify a config file 
 
 ### API Scan
 
-It is tuned for performing scans against APIs defined by `OpenAPI`, `SOAP`, or `GraphQL` via either a local file or a URL.
+It is tuned for performing scans against APIs defined by `openapi`, `soap`, or `graphql` via either a local file or a URL.
 
 It imports the definition that you specify and then runs an `Active Scan` against the URLs found. The `Active Scan` is tuned to APIs, so it doesn't bother looking for things like `XSSs`.
 
