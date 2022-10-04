@@ -1014,13 +1014,6 @@ class SOOSDASTAnalysis:
                 report_url=soos_dast_start_response.scan_url,
             )
 
-            self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
-                                                   branch_hash=soos_dast_start_response.branch_hash,
-                                                   analysis_id=soos_dast_start_response.analysis_id,
-                                                   status="Finished",
-                                                   status_message=None
-                                                   )
-
             if self.outputFormat == "sarif":
                 SOOSSARIFReport.exec(analysis=self,
                                      project_hash=soos_dast_start_response.project_id,
