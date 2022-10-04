@@ -843,7 +843,7 @@ class SOOSDASTAnalysis:
             "--reportRequestHeaders",
             help="Include request/response headers data in report",
             type=bool,
-            default=False,
+            default=True,
             required=False
         )
 
