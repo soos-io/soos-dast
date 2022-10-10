@@ -31,12 +31,12 @@ class ErrorAPIResponse:
         self.message = api_response["message"] if "message" in api_response else None
 
 
-def log(message: str, log_level: LogLevel = LogLevel.INFO) -> NoReturn:
+def log(message: str, log_level: LogLevel = LogLevel.INFO) -> None:
     logFunc = loggerFunc.get(log_level)
     logFunc(str(message))
 
 
-def print_line_separator() -> NoReturn:
+def print_line_separator() -> None:
     print(
         "----------------------------------------------------------------------------------------------------------"
     )
@@ -156,7 +156,7 @@ def set_generic_value(self, object_key: str, param_key: str, param_value: Option
         self[object_key] = param_value
 
 
-def log_error(api_response: Response) -> NoReturn:
+def log_error(api_response: Response) -> None:
     log(f"Status Code: {api_response.status_code}", log_level=LogLevel.ERROR)
     if api_response.text is not None:
         log(f"Response Text: {api_response.text}", log_level=LogLevel.ERROR)
@@ -169,7 +169,7 @@ def unescape_string(value: str) -> str or None:
     return unescape(unquote(value))
 
 
-def encode_report(report_json) -> NoReturn:
+def encode_report(report_json) -> None:
     if report_json['site'] is not None:
         for site in report_json['site']:
             if site['alerts'] is not None:

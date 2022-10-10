@@ -257,25 +257,25 @@ class SOOSDASTAnalysis:
         else:
             exit_app("Target url is required.")
 
-    def __add_rules_file_option__(self, args: List[str]) -> NoReturn:
+    def __add_rules_file_option__(self, args: List[str]) -> None:
         if has_value(self.rules_file):
             args.append(Constants.ZAP_RULES_FILE_OPTION)
             args.append(self.rules_file)
 
-    def __add_context_file_option__(self, args: List[str]) -> NoReturn:
+    def __add_context_file_option__(self, args: List[str]) -> None:
         if has_value(self.context_file):
             args.append(Constants.ZAP_CONTEXT_FILE_OPTION)
             args.append(self.context_file)
 
-    def __add_debug_option__(self, args: List[str]) -> NoReturn:
+    def __add_debug_option__(self, args: List[str]) -> None:
         if is_true(self.debug_mode):
             args.append(Constants.ZAP_DEBUG_OPTION)
 
-    def __add_ajax_spider_scan_option__(self, args: List[str]) -> NoReturn:
+    def __add_ajax_spider_scan_option__(self, args: List[str]) -> None:
         if is_true(self.ajax_spider_scan):
             args.append(Constants.ZAP_AJAX_SPIDER_OPTION)
 
-    def __add_minutes_delay_option__(self, args: List[str]) -> NoReturn:
+    def __add_minutes_delay_option__(self, args: List[str]) -> None:
         if has_value(self.minutes_delay):
             args.append(Constants.ZAP_MINUTES_DELAY_OPTION)
             args.append(self.minutes_delay)
@@ -287,16 +287,16 @@ class SOOSDASTAnalysis:
         elif self.scan_mode == Constants.API_SCAN:
             exit_app("Format is required for apiscan mode.")
 
-    def __add_log_level_option__(self, args: List[str]) -> NoReturn:
+    def __add_log_level_option__(self, args: List[str]) -> None:
         if has_value(self.log_level):
             args.append(Constants.ZAP_MINIMUM_LEVEL_OPTION)
             args.append(self.log_level)
 
-    def __add_report_file__(self, args: List[str]) -> NoReturn:
+    def __add_report_file__(self, args: List[str]) -> None:
         args.append(Constants.ZAP_JSON_REPORT_OPTION)
         args.append(Constants.REPORT_SCAN_RESULT_FILENAME)
 
-    def __add_zap_options__(self, args: List[str]) -> NoReturn:
+    def __add_zap_options__(self, args: List[str]) -> None:
         log(f"Adding Zap Options")
         args.append(Constants.ZAP_OTHER_OPTIONS)
 
@@ -340,7 +340,7 @@ class SOOSDASTAnalysis:
     def __add_custom_option__(self, label, value) -> str:
         return f"{label}='{value}'"
 
-    def __add_hook_option__(self, args: List[str]) -> NoReturn:
+    def __add_hook_option__(self, args: List[str]) -> None:
         args.append(Constants.ZAP_HOOK_OPTION)
         args.append('/zap/hooks/soos_dast_hook.py')
 
