@@ -1084,7 +1084,7 @@ class SOOSSARIFReport:
             raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
 
             if sarif_json_response is None:
-                SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
+                log("This project contains no issues. There will be no SARIF upload.")
                 return
             if analysis.github_pat is not None:
                 sarif_report_str = json.dumps(sarif_json_response)
