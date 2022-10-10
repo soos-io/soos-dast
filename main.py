@@ -111,6 +111,7 @@ class SOOSDASTAnalysis:
     def parse_configuration(self, configuration: Dict, target_url: str):
         valid_required("Target URL", target_url)
         self.target_url = target_url
+        log(json.dumps(configuration, indent=2), log_level=LogLevel.DEBUG)
         for key, value in configuration.items():
             if key == "clientId":
                 if value is None:
@@ -549,6 +550,7 @@ class SOOSDASTAnalysis:
             api_url: str = self.__generate_upload_results_url__(project_id, branch_hash, analysis_id)
             log("SOOS URL Upload Results Endpoint: " + api_url)
             results_json = json.loads(zap_report)
+            log(json.dumps(results_json, indent=2), log_level=LogLevel.DEBUG)
 
             zap_report_encoded = convert_string_to_b64(json.dumps(results_json))
             files = {"base64Manifest": zap_report_encoded}
@@ -1078,7 +1080,7 @@ class SOOSSARIFReport:
                     log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
                 else:
                     log("SARIF Report")
-                    log(str(sarif_json_response))
+                    log(json.dumps(sarif_json_response, indent=2))
                     break
 
             raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
