@@ -1,4 +1,4 @@
-name: SOOS DAST Docker Container Build
+name: Push Docker Container
 
 on:
   push:
@@ -6,9 +6,6 @@ on:
       - 'main'
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - 'main'
 
 jobs:
   docker:
