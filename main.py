@@ -236,7 +236,10 @@ class SOOSDASTAnalysis:
             elif key =="bearerToken":
                 self.auth_bearer_token = value
             elif key == "reportRequestHeaders":
-                self.report_request_headers = value
+                if str.lower(value) == "true":
+                    self.report_request_headers = True
+                else:
+                    self.report_request_headers = False
             elif key == "checkoutDir":
                 self.checkout_dir = value
             elif key == "sarifDestination":
@@ -844,8 +847,8 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--reportRequestHeaders",
             help="Include request/response headers data in report",
-            type=bool,
-            default=True,
+            type=str,
+            default="True",
             required=False
         )
 
