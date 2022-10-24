@@ -15,7 +15,7 @@ def load(config: DASTConfig, zap):
             zap.script.load('blindxss', 'active', 'Oracle Nashorn', xss_script_path)
             zap.script.enable('blindxss')
             zap.ascan.set_option_target_params_injectable(31)
-        except Exception as e:
+        except Exception as error:
             log(f"error in zap_blindxss.load loading custom script: {print_exc()}")
             exit(1)
 
