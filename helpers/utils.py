@@ -229,10 +229,6 @@ def generate_header(api_key: str, content_type: str):
     return {'x-soos-apikey': api_key, 'Content-Type': content_type}
 
 
-def raise_max_retry_exception(attempt: int, retry_count: int):
-    if attempt >= retry_count:
-        raise Exception("The maximum retries allowed were reached")
-
 
 def array_to_str(array: Iterable[str]):
 

@@ -175,7 +175,7 @@ class DASTAuth:
         if "token" in data:
             auth_header = f"Bearer {data['token']}"
         elif "access_token" in data:
-            log(f"setting access_token from oauth response")
+            log("setting access_token from oauth response")
             auth_header = f"Bearer {data['access_token']}"
 
     def add_authorization_header(self, zap, auth_token):

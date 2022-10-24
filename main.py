@@ -16,7 +16,7 @@ from requests import Response, put, post, patch
 import helpers.constants as Constants
 from helpers.utils import log, valid_required, has_value, exit_app, is_true, print_line_separator, \
     check_site_is_available, log_error, unescape_string, read_file, convert_string_to_b64, generate_header, \
-    handle_response, ErrorAPIResponse, raise_max_retry_exception, array_to_str
+    handle_response, ErrorAPIResponse, array_to_str
 from model.log_level import LogLevel
 
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -300,7 +300,7 @@ class SOOSDASTAnalysis:
         args.append(Constants.REPORT_SCAN_RESULT_FILENAME)
 
     def __add_zap_options__(self, args: List[str]) -> None:
-        log(f"Adding Zap Options")
+        log("Adding Zap Options")
         args.append(Constants.ZAP_OTHER_OPTIONS)
 
         zap_options: List[str] = list()
@@ -353,7 +353,7 @@ class SOOSDASTAnalysis:
         self.__add_context_file_option__(args)
         self.__add_ajax_spider_scan_option__(args)
         self.__add_minutes_delay_option__(args)
-        log(f"Add ZAP Options?")
+        log("Add ZAP Options?")
         log(f"Auth Login: {str(self.auth_loginUrl)}")
         log(f"Zap Options: {str(self.zap_options)}")
         log(f"Cookies: {str(self.request_cookies)}")
@@ -452,29 +452,24 @@ class SOOSDASTAnalysis:
 
             error_response: Optional[Any] = None
 
-            attempt = 0
-
             data = json.dumps(request_body)
 
-            for attempt in range(0, Constants.MAX_RETRY_COUNT):
-                api_response: Response = post(
-                    url=api_url,
-                    data=data,
-                    headers={"x-soos-apikey": self.api_key, "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE}
+            api_response: Response = post(
+                url=api_url,
+                data=data,
+                headers={"x-soos-apikey": self.api_key, "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE}
+            )
+
+            if api_response.ok:
+                return DASTStartAnalysisResponse(api_response.json())
+            else:
+                log_error(api_response)
+                error_response = api_response
+                log(
+                    "An error has occurred performing the request."
                 )
 
-                if api_response.ok:
-                    return DASTStartAnalysisResponse(api_response.json())
-                else:
-                    log_error(api_response)
-                    error_response = api_response
-                    log(
-                        "An error has occurred performing the request. Retrying Request: "
-                        + str(attempt + 1)
-                        + "Attempts"
-                    )
-
-            if attempt > Constants.MAX_RETRY_COUNT and error_response is not None:
+            if error_response is not None:
                 error_response = error_response.json()
                 message = error_response["message"]
 
@@ -503,29 +498,24 @@ class SOOSDASTAnalysis:
 
             error_response: Optional[Any] = None
 
-            attempt = 0
-
             data = json.dumps(request_body)
 
-            for attempt in range(0, Constants.MAX_RETRY_COUNT):
-                api_response: Response = patch(
-                    url=api_url,
-                    data=data,
-                    headers={"x-soos-apikey": self.api_key, "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE}
+            api_response: Response = patch(
+                url=api_url,
+                data=data,
+                headers={"x-soos-apikey": self.api_key, "Content-Type": Constants.JSON_HEADER_CONTENT_TYPE}
+            )
+
+            if api_response.ok:
+                return True
+            else:
+                log_error(api_response)
+                error_response = api_response
+                log(
+                    "An error has occurred performing the request"
                 )
 
-                if api_response.ok:
-                    return True
-                else:
-                    log_error(api_response)
-                    error_response = api_response
-                    log(
-                        "An error has occurred performing the request. Retrying Request: "
-                        + str(attempt + 1)
-                        + "Attempts"
-                    )
-
-            if attempt > Constants.MAX_RETRY_COUNT and error_response is not None:
+            if  error_response is not None:
                 error_response = error_response.json()
                 message = error_response["message"]
 
@@ -558,31 +548,25 @@ class SOOSDASTAnalysis:
             zap_report_encoded = convert_string_to_b64(json.dumps(results_json))
             files = {"base64Manifest": zap_report_encoded}
 
-            attempt: int = 1
+            api_response: Response = put(
+                url=api_url,
+                data=dict(resultVersion=results_json["@version"]),
+                files=files,
+                headers={
+                    "x-soos-apikey": self.api_key,
+                    "Content_type": Constants.MULTIPART_HEADER_CONTENT_TYPE,
+                },
+            )
 
-            while attempt <= Constants.MAX_RETRY_COUNT:
-                api_response: Response = put(
-                    url=api_url,
-                    data=dict(resultVersion=results_json["@version"]),
-                    files=files,
-                    headers={
-                        "x-soos-apikey": self.api_key,
-                        "Content_type": Constants.MULTIPART_HEADER_CONTENT_TYPE,
-                    },
-                )
+            if api_response.ok:
+                log("SOOS Upload Success")
+                return True
+            else:
+                error_response = api_response
+                log_error(error_response)
+                log("An error has occurred performing the request")
 
-                if api_response.ok:
-                    log("SOOS Upload Success")
-                    return True
-                else:
-                    error_response = api_response
-                    log_error(error_response)
-                    log(
-                        f"An error has occurred performing the request. Retrying Request: {str(attempt)} attempts"
-                    )
-                    attempt = attempt + 1
-
-            if attempt > Constants.MAX_RETRY_COUNT and error_response is not None:
+            if  error_response is not None:
                 error_response = error_response.json()
                 error_message = error_response["message"]
 
@@ -924,7 +908,7 @@ class SOOSDASTAnalysis:
         if "-hf" in sys.argv or "--helpFormatted" in sys.argv:
             self.print_help_formatted(parser)
             sys.exit(0)
-        log(f"Parsing Arguments")
+        log("Parsing Arguments")
         args: Namespace = parser.parse_args()
         if args.configFile is not None:
             log(f"Reading config file: {args.configFile}", log_level=LogLevel.DEBUG)
@@ -1032,7 +1016,6 @@ class SOOSDASTAnalysis:
 
 
 class SOOSSARIFReport:
-    API_RETRY_COUNT = 3
 
     URL_TEMPLATE = '{soos_base_uri}clients/{clientHash}/projects/{projectHash}/branches/{branchHash}/scan-types/dast/scans/{scanId}/formats/sarif'
     GITHUB_URL_TEMPLATE = 'https://api.github.com/repos/{sarif_destination}/code-scanning/sarifs'
@@ -1072,22 +1055,17 @@ class SOOSSARIFReport:
                                                           scan_id=scan_id)
 
             headers = generate_header(api_key=analysis.api_key, content_type="application/json")
-            attempt = 0
             sarif_json_response = None
 
-            for attempt in range(0, SOOSSARIFReport.API_RETRY_COUNT):
-                api_response: requests.Response = requests.get(url=url, headers=headers)
-                sarif_json_response = handle_response(api_response)
-                if type(sarif_json_response) is ErrorAPIResponse:
-                    error_message = f"A Generate SARIF Report API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSSARIFReport.API_RETRY_COUNT)}"
-                    log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
-                else:
-                    log("SARIF Report")
-                    log(json.dumps(sarif_json_response, indent=2))
-                    break
-
-            raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
-
+            api_response: requests.Response = requests.get(url=url, headers=headers)
+            sarif_json_response = handle_response(api_response)
+            if type(sarif_json_response) is ErrorAPIResponse:
+                error_message = "A Generate SARIF Report API Exception Occurred."
+                log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
+            else:
+                log("SARIF Report")
+                log(json.dumps(sarif_json_response, indent=2))
+                
             if sarif_json_response is None:
                 log("This project contains no issues. There will be no SARIF upload.")
                 return
