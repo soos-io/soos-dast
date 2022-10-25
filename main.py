@@ -6,6 +6,7 @@ import platform
 import sys
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
+import time
 from typing import List, Optional, Any, Dict, NoReturn
 from collections import OrderedDict
 
@@ -21,6 +22,8 @@ from model.log_level import LogLevel
 
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 OPERATING_ENVIRONMENT = f'{platform.system()} {platform.release()} {platform.architecture()[0]}'
+ANALYSIS_RESULT_POLLING_INTERVAL = 10 # 10 seconds
+ANALYSIS_RESULT_MAX_WAIT = 300 # 5 minutes
 
 with open(os.path.join(os.path.dirname(__file__), "VERSION.txt"), encoding='UTF-8') as version_file:
     SCRIPT_VERSION = version_file.read().strip()
@@ -62,6 +65,7 @@ class SOOSDASTAnalysis:
         self.spider: bool = False
         self.minutes_delay: Optional[str] = None
         self.report_request_headers: bool = False
+        self.on_failure: Optional[str] = None
 
         # Special Context - loads from script arguments only
         self.commit_hash: Optional[str] = None
@@ -240,6 +244,8 @@ class SOOSDASTAnalysis:
                     self.report_request_headers = True
                 else:
                     self.report_request_headers = False
+            elif key == "onFailure":
+                self.on_failure = value
             elif key == "checkoutDir":
                 self.checkout_dir = value
             elif key == "sarifDestination":
@@ -607,6 +613,20 @@ class SOOSDASTAnalysis:
                                                    )
             exit_app(error)
 
+    def get_analysis_status_soos(self, result_uri):
+
+        analysis_result_response = None
+        try:
+            analysis_result_response = requests.get(
+                url=result_uri,
+                headers={'x-soos-apikey': self.api_key, 'Content-Type': 'application/json'}
+            )
+
+        except Exception as error:
+            log(f"Analysis Result API Exception Occurred: {error}")
+
+        return analysis_result_response
+
     def parse_args(self) -> None:
         parser = ArgumentParser(description="SOOS DAST Analysis Script")
 
@@ -785,6 +805,13 @@ class SOOSDASTAnalysis:
             type=str,
             nargs="*",
             default=None,
+            required=False,
+        )
+        parser.add_argument(
+            "--onFailure",
+            help="Action to perform when the scan fails. Values available: fail_the_build, continue_on_failure ** Default Value",
+            type=str,
+            default="continue_on_failure",
             required=False,
         )
         parser.add_argument(
@@ -1007,6 +1034,47 @@ class SOOSDASTAnalysis:
                                      project_hash=soos_dast_start_response.project_id,
                                      branch_hash=soos_dast_start_response.branch_hash,
                                      scan_id=soos_dast_start_response.analysis_id)
+
+
+            while True and self.on_failure == Constants.FAIL_THE_BUILD:
+                if (datetime.utcnow() - datetime.strptime(ANALYSIS_START_TIME, "%Y-%m-%dT%H:%M:%SZ")).seconds > ANALYSIS_RESULT_MAX_WAIT:
+                    log(f"Analysis Result Max Wait Time Reached ({str(ANALYSIS_RESULT_MAX_WAIT)})")
+                    sys.exit(1)
+
+                analysis_result_api_response = self.get_analysis_status_soos(result_uri=soos_dast_start_response.scan_status_url)
+
+                content_object = analysis_result_api_response.json()
+
+                if analysis_result_api_response.status_code < 299:
+                    analysis_status = str(content_object["status"]) if content_object and "status" in content_object else None
+
+                    if analysis_status.lower().startswith("failed") and self.on_failure:
+                        log("Analysis complete - Failures reported")
+                        log("Failing the build.")
+                        sys.exit(1)
+                    elif analysis_status.lower() == "incomplete":
+                        log("Analysis Incomplete. It may have been cancelled or superseded by another scan.")
+                        log("Failing the build.")
+                        sys.exit(1)
+                    elif analysis_status.lower() == "error":
+                        log("Analysis Error.")
+                        log("Failing the build.")
+                        sys.exit(1)
+                    elif analysis_status.lower() == "finished":
+                        return
+                    else:
+                    # Status code that is not pertinent to the result
+                        log(f"Analysis Ongoing. Will retry in {str(ANALYSIS_RESULT_POLLING_INTERVAL)} seconds.")
+                        time.sleep(ANALYSIS_RESULT_POLLING_INTERVAL)
+                        continue
+                else:
+                    if "message" in analysis_result_api_response.json():
+                        results_error_code = analysis_result_api_response.json()["code"]
+                        results_error_message = analysis_result_api_response.json()["message"]
+                        log(f"Analysis Results API Status Code: {str(results_error_code)},{results_error_message}")
+                        sys.exit(1)
+
+
 
             sys.exit(0)
 
