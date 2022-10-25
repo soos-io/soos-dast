@@ -20,6 +20,7 @@ def load(config: DASTConfig, zap):
             zap.script.load(script_name, 'httpsender', 'Oracle Nashorn', request_cookies_script_path)
             zap.script.enable(script_name)
             zap.script.set_global_var(varkey='custom_cookies', varvalue=json.dumps(cookies_data, sort_keys=True))
-        except Exception as e:
+        except Exception as error:
             log(f"error in zap_{script_name}.load loading custom script: {traceback.print_exc()}")
+            log(f"Error: {error}")
             sys.exit(1)

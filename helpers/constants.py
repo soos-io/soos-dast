@@ -14,6 +14,8 @@ SERVER_ERROR_CODES = range(500, 599)
 RETRY_DELAY = 3  # seconds
 REQUEST_TIMEOUT = 10  # seconds
 EMPTY_STRING = ''
+FAIL_THE_BUILD = "fail_the_build"
+CONTINUE_ON_FAILURE = "continue_on_failure"
 
 # SCAN MODES
 BASELINE = 'baseline'

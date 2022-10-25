@@ -6,6 +6,7 @@ import platform
 import sys
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
+import time
 from typing import List, Optional, Any, Dict, NoReturn
 from collections import OrderedDict
 
@@ -20,10 +21,12 @@ from helpers.utils import log, valid_required, has_value, exit_app, is_true, pri
 from model.log_level import LogLevel
 
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-OPERATING_ENVIRONMENT = '{system} {release} {architecture}'.format(system=platform.system(), release=platform.release(), architecture=platform.architecture()[0])
+OPERATING_ENVIRONMENT = f'{platform.system()} {platform.release()} {platform.architecture()[0]}'
+ANALYSIS_RESULT_POLLING_INTERVAL = 10 # 10 seconds
+ANALYSIS_RESULT_MAX_WAIT = 300 # 5 minutes
 
-with open(os.path.join(os.path.dirname(__file__), "VERSION.txt")) as version_file:
-  SCRIPT_VERSION = version_file.read().strip()
+with open(os.path.join(os.path.dirname(__file__), "VERSION.txt"), encoding='UTF-8') as version_file:
+    SCRIPT_VERSION = version_file.read().strip()
 
 class DASTStartAnalysisResponse:
     def __init__(self, dast_analysis_api_response):
@@ -62,6 +65,7 @@ class SOOSDASTAnalysis:
         self.spider: bool = False
         self.minutes_delay: Optional[str] = None
         self.report_request_headers: bool = False
+        self.on_failure: Optional[str] = None
 
         # Special Context - loads from script arguments only
         self.commit_hash: Optional[str] = None
@@ -83,7 +87,7 @@ class SOOSDASTAnalysis:
 
         # Auth Options
         self.auth_auto: Optional[str] = '0'
-        self.auth_loginUrl: Optional[str] = None
+        self.auth_login_url: Optional[str] = None
         self.auth_username: Optional[str] = None
         self.auth_password: Optional[str] = None
         self.auth_username_field_name: Optional[str] = None
@@ -91,13 +95,13 @@ class SOOSDASTAnalysis:
         self.auth_submit_field_name: Optional[str] = None
         self.auth_first_submit_field_name: Optional[str] = None
         self.auth_submit_action: Optional[str] = None
-        self.auth_excludeUrls: Optional[str] = None
+        self.auth_exclude_urls: Optional[str] = None
         self.auth_display: bool = False
         self.auth_bearer_token: Optional[str] = None
         self.oauth_token_url: Optional[str] = None
         self.oauth_parameters: Optional[str] = None
 
-        self.outputFormat: Optional[str] = None
+        self.output_format: Optional[str] = None
         self.github_pat: Optional[str] = None
         self.checkout_dir: Optional[str] = None
         self.sarif_destination: Optional[str] = None
@@ -118,8 +122,8 @@ class SOOSDASTAnalysis:
                     try:
                         self.client_id = os.environ.get(Constants.SOOS_CLIENT_ID_KEY)
                         valid_required(key, self.client_id)
-                    except Exception as e:
-                        exit_app(e)
+                    except Exception as error:
+                        exit_app(error)
                 else:
                     valid_required(key, value)
                     self.client_id = value
@@ -128,8 +132,8 @@ class SOOSDASTAnalysis:
                     try:
                         self.api_key = os.environ.get(Constants.SOOS_API_KEY)
                         valid_required(key, self.api_key)
-                    except Exception as e:
-                        exit_app(e)
+                    except Exception as error:
+                        exit_app(error)
                 else:
                     valid_required(key, value)
                     self.api_key = value
@@ -207,7 +211,7 @@ class SOOSDASTAnalysis:
             elif key == 'authPassword':
                 self.auth_password = value
             elif key == 'authLoginURL':
-                self.auth_loginUrl = value
+                self.auth_login_url = value
             elif key == 'authUsernameField':
                 self.auth_username_field_name = value
             elif key == 'authPasswordField':
@@ -230,7 +234,7 @@ class SOOSDASTAnalysis:
                 value = array_to_str(value)
                 self.request_header = value
             elif key == "outputFormat":
-                self.outputFormat = value
+                self.output_format = value
             elif key == "gpat":
                 self.github_pat = value
             elif key =="bearerToken":
@@ -240,6 +244,8 @@ class SOOSDASTAnalysis:
                     self.report_request_headers = True
                 else:
                     self.report_request_headers = False
+            elif key == "onFailure":
+                self.on_failure = value
             elif key == "checkoutDir":
                 self.checkout_dir = value
             elif key == "sarifDestination":
@@ -304,8 +310,8 @@ class SOOSDASTAnalysis:
         args.append(Constants.ZAP_OTHER_OPTIONS)
 
         zap_options: List[str] = list()
-        if self.auth_loginUrl is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.loginurl", value=self.auth_loginUrl))
+        if self.auth_login_url is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.loginurl", value=self.auth_login_url))
         if self.auth_username is not None:
             zap_options.append(self.__add_custom_option__(label="auth.username", value=self.auth_username))
         if self.auth_password is not None:
@@ -332,7 +338,7 @@ class SOOSDASTAnalysis:
             zap_options.append(self.__add_custom_option__(label="oauth.parameters", value=self.oauth_parameters))
         
         # ZAP options should be wrapped with "" when auth or oauth is enabled
-        if len(zap_options) > 0 and (self.auth_loginUrl is not None or self.oauth_token_url is not None):
+        if len(zap_options) > 0 and (self.auth_login_url is not None or self.oauth_token_url is not None):
             zap_options.insert(0, "\"")
             zap_options.append("\"")
             
@@ -354,11 +360,13 @@ class SOOSDASTAnalysis:
         self.__add_ajax_spider_scan_option__(args)
         self.__add_minutes_delay_option__(args)
         log("Add ZAP Options?")
-        log(f"Auth Login: {str(self.auth_loginUrl)}")
+        log(f"Auth Login: {str(self.auth_login_url)}")
         log(f"Zap Options: {str(self.zap_options)}")
         log(f"Cookies: {str(self.request_cookies)}")
         log(f"Github PAT: {str(self.github_pat)}")
-        if self.auth_loginUrl or self.zap_options or self.request_cookies is not None or self.request_header is not None or self.auth_bearer_token is not None or self.oauth_token_url is not None:
+        if (self.auth_login_url or self.zap_options or self.request_cookies is not None or
+            self.request_header is not None or self.auth_bearer_token is not None or
+            self.oauth_token_url is not None):
             self.__add_zap_options__(args)
 
         self.__add_hook_option__(args)
@@ -473,8 +481,8 @@ class SOOSDASTAnalysis:
                 error_response = error_response.json()
                 message = error_response["message"]
 
-        except Exception as e:
-            log("ERROR:" + str(e))
+        except Exception as error:
+            log(f"Error: {error}")
             message = message if message is not None else "An error has occurred Starting the Analysis"
 
         exit_app(message)
@@ -519,8 +527,8 @@ class SOOSDASTAnalysis:
                 error_response = error_response.json()
                 message = error_response["message"]
 
-        except Exception as e:
-            log("ERROR:" + str(e))
+        except Exception as error:
+            log(f"Error: {error}")
             message = message if message is not None else "An error has occurred setting the scan status"
             self.__make_soos_scan_status_request__(project_id=project_id,
                                                    branch_hash=branch_hash,
@@ -570,8 +578,8 @@ class SOOSDASTAnalysis:
                 error_response = error_response.json()
                 error_message = error_response["message"]
 
-        except Exception as e:
-            log(str(e))
+        except Exception as error:
+            log(f"Error: {error}")
 
         self.__make_soos_scan_status_request__(project_id=project_id,
                                                branch_hash=branch_hash,
@@ -596,14 +604,28 @@ class SOOSDASTAnalysis:
             log(f"Project URL: {report_url}")
             print_line_separator()
 
-        except Exception as e:
+        except Exception as error:
             self.__make_soos_scan_status_request__(project_id=project_id,
                                                    branch_hash=branch_hash,
                                                    analysis_id=analysis_id,
                                                    status="Error",
                                                    status_message="An Unexpected error has occurred uploading ZAP Report Results"
                                                    )
-            exit_app(e)
+            exit_app(error)
+
+    def get_analysis_status_soos(self, result_uri):
+
+        analysis_result_response = None
+        try:
+            analysis_result_response = requests.get(
+                url=result_uri,
+                headers={'x-soos-apikey': self.api_key, 'Content-Type': 'application/json'}
+            )
+
+        except Exception as error:
+            log(f"Analysis Result API Exception Occurred: {error}")
+
+        return analysis_result_response
 
     def parse_args(self) -> None:
         parser = ArgumentParser(description="SOOS DAST Analysis Script")
@@ -786,6 +808,13 @@ class SOOSDASTAnalysis:
             required=False,
         )
         parser.add_argument(
+            "--onFailure",
+            help="Action to perform when the scan fails. Values available: fail_the_build, continue_on_failure ** Default Value",
+            type=str,
+            default="continue_on_failure",
+            required=False,
+        )
+        parser.add_argument(
             "--commitHash",
             help="The commit hash value from the SCM System",
             type=str,
@@ -878,7 +907,7 @@ class SOOSDASTAnalysis:
 
         parser.add_argument(
             "--sarif",
-            help="DEPRECATED sarif parameter is currently deprecated, for same functionality as before please use --outPutFormat='sarif'",
+            help="DEPRECATED sarif parameter is currently deprecated, for same functionality as before please use --outputFormat='sarif'",
             type=bool,
             default=None,
             required=False
@@ -901,9 +930,6 @@ class SOOSDASTAnalysis:
             required=False,
         )
 
-        
-
-        
         # parse help argument
         if "-hf" in sys.argv or "--helpFormatted" in sys.argv:
             self.print_help_formatted(parser)
@@ -917,17 +943,17 @@ class SOOSDASTAnalysis:
             self.parse_configuration(configuration["config"], args.targetURL)
         else:
             self.parse_configuration(vars(args), args.targetURL)
-    
+
     def print_help_formatted(self, parser):
         print("| Argument | Default | Description |")
         print("| --- | --- | --- |")
-        allRows = []
+        all_rows = []
         for arg, options in parser._option_string_actions.items():
-            defaultValue = options.default
-            descriptionText = options.help
-            allRows.append(f"| {', '.join(options.option_strings)} | {defaultValue} | {descriptionText} |")
+            default_value = options.default
+            description_text = options.help
+            all_rows.append(f"| {', '.join(options.option_strings)} | {default_value} | {description_text} |")
         # remove duplicates
-        for row in list(OrderedDict.fromkeys(allRows)):
+        for row in list(OrderedDict.fromkeys(all_rows)):
             print(row)
 
     def run_analysis(self) -> None:
@@ -945,7 +971,7 @@ class SOOSDASTAnalysis:
             log(f"API URL: {self.base_uri}")
             log(f"Target URL: {self.target_url}")
             print_line_separator()
-            
+
             if self.scan_mode != Constants.API_SCAN:
                 check: bool = check_site_is_available(self.target_url)
 
@@ -1003,16 +1029,57 @@ class SOOSDASTAnalysis:
                 report_url=soos_dast_start_response.scan_url,
             )
 
-            if self.outputFormat == "sarif":
+            if self.output_format == "sarif":
                 SOOSSARIFReport.exec(analysis=self,
                                      project_hash=soos_dast_start_response.project_id,
                                      branch_hash=soos_dast_start_response.branch_hash,
                                      scan_id=soos_dast_start_response.analysis_id)
 
+
+            while True and self.on_failure == Constants.FAIL_THE_BUILD:
+                if (datetime.utcnow() - datetime.strptime(ANALYSIS_START_TIME, "%Y-%m-%dT%H:%M:%SZ")).seconds > ANALYSIS_RESULT_MAX_WAIT:
+                    log(f"Analysis Result Max Wait Time Reached ({str(ANALYSIS_RESULT_MAX_WAIT)})")
+                    sys.exit(1)
+
+                analysis_result_api_response = self.get_analysis_status_soos(result_uri=soos_dast_start_response.scan_status_url)
+
+                content_object = analysis_result_api_response.json()
+
+                if analysis_result_api_response.status_code < 299:
+                    analysis_status = str(content_object["status"]) if content_object and "status" in content_object else None
+
+                    if analysis_status.lower().startswith("failed") and self.on_failure:
+                        log("Analysis complete - Failures reported")
+                        log("Failing the build.")
+                        sys.exit(1)
+                    elif analysis_status.lower() == "incomplete":
+                        log("Analysis Incomplete. It may have been cancelled or superseded by another scan.")
+                        log("Failing the build.")
+                        sys.exit(1)
+                    elif analysis_status.lower() == "error":
+                        log("Analysis Error.")
+                        log("Failing the build.")
+                        sys.exit(1)
+                    elif analysis_status.lower() == "finished":
+                        return
+                    else:
+                    # Status code that is not pertinent to the result
+                        log(f"Analysis Ongoing. Will retry in {str(ANALYSIS_RESULT_POLLING_INTERVAL)} seconds.")
+                        time.sleep(ANALYSIS_RESULT_POLLING_INTERVAL)
+                        continue
+                else:
+                    if "message" in analysis_result_api_response.json():
+                        results_error_code = analysis_result_api_response.json()["code"]
+                        results_error_message = analysis_result_api_response.json()["message"]
+                        log(f"Analysis Results API Status Code: {str(results_error_code)},{results_error_message}")
+                        sys.exit(1)
+
+
+
             sys.exit(0)
 
-        except Exception as e:
-            exit_app(e)
+        except Exception as error:
+            exit_app(error)
 
 
 class SOOSSARIFReport:
@@ -1065,7 +1132,7 @@ class SOOSSARIFReport:
             else:
                 log("SARIF Report")
                 log(json.dumps(sarif_json_response, indent=2))
-                
+
             if sarif_json_response is None:
                 log("This project contains no issues. There will be no SARIF upload.")
                 return

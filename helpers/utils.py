@@ -77,7 +77,7 @@ def check_site_is_available(url: str) -> bool:
 
             if datetime.utcnow() + timedelta(0, RETRY_DELAY) > max_time:
                 break
-        except Exception as e:
+        except Exception as error:
             pass
 
         sleep(RETRY_DELAY)
@@ -142,8 +142,8 @@ def make_call(request) -> Response:
             error_response = error_response.json()
             error_message = error_response["message"]
 
-    except Exception as e:
-        log(str(e))
+    except Exception as error:
+        log(error)
 
     exit_app(error_message)
 

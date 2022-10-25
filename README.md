@@ -72,6 +72,7 @@ The basic command to run a baseline scan would look like:
 | --buildURI | None | URI to CI build info |
 | --operatingEnvironment | None | Set Operating environment for information porpuses only |
 | --reportRequestHeaders | True | Include request/response headers data in report |
+| --onFailure | continue_on_failure | Action to perform when the scan fails. Values available: fail_the_build, continue_on_failure |
 | --outputFormat | None | Output format for vulnerabilities: only the value sarif is available at the moment |
 | --gpat | None | GitHub Personal Authorization Token |
 | --bearerToken | None | Bearer token to authenticate |
