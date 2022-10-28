@@ -1,6 +1,4 @@
-# SOOS-DAST-Python
-
-## DAST Analysis Tool
+# SOOS DAST
 The affordable no limit web vulnerability scanner.
 
 Use **SOOS DAST** to:
