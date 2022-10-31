@@ -1,26 +1,25 @@
-# SOOS DAST
+# [SOOS DAST](https://soos.io/dast-product/)
 The affordable no limit web vulnerability scanner.
 
 Use **SOOS DAST** to:
-
-1. Scan web apps and APIs defined by **OpenAPI**, **SOAP**, or **GraphQL**
-2. Containerized solution runs in your environment
-3. Manage issues via single-pane web dashboard shared with [SOOS SCA](https://soos.io/sca-product/)
-4. Track tickets in Jira or GitHub Issues
+1. Scan Web Apps and APIs defined by **OpenAPI**, **SOAP**, or **GraphQL**
+2. Run our containerized solution in any environment or CI/CD tool
+3. Manage issues via a unified web dashboard shared with [SOOS SCA](https://soos.io/sca-product/)
+4. Push tickets to Jira or GitHub Issues
 
 ## Requirements
 - [Docker](https://www.docker.com/get-started)
-- Have your application or website reachable on some URL.  
+- Have your application or website reachable via URL.
 
 ## How to Use
-To execute the script you need to run this command from a terminal:
+To start the scan you need to run this command from a terminal:
 ``` shell
 docker run -it --rm soosio/dast <parameters>
 ```
 
 The basic command to run a baseline scan would look like:
+`docker run -it --rm soosio/dast --clientId=<YOUR_CLIENT_ID> --apiKey=<YOUR_API_KEY> --projectName="<YOUR_PROJECT_NAME>" <YOUR_TARGET_URL>`
 
-`docker run -it --rm soosio/dast --clientId=<YOUR_CLIENTID> --apiKey=<YOUR_APIKEY> --projectName="<YOUR_PROJECT_NAME>" <YOUR_TARGET_URL>`
 ### Arguments
 
 | Argument | Required | Description |
@@ -80,7 +79,6 @@ The basic command to run a baseline scan would look like:
 | --oauthTokenUrl | None | The authentication URL that grants the access_token. |
 | --oauthParameters | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
 
-
 #### Config File Definition
 ``` yaml
 config:
@@ -134,3 +132,4 @@ It also includes 2 scripts that:
 
 ## References
  - [ZAP](https://www.zaproxy.org/)
+ - [Docker](https://docs.docker.com/)
