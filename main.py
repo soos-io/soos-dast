@@ -628,7 +628,7 @@ class SOOSDASTAnalysis:
         return analysis_result_response
 
     def parse_args(self) -> None:
-        parser = ArgumentParser(description="SOOS DAST Analysis Script")
+        parser = ArgumentParser(description="SOOS DAST")
 
         # DOCUMENTATION
 
@@ -642,38 +642,38 @@ class SOOSDASTAnalysis:
 
         parser.add_argument(
             "targetURL",
-            help="target URL including the protocol, eg https://www.example.com",
+            help="Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
         )
         parser.add_argument(
             "--configFile",
-            help="SOOS yaml file with all the configuration for the DAST Analysis (See https://github.com/soos-io/soos-dast#config-file-definition)",
+            help="Config File - SOOS yaml file with all the configuration for the DAST Analysis (See https://github.com/soos-io/soos-dast#config-file-definition)",
             required=False,
         )
-        parser.add_argument("--clientId", help="SOOS Client ID get yours from https://app.soos.io/integrate/sca", required=False)
-        parser.add_argument("--apiKey", help="SOOS API Key get yours from https://app.soos.io/integrate/sca", required=False)
-        parser.add_argument("--projectName", help="Project name (this will be the one used inside of the SOOS App)", nargs="+", required=False)
+        parser.add_argument("--clientId", help="SOOS Client ID - get yours from https://app.soos.io/integrate/sca", required=False)
+        parser.add_argument("--apiKey", help="SOOS API Key - get yours from https://app.soos.io/integrate/sca", required=False)
+        parser.add_argument("--projectName", help="Project Name - this is what will be displayed in the SOOS app", nargs="+", required=False)
         parser.add_argument(
             "--scanMode",
-            help="SOOS DAST scan mode. Values available: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
+            help="Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
             default="baseline",
             required=False,
         )
         parser.add_argument(
             "--apiURL",
-            help="SOOS API URL, internal use only, do not modify.",
+            help="SOOS API URL - Intended for internal use only, do not modify.",
             default="https://api.soos.io/api/",
             required=False,
         )
         parser.add_argument(
             "--debug",
-            help="Show debug messages",
+            help="Enable to show debug messages.",
             default=False,
             type=bool,
             required=False,
         )
         parser.add_argument(
             "--ajaxSpider",
-            help="Use the Ajax spider in addition to the traditional one (About AjaxSpider https://www.zaproxy.org/docs/desktop/addons/ajax-spider/)",
+            help="Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/",
             type=bool,
             required=False,
         )
@@ -697,7 +697,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--fullScanMinutes",
-            help="The number of minutes for spider to run",
+            help="Number of minutes for the spider to run",
             required=False,
         )
         parser.add_argument(
@@ -707,33 +707,33 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--level",
-            help="minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            help="Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
             required=False,
         )
         parser.add_argument(
             "--integrationName",
-            help="Integration Name. Intended for internal use only.",
+            help="Integration Name - Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
         )
         parser.add_argument(
             "--integrationType",
-            help="Integration Type. Intended for internal use only.",
+            help="Integration Type - Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
         )
         parser.add_argument(
             "--scriptVersion",
-            help="Script Version. Intended for internal use only.",
+            help="Script Version - Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
         )
         parser.add_argument(
             "--appVersion",
-            help="App Version. Intended for internal use only.",
+            help="App Version - Intended for internal use only.",
             type=str,
             nargs="*",
             required=False,
@@ -780,13 +780,13 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--authSubmitAction",
-            help="Submit action to perform on form filled, click or submit",
+            help="Submit action to perform on form filled. Options: click or submit",
             type=str,
             required=False,
         )
         parser.add_argument(
             "--zapOptions",
-            help="ZAP Additional Options",
+            help="Additional ZAP Options",
             type=str,
             nargs="*",
             required=False,
@@ -809,7 +809,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--onFailure",
-            help="Action to perform when the scan fails. Values available: fail_the_build, continue_on_failure ** Default Value",
+            help="Action to perform when the scan fails. Options: fail_the_build, continue_on_failure",
             type=str,
             default="continue_on_failure",
             required=False,
@@ -851,7 +851,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--operatingEnvironment",
-            help="Set Operating environment for information porpuses only",
+            help="Set Operating environment for information purposes only",
             type=str,
             default=None,
             nargs="*",
@@ -864,15 +864,13 @@ class SOOSDASTAnalysis:
             default="True",
             required=False
         )
-
         parser.add_argument(
             "--outputFormat",
-            help="Output format for vulnerabilities: only the value sarif is available at the moment",
+            help="Output format for vulnerabilities: only the value SARIF is available at the moment",
             type=str,
             default=None,
             required=False
         )
-
         parser.add_argument(
             "--gpat",
             help="GitHub Personal Authorization Token",
@@ -880,7 +878,6 @@ class SOOSDASTAnalysis:
             default=None,
             required=False
         )
-
         parser.add_argument(
             "--bearerToken",
             help="Bearer token to authenticate",
@@ -888,39 +885,34 @@ class SOOSDASTAnalysis:
             default=None,
             required=False
         )
-
         parser.add_argument(
             "--checkoutDir",
-            help="Checkout Dir to locate sarif report",
+            help="Checkout directory to locate SARIF report",
             type=str,
             default=None,
             required=False
         )
-
         parser.add_argument(
             "--sarifDestination",
-            help="Sarif destination to upload report in the form of <repoowner>/<reponame>",
+            help="SARIF destination to upload report in the form of <repo_owner>/<repo_name>",
             type=str,
             default=None,
             required=False
         )
-
         parser.add_argument(
             "--sarif",
-            help="DEPRECATED sarif parameter is currently deprecated, for same functionality as before please use --outputFormat='sarif'",
+            help="DEPRECATED - SARIF parameter is currently deprecated, please use --outputFormat='sarif' instead",
             type=bool,
             default=None,
             required=False
         )
-
         parser.add_argument(
             "--oauthTokenUrl",
-            help="The fully qualified authentication URL that grants the access_token.",
+            help="The authentication URL that grants the access_token.",
             type=str,
             default=None,
             required=False
         )
-
         parser.add_argument(
             "--oauthParameters",
             help="Parameters to be added to the oauth token request. (eg --oauthParameters=\"client_id:clientID, client_secret:clientSecret, grant_type:client_credentials\")",
@@ -944,7 +936,7 @@ class SOOSDASTAnalysis:
         else:
             self.parse_configuration(vars(args), args.targetURL)
 
-    def print_help_formatted(self, parser):
+    def print_help_formatted(self, parser: ArgumentParser):
         print("| Argument | Default | Description |")
         print("| --- | --- | --- |")
         all_rows = []

@@ -5,7 +5,7 @@ Use **SOOS DAST** to:
 
 1. Scan web apps and APIs defined by **OpenAPI**, **SOAP**, or **GraphQL**
 2. Containerized solution runs in your environment
-3. Manage issues via single-pane web dashboard shared with [SOOS SCA](https://github.com/marketplace/actions/soos-sca-github-action)
+3. Manage issues via single-pane web dashboard shared with [SOOS SCA](https://soos.io/sca-product/)
 4. Track tickets in Jira or GitHub Issues
 
 ## Requirements
@@ -21,36 +21,36 @@ docker run -it --rm soosio/dast <parameters>
 The basic command to run a baseline scan would look like:
 
 `docker run -it --rm soosio/dast --clientId=<YOUR_CLIENTID> --apiKey=<YOUR_APIKEY> --projectName="<YOUR_PROJECT_NAME>" <YOUR_TARGET_URL>`
-### Script Arguments
+### Arguments
 
-| Name        | Required | Description                                                                                   |
-|-------------|----------|-----------------------------------------------------------------------------------------------|
-| `targetURL` | Yes      | target URL including the protocol, eg https://www.example.com. A `https` protocol is required |
+| Argument | Required | Description |
+| --- | --- | --- |
+| `targetURL` | Yes | Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com |
 
-### Script Parameters
+### Parameters
 
 | Argument | Default | Description |
 | --- | --- | --- |
 | -h, --help | ==SUPPRESS== | show this help message and exit |
 | -hf, --helpFormatted | False | Print the --help command in markdown table format |
-| --configFile | None | SOOS yaml file with all the configuration for the DAST Analysis (See https://github.com/soos-io/soos-dast#config-file-definition) |
-| --clientId | None | SOOS Client ID get yours from https://app.soos.io/integrate/sca |
-| --apiKey | None | SOOS API Key get yours from https://app.soos.io/integrate/sca |
-| --projectName | None | Project name (this will be the one used inside of the SOOS App) |
-| --scanMode | baseline | SOOS DAST scan mode. Values available: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
-| --apiURL | https://api.soos.io/api/ | SOOS API URL, internal use only, do not modify. |
-| --debug | False | Show debug messages |
-| --ajaxSpider | None | Use the Ajax spider in addition to the traditional one (About AjaxSpider https://www.zaproxy.org/docs/desktop/addons/ajax-spider/) |
+| --configFile | None | Config File - SOOS yaml file with all the configuration for the DAST Analysis (See https://github.com/soos-io/soos-dast#config-file-definition) |
+| --clientId | None | SOOS Client ID - get yours from https://app.soos.io/integrate/sca |
+| --apiKey | None | SOOS API Key - get yours from https://app.soos.io/integrate/sca |
+| --projectName | None | Project Name - this is what will be displayed in the SOOS app |
+| --scanMode | baseline | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
+| --apiURL | https://api.soos.io/api/ | SOOS API URL - Intended for internal use only, do not modify. |
+| --debug | False | Enable to show debug messages. |
+| --ajaxSpider | None | Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/ |
 | --rules | None | Rules file to use to INFO, IGNORE or FAIL warnings |
 | --contextFile | None | Context file which will be loaded prior to scanning the target |
 | --contextUser | None | Username to use for authenticated scans - must be defined in the given context file |
-| --fullScanMinutes | None | The number of minutes for spider to run |
-| --apiScanFormat | None | Target API format: openapi, soap, or graphql |
-| --level | None | minimum level to show: PASS, IGNORE, INFO, WARN or FAIL |
-| --integrationName | None | Integration Name. Intended for internal use only. |
-| --integrationType | None | Integration Type. Intended for internal use only. |
-| --scriptVersion | None | Script Version. Intended for internal use only. |
-| --appVersion | None | App Version. Intended for internal use only. |
+| --fullScanMinutes | None | Number of minutes for the spider to run |
+| --apiScanFormat | None | Target API format: OpenAPI, SOAP, or GraphQL |
+| --level | None | Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL |
+| --integrationName | None | Integration Name - Intended for internal use only. |
+| --integrationType | None | Integration Type - Intended for internal use only. |
+| --scriptVersion | None | Script Version - Intended for internal use only. |
+| --appVersion | None | App Version - Intended for internal use only. |
 | --authDisplay | None | Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL |
 | --authUsername | None | Username to use in auth apps |
 | --authPassword | None | Password to use in auth apps |
@@ -59,27 +59,26 @@ The basic command to run a baseline scan would look like:
 | --authPasswordField | None | Password input id to use in auth apps |
 | --authSubmitField | None | Submit button id to use in auth apps |
 | --authFirstSubmitField | None | First submit button id to use in auth apps |
-| --authSubmitAction | None | Submit action to perform on form filled, click or submit |
-| --zapOptions | None | ZAP Additional Options |
+| --authSubmitAction | None | Submit action to perform on form filled. Options: click or submit |
+| --zapOptions | None | Additional ZAP Options |
 | --requestCookies | None | Set Cookie values for the requests to the target URL |
 | --requestHeaders | None | Set extra Header requests |
+| --onFailure | continue_on_failure | Action to perform when the scan fails. Options: fail_the_build, continue_on_failure |
 | --commitHash | None | The commit hash value from the SCM System |
 | --branchName | None | The name of the branch from the SCM System |
 | --branchURI | None | The URI to the branch from the SCM System |
 | --buildVersion | None | Version of application build artifacts |
 | --buildURI | None | URI to CI build info |
-| --operatingEnvironment | None | Set Operating environment for information porpuses only |
+| --operatingEnvironment | None | Set Operating environment for information purposes only |
 | --reportRequestHeaders | True | Include request/response headers data in report |
-| --onFailure | continue_on_failure | Action to perform when the scan fails. Values available: fail_the_build, continue_on_failure |
-| --outputFormat | None | Output format for vulnerabilities: only the value sarif is available at the moment |
+| --outputFormat | None | Output format for vulnerabilities: only the value SARIF is available at the moment |
 | --gpat | None | GitHub Personal Authorization Token |
 | --bearerToken | None | Bearer token to authenticate |
-| --checkoutDir | None | Checkout Dir to locate sarif report |
-| --sarifDestination | None | Sarif destination to upload report in the form of <repoowner>/<reponame> |
-| --sarif | None | DEPRECATED sarif parameter is currently deprecated, for same functionality as before please use --outPutFormat='sarif' |
-| --oauthTokenUrl | None | The fully qualified authentication URL that grants the access_token. |
+| --checkoutDir | None | Checkout directory to locate SARIF report |
+| --sarifDestination | None | SARIF destination to upload report in the form of <repo_owner>/<repo_name> |
+| --sarif | None | DEPRECATED - SARIF parameter is currently deprecated, please use --outputFormat='sarif' instead |
+| --oauthTokenUrl | None | The authentication URL that grants the access_token. |
 | --oauthParameters | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
-
 
 
 #### Config File Definition
