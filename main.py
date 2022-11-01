@@ -1,6 +1,7 @@
 import base64
 import gzip
 import json
+import logging
 import os
 import platform
 import sys
@@ -115,6 +116,9 @@ class SOOSDASTAnalysis:
     def parse_configuration(self, configuration: Dict, target_url: str):
         valid_required("Target URL", target_url)
         self.target_url = target_url
+        self.log_level = configuration.get("level", "INFO")
+        log("Log Level: " + self.log_level, LogLevel.INFO)
+        logging.getLogger("SOOS DAST").setLevel(self.log_level)
         log(json.dumps(configuration, indent=2), log_level=LogLevel.DEBUG)
         for key, value in configuration.items():
             if key == "clientId":
@@ -222,8 +226,6 @@ class SOOSDASTAnalysis:
                 self.auth_first_submit_field_name = value
             elif key == 'authSubmitAction':
                 self.auth_submit_action = value
-            elif key == "level":
-                self.log_level = value
             elif key == "zapOptions":
                 value = array_to_str(value)
                 self.zap_options = value
