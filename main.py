@@ -116,8 +116,7 @@ class SOOSDASTAnalysis:
     def parse_configuration(self, configuration: Dict, target_url: str):
         valid_required("Target URL", target_url)
         self.target_url = target_url
-        self.log_level = configuration.get("level", "INFO")
-        log("Log Level: " + self.log_level, LogLevel.INFO)
+        self.log_level = configuration.get("level", LogLevel.INFO)
         logging.getLogger("SOOS DAST").setLevel(self.log_level)
         log(json.dumps(configuration, indent=2), log_level=LogLevel.DEBUG)
         for key, value in configuration.items():
@@ -710,6 +709,7 @@ class SOOSDASTAnalysis:
         parser.add_argument(
             "--level",
             help="Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            default="INFO",
             required=False,
         )
         parser.add_argument(
