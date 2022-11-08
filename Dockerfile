@@ -16,7 +16,7 @@ RUN chmod -R 444 /zap/reports/traditional-json
 RUN chmod -R 444 /zap/reports/traditional-json-headers
 
 # Reference: https://github.com/mozilla/geckodriver/releases
-ENV GECKO_DRIVER_VERSION="v0.30.0"
+ENV GECKO_DRIVER_VERSION="v0.32.0"
 
 RUN pip3 install -r requirements.txt && mkdir /zap/wrk && cd /opt \
 	&& wget -qO- -O geckodriver.tar.gz "https://github.com/mozilla/geckodriver/releases/download/${GECKO_DRIVER_VERSION}/geckodriver-${GECKO_DRIVER_VERSION}-linux64.tar.gz" \
