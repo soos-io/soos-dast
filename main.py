@@ -862,7 +862,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--reportRequestHeaders",
-            help="Include request/response headers data in report",
+            help="(Temporarily Unavailable) Include request/response headers data in report",
             type=str,
             default="False",
             required=False
