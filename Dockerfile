@@ -10,11 +10,10 @@ COPY ./model model/
 COPY ./scripts/httpsender /home/zap/.ZAP_D/scripts/scripts/httpsender/
 RUN chmod 777 /home/zap/.ZAP_D/scripts/scripts/httpsender/
 
-# Needed for reportRequestHeaders option, disabled until functionality is pulled into stable zap release
-# COPY ./reports/traditional-json /zap/reports/traditional-json
-# COPY ./reports/traditional-json-headers /zap/reports/traditional-json-headers
-# RUN chmod -R 444 /zap/reports/traditional-json
-# RUN chmod -R 444 /zap/reports/traditional-json-headers
+COPY ./reports/traditional-json /zap/reports/traditional-json
+COPY ./reports/traditional-json-headers /zap/reports/traditional-json-headers
+RUN chmod -R 444 /zap/reports/traditional-json
+RUN chmod -R 444 /zap/reports/traditional-json-headers
 
 # Reference: https://github.com/mozilla/geckodriver/releases
 ENV GECKO_DRIVER_VERSION="v0.32.0"
