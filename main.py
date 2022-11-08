@@ -708,7 +708,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--level",
-            help="Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            help="Log level to show: DEBUG, INFO, WARN, ERROR, CRITICAL",
             default="INFO",
             required=False,
         )
