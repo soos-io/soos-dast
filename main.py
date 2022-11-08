@@ -243,6 +243,7 @@ class SOOSDASTAnalysis:
             elif key == "reportRequestHeaders":
                 if str.lower(value) == "true":
                     self.report_request_headers = True
+                    log("Argument 'reportRequestHeaders' is temporarily disabled, parameter will be ignored.")
                 else:
                     self.report_request_headers = False
             elif key == "onFailure":
