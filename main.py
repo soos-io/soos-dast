@@ -243,6 +243,7 @@ class SOOSDASTAnalysis:
             elif key == "reportRequestHeaders":
                 if str.lower(value) == "true":
                     self.report_request_headers = True
+                    log("Argument 'reportRequestHeaders' is temporarily disabled, parameter will be ignored.")
                 else:
                     self.report_request_headers = False
             elif key == "onFailure":
@@ -863,7 +864,7 @@ class SOOSDASTAnalysis:
             "--reportRequestHeaders",
             help="Include request/response headers data in report",
             type=str,
-            default="True",
+            default="False",
             required=False
         )
         parser.add_argument(
@@ -982,15 +983,15 @@ class SOOSDASTAnalysis:
                 exit_app(f"The scan mode {self.scan_mode} is invalid.")
                 return None
 
-            log(f"Copying report templates. Include request headers: {self.report_request_headers}", log_level=LogLevel.DEBUG)
-            os.system("mkdir -p ~/.ZAP_D/reports")
-            os.system("mkdir -p /root/.ZAP_D/reports")
-            if self.report_request_headers is True:
-                os.system("cp -R /zap/reports/traditional-json-headers ~/.ZAP_D/reports/traditional-json")
-                os.system("cp -R /zap/reports/traditional-json-headers /root/.ZAP_D/reports/traditional-json")
-            else:
-                os.system("cp -R /zap/reports/traditional-json ~/.ZAP_D/reports/traditional-json")
-                os.system("cp -R /zap/reports/traditional-json /root/.ZAP_D/reports/traditional-json")
+            # log(f"Copying report templates. Include request headers: {self.report_request_headers}", log_level=LogLevel.DEBUG)
+            # os.system("mkdir -p ~/.ZAP_D/reports")
+            # os.system("mkdir -p /root/.ZAP_D/reports")
+            # if self.report_request_headers is True:
+            #    os.system("cp -R /zap/reports/traditional-json-headers ~/.ZAP_D/reports/traditional-json")
+            #    os.system("cp -R /zap/reports/traditional-json-headers /root/.ZAP_D/reports/traditional-json")
+            # else:
+            #    os.system("cp -R /zap/reports/traditional-json ~/.ZAP_D/reports/traditional-json")
+            #    os.system("cp -R /zap/reports/traditional-json /root/.ZAP_D/reports/traditional-json")
 
             command: str = scan_function()
 
