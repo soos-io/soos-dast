@@ -1,5 +1,5 @@
 # if the image or tag changes, make sure to update the scan structure tool name and version
-FROM owasp/zap2docker-stable as base
+FROM owasp/zap2docker-weekly:w2022-11-07 as base
 
 USER root
 
@@ -15,8 +15,11 @@ COPY ./reports/traditional-json-headers /zap/reports/traditional-json-headers
 RUN chmod -R 444 /zap/reports/traditional-json
 RUN chmod -R 444 /zap/reports/traditional-json-headers
 
+# Reference: https://github.com/mozilla/geckodriver/releases
+ENV GECKO_DRIVER_VERSION="v0.30.0"
+
 RUN pip3 install -r requirements.txt && mkdir /zap/wrk && cd /opt \
-	&& wget -qO- -O geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz \
+	&& wget -qO- -O geckodriver.tar.gz "https://github.com/mozilla/geckodriver/releases/download/${GECKO_DRIVER_VERSION}/geckodriver-${GECKO_DRIVER_VERSION}-linux64.tar.gz" \
 	&& tar -xvzf geckodriver.tar.gz \
 	&& chmod +x geckodriver \
 	&& ln -s /opt/geckodriver /usr/bin/geckodriver \
@@ -27,21 +30,23 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
 
 # Set up Chrome version to be used
-ARG CHROME_VERSION="100.0.4896.88-1"
+# Reference: https://www.ubuntuupdates.org/ppa/google_chrome
+ENV CHROME_VERSION="107.0.5304.87-1"
 
 # Set up the Chrome PPA
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \ 
+RUN wget --no-verbose -O /tmp/chrome.deb "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb" \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
 
 # Set up Chromedriver Environment variables
-ENV CHROMEDRIVER_VERSION 100.0.4896.20
+# Reference: https://chromedriver.chromium.org/downloads
+ENV CHROMEDRIVER_VERSION="107.0.5304.62"
 ENV CHROMEDRIVER_DIR /chromedriver
 RUN mkdir $CHROMEDRIVER_DIR
 
 # Download and install Chromedriver
-RUN wget -q --continue -P $CHROMEDRIVER_DIR "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
+RUN wget -q --continue -P $CHROMEDRIVER_DIR "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
 RUN unzip $CHROMEDRIVER_DIR/chromedriver* -d $CHROMEDRIVER_DIR
 
 # Put Chromedriver into the PATH
