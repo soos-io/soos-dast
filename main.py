@@ -859,13 +859,13 @@ class SOOSDASTAnalysis:
             nargs="*",
             required=False,
         )
-        # parser.add_argument(
-        #    "--reportRequestHeaders",
-        #    help="Include request/response headers data in report",
-        #    type=str,
-        #    default="True",
-        #    required=False
-        # )
+        parser.add_argument(
+            "--reportRequestHeaders",
+            help="Include request/response headers data in report",
+            type=str,
+            default="True",
+            required=False
+        )
         parser.add_argument(
             "--outputFormat",
             help="Output format for vulnerabilities: only the value SARIF is available at the moment",
