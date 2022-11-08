@@ -45,7 +45,7 @@ The basic command to run a baseline scan would look like:
 | --contextUser | None | Username to use for authenticated scans - must be defined in the given context file |
 | --fullScanMinutes | None | Number of minutes for the spider to run |
 | --apiScanFormat | None | Target API format: OpenAPI, SOAP, or GraphQL |
-| --level | None | Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL |
+| --level | None | Mimimun level to show logs for: INFO, DEBUG, WARN, ERROR, CRITICAL |
 | --integrationName | None | Integration Name - Intended for internal use only. |
 | --integrationType | None | Integration Type - Intended for internal use only. |
 | --scriptVersion | None | Script Version - Intended for internal use only. |
@@ -97,7 +97,6 @@ config:
     minutes: ''
   apiScan:
     format: 'openapi'
-  level: 'PASS'
 ```
 
 ## Scan Modes
