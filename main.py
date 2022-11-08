@@ -709,7 +709,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--level",
-            help="Minimum level to show: PASS, IGNORE, INFO, WARN or FAIL",
+            help="Log level to show: DEBUG, INFO, WARN, ERROR, CRITICAL",
             default="INFO",
             required=False,
         )
@@ -862,7 +862,7 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--reportRequestHeaders",
-            help="Include request/response headers data in report",
+            help="(Temporarily Unavailable) Include request/response headers data in report",
             type=str,
             default="False",
             required=False
@@ -946,7 +946,7 @@ class SOOSDASTAnalysis:
         for arg, options in parser._option_string_actions.items():
             default_value = options.default
             description_text = options.help
-            all_rows.append(f"| {', '.join(options.option_strings)} | {default_value} | {description_text} |")
+            all_rows.append(f"| `{'`, `'.join(options.option_strings)}` | {default_value} | {description_text} |")
         # remove duplicates
         for row in list(OrderedDict.fromkeys(all_rows)):
             print(row)
