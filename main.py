@@ -67,6 +67,7 @@ class SOOSDASTAnalysis:
         self.minutes_delay: Optional[str] = None
         self.report_request_headers: bool = False
         self.on_failure: Optional[str] = None
+        self.update_addons: bool = False
 
         # Special Context - loads from script arguments only
         self.commit_hash: Optional[str] = None
@@ -260,6 +261,11 @@ class SOOSDASTAnalysis:
             elif key == "sarif" and value is not None:
                 log("Argument 'sarif' is deprecated. Please use --outputFormat='sarif' instead.")
                 sys.exit(1)
+            elif key == "updateAddons":
+                if str.lower(value) == "true":
+                    self.update_addons = True
+                else:
+                    self.update_addons = False
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -924,6 +930,13 @@ class SOOSDASTAnalysis:
             default=None,
             required=False,
         )
+        parser.add_argument(
+            "--updateAddons",
+            help="Internal use only. Update addons of the zap image.",
+            type=str,
+            default="False",
+            required=False
+        )
 
         # parse help argument
         if "-hf" in sys.argv or "--helpFormatted" in sys.argv:
@@ -995,14 +1008,17 @@ class SOOSDASTAnalysis:
 
             command: str = scan_function()
 
-            log(f"Command to be executed: {command}", log_level=LogLevel.DEBUG)
+
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,
                                                    status="Running",
                                                    status_message=None
-                                                   )
-
+                                                   )                                       
+            if self.update_addons:
+                command = f"{command} --updateAddons"
+            
+            log(f"Command to be executed: {command}", log_level=LogLevel.DEBUG)
             os.system(command)
 
             run_success = os.path.exists(Constants.REPORT_SCAN_RESULT_FILE)
