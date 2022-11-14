@@ -262,10 +262,7 @@ class SOOSDASTAnalysis:
                 log("Argument 'sarif' is deprecated. Please use --outputFormat='sarif' instead.")
                 sys.exit(1)
             elif key == "updateAddons":
-                if str.lower(value) == "true":
-                    self.update_addons = True
-                else:
-                    self.update_addons = False
+                self.update_addons = True if str.lower(value) == "true" else False
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
