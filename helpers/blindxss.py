@@ -21,14 +21,14 @@ def load(config: DASTConfig, zap):
 
 
 def replace_collector_uri(uri):
-    template_script_path = '/home/zap/.ZAP_D/scripts/scripts/active/blindxss.js'
+    template_script_path = '/home/zap/.ZAP/scripts/scripts/active/blindxss.js'
 
     file_data = read_file(file_path=template_script_path)
 
     file_data = file_data.replace('callbackdomain.com', uri)
 
     random_suffix = randint(1000, 9999)
-    script_path = f'/home/zap/.ZAP_D/scripts/scripts/active/bxxs_{random_suffix}.js'
+    script_path = f'/home/zap/.ZAP/scripts/scripts/active/bxxs_{random_suffix}.js'
     with open(script_path, 'w') as file:
         file.write(file_data)
     return script_path

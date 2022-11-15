@@ -72,5 +72,5 @@ LOG_DATE_FORMAT = "%m/%d/%Y %I:%M:%S %p %Z"
 
 
 # ZAP SCRIPTS
-ZAP_ACTIVE_SCAN_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP_D/scripts/scripts/active/"
-ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP_D/scripts/scripts/httpsender/"
+ZAP_ACTIVE_SCAN_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP/scripts/scripts/active/"
+ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP/scripts/scripts/httpsender/"
