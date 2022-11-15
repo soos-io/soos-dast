@@ -3,8 +3,8 @@ import subprocess
 import unittest
 
 SCAN_COMMAND = ["python3", "main.py"]
-SOOS_CLIENT_ID_DEV = "c4337d37a91c0180875d901c0d8810ea44b1735ac4a00ca6c0afed13ae0ee48a"
-SOOS_API_KEY_DEV = "N2FiNjM1YzItOGE0My00MGE1LWE0ZWMtODYxNTNlODViZGIx"
+SOOS_CLIENT_ID_DEV = ""
+SOOS_API_KEY_DEV = ""
 DEV_ENV = "https://dev-api.soos.io/api/"
 
 
