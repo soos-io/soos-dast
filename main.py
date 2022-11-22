@@ -80,12 +80,13 @@ class SOOSDASTAnalysis:
         self.zap_options: Optional[str] = None
         self.request_cookies: Optional[str] = None
         self.request_header: Optional[str] = None
-        self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
-        self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
 
-        # INTENTIONALLY HARDCODED
+
+        # Hardcoded values, used for analysis metadata
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
         self.dast_analysis_tool_version: str = Constants.DEFAULT_DAST_TOOL_VERSION
+        self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
+        self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
 
         # Auth Options
         self.auth_auto: Optional[str] = '0'
