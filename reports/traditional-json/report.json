@@ -17,9 +17,8 @@
 					"confidence": "[(${alert.confidence})]",
 					"riskdesc": "[(${helper.legacyEscapeText(helper.getRiskString(alert.risk) + ' (' + helper.getConfidenceString(alert.confidence) + ')', true)})]",
 					"desc": "[(${helper.legacyEscapeParagraph(alert.description, true)})]",
-					"instances":[ [#th:block th:each="instance, instState: ${instances}" th:unless="${ instState.index > 50}"]
-					[#th:block th:if="${! instState.first} and ${instState.index} != 50"],[/th:block]
-					[#th:block th:unless="${ instState.index == 50 }"]
+					"instances":[ [#th:block th:each="instance, instState: ${instances}" th:unless="${ instState.index > 500}"]
+					[#th:block th:if="${! instState.first}"],[/th:block]
 					{
 						"uri": "[(${helper.legacyEscapeText(instance.uri, true)})]",
 						"method": "[(${helper.legacyEscapeText(instance.method, true)})]",
@@ -27,21 +26,10 @@
 						"param": "[(${helper.legacyEscapeText(instance.param, true)})]",
 						"attack": "[(${helper.legacyEscapeText(instance.attack, true)})]",
 						"evidence": "[(${helper.legacyEscapeText(instance.evidence, true)})]",
-					}[/th:block]
-					[#th:block th:if="${ instState.index == 50 }"],	
-					{
-						"uri": "#RESULTS WHERE TRIMMED DUE TO SIZE [(${instances.size})]",
-						"method": "123",
-						"status-code": 0,
-						"param": "123",
-						"attack": "[(${instances.size})]",
-						"evidence": "123",
-						"request-header": "123",
-						"response-header": "123"
-					}[/th:block]
+					}
 				[/th:block]
 				],
-					"count": "[(${instances.size})]",
+					"totalInstanceCount": "[(${instances.size})]",
 					"solution": "[(${helper.legacyEscapeParagraph(alert.solution, true)})]",
 					"otherinfo": "[(${helper.legacyEscapeParagraph(alert.otherinfo, true)})]",
 					"reference": "[(${helper.legacyEscapeParagraph(alert.reference, true)})]",

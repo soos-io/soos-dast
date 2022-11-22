@@ -83,9 +83,10 @@ class SOOSDASTAnalysis:
         self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
         self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
 
-        # INTENTIONALLY HARDCODED
+        # Scan Metadata
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
         self.dast_analysis_tool_version: str = Constants.DEFAULT_DAST_TOOL_VERSION
+        self.command: Optional[str]  = None
 
         # Auth Options
         self.auth_auto: Optional[str] = '0'
@@ -421,7 +422,7 @@ class SOOSDASTAnalysis:
                                                             soos_project_id=project_id)
         return url
 
-    def __make_soos_start_analysis_request__(self) -> DASTStartAnalysisResponse:
+    def __make_soos_start_analysis_request__(self, command: str) -> DASTStartAnalysisResponse:
         message: str = "An error has occurred Starting the Analysis"
         try:
             log("Making request to SOOS")
@@ -446,6 +447,7 @@ class SOOSDASTAnalysis:
                 appVersion=self.app_version,
                 toolName=self.dast_analysis_tool,
                 toolVersion=self.dast_analysis_tool_version,
+                commandLine=command,
                 scanMode=self.scan_mode,
                 commitHash=self.commit_hash,
                 branch=self.branch_name,
@@ -980,9 +982,7 @@ class SOOSDASTAnalysis:
                     exit_app(f"The URL {self.target_url} is not available")
                     return None
 
-            log(f"Executing {self.scan_mode} scan")
-            soos_dast_start_response = self.__make_soos_start_analysis_request__()
-            # execute test
+
             scan_function = self.scan_mode_map.get(self.scan_mode, None)
 
             if scan_function is None:
@@ -1000,16 +1000,19 @@ class SOOSDASTAnalysis:
                os.system("cp -R /zap/reports/traditional-json /root/.ZAP/reports/traditional-json")
 
             command: str = scan_function()
+                            
+            if self.update_addons:
+                command = f"{command} --updateAddons"
 
+            log(f"Executing {self.scan_mode} scan")
+            soos_dast_start_response = self.__make_soos_start_analysis_request__(command)
 
             self.__make_soos_scan_status_request__(project_id=soos_dast_start_response.project_id,
                                                    branch_hash=soos_dast_start_response.branch_hash,
                                                    analysis_id=soos_dast_start_response.analysis_id,
                                                    status="Running",
                                                    status_message=None
-                                                   )                                       
-            if self.update_addons:
-                command = f"{command} --updateAddons"
+                                                   )           
             
             log(f"Command to be executed: {command}", log_level=LogLevel.DEBUG)
             os.system(command)
