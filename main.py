@@ -83,10 +83,9 @@ class SOOSDASTAnalysis:
         self.integration_name: str = Constants.DEFAULT_INTEGRATION_NAME
         self.integration_type: str = Constants.DEFAULT_INTEGRATION_TYPE
 
-        # Scan Metadata
+        # INTENTIONALLY HARDCODED
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
         self.dast_analysis_tool_version: str = Constants.DEFAULT_DAST_TOOL_VERSION
-        self.command: Optional[str]  = None
 
         # Auth Options
         self.auth_auto: Optional[str] = '0'
