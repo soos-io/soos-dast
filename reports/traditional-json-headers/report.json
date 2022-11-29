@@ -17,7 +17,8 @@
 					"confidence": "[(${alert.confidence})]",
 					"riskdesc": "[(${helper.legacyEscapeText(helper.getRiskString(alert.risk) + ' (' + helper.getConfidenceString(alert.confidence) + ')', true)})]",
 					"desc": "[(${helper.legacyEscapeParagraph(alert.description, true)})]",
-					"instances":[ [#th:block th:each="instance, instState: ${instances}"][#th:block th:if="${! instState.first}"],[/th:block]
+					"instances":[ [#th:block th:each="instance, instState: ${instances}" th:unless="${ instState.index > 500}"]
+						[#th:block th:if="${! instState.first}"],[/th:block]
 						{
 							"uri": "[(${helper.legacyEscapeText(instance.uri, true)})]",
 							"method": "[(${helper.legacyEscapeText(instance.method, true)})]",
@@ -27,9 +28,10 @@
 							"evidence": "[(${helper.legacyEscapeText(instance.evidence, true)})]",
 							"request-header": "[(${helper.legacyEscapeText(instance.message.requestHeader, true)})]",
 							"response-header": "[(${helper.legacyEscapeText(instance.message.responseHeader, true)})]"
-						}[/th:block]
+						}
+					[/th:block]
 					],
-					"count": "[(${instances.size})]",
+					"totalInstanceCount": "[(${instances.size})]",
 					"solution": "[(${helper.legacyEscapeParagraph(alert.solution, true)})]",
 					"otherinfo": "[(${helper.legacyEscapeParagraph(alert.otherinfo, true)})]",
 					"reference": "[(${helper.legacyEscapeParagraph(alert.reference, true)})]",
