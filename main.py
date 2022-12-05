@@ -439,6 +439,18 @@ class SOOSDASTAnalysis:
                 log("projectName and scanMode are required", LogLevel.ERROR)
                 sys.exit(1)
 
+            # Obfuscate sensitive data
+            obfuscated_command = command
+            if self.auth_bearer_token is not None:
+                obfuscated_command = obfuscated_command.replace(self.auth_bearer_token, "********")
+            if self.auth_password is not None:
+                obfuscated_command = obfuscated_command.replace(self.auth_password, "********")
+            if self.auth_username is not None:
+                obfuscated_command = obfuscated_command.replace(self.auth_username, "********")
+            if self.oauth_token_url is not None:
+                obfuscated_command = obfuscated_command.replace
+            
+
             param_values: dict = dict(
                 projectName=self.project_name,
                 name=datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
@@ -447,7 +459,7 @@ class SOOSDASTAnalysis:
                 appVersion=self.app_version,
                 toolName=self.dast_analysis_tool,
                 toolVersion=self.dast_analysis_tool_version,
-                commandLine=command,
+                commandLine=obfuscated_command,
                 scanMode=self.scan_mode,
                 commitHash=self.commit_hash,
                 branch=self.branch_name,
