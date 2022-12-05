@@ -450,7 +450,6 @@ class SOOSDASTAnalysis:
             if self.oauth_token_url is not None:
                 obfuscated_command = obfuscated_command.replace
             
-
             param_values: dict = dict(
                 projectName=self.project_name,
                 name=datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
