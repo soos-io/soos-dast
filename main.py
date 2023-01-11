@@ -797,18 +797,13 @@ class SOOSDASTAnalysis:
         )
         parser.add_argument(
             "--authFirstSubmitField",
-            help="First submit button id to use in auth apps",
+            help="First submit button id to use in auth apps (for multi-page forms)",
             required=False,
         )
         parser.add_argument(
             "--authSubmitAction",
             help="Submit action to perform on form filled. Options: click or submit",
             type=str,
-            required=False,
-        )
-        parser.add_argument(
-            "--authContinueField",
-            help="Continue button id to use in auth apps, only required if form type is MULTI_PAGE",
             required=False,
         )
         parser.add_argument(
