@@ -98,6 +98,7 @@ class SOOSDASTAnalysis:
         self.auth_submit_field_name: Optional[str] = None
         self.auth_first_submit_field_name: Optional[str] = None
         self.auth_submit_action: Optional[str] = None
+        self.auth_form_type: Optional[str] = None
         self.auth_exclude_urls: Optional[str] = None
         self.auth_display: bool = False
         self.auth_bearer_token: Optional[str] = None
@@ -227,6 +228,8 @@ class SOOSDASTAnalysis:
                 self.auth_first_submit_field_name = value
             elif key == 'authSubmitAction':
                 self.auth_submit_action = value
+            elif key == 'authFormType':
+                self.auth_form_type = value
             elif key == "zapOptions":
                 value = array_to_str(value)
                 self.zap_options = value
@@ -328,8 +331,12 @@ class SOOSDASTAnalysis:
             zap_options.append(self.__add_custom_option__(label="auth.display", value=self.auth_display))
         if self.auth_submit_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.submit_field", value=self.auth_submit_field_name))
+        if self.auth_first_submit_field_name is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.first_submit_field", value=self.auth_first_submit_field_name))
         if self.auth_submit_action is not None:
             zap_options.append(self.__add_custom_option__(label="auth.submit_action", value=self.auth_submit_action))
+        if self.auth_form_type is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.form_type", value=self.auth_form_type))
         if self.auth_username_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.username_field", value=self.auth_username_field_name))
         if self.auth_password_field_name is not None:
@@ -797,6 +804,18 @@ class SOOSDASTAnalysis:
             "--authSubmitAction",
             help="Submit action to perform on form filled. Options: click or submit",
             type=str,
+            required=False,
+        )
+        parser.add_argument(
+            "--authContinueField",
+            help="Continue button id to use in auth apps, only required if form type is MULTI_PAGE",
+            required=False,
+        )
+        parser.add_argument(
+            "--authFormType",
+            help="SIMPLE (all fields are displayed at once), MULTI_STEP (Password field is displayed only after username is filled), or MULTI_PAGE (Password field is displayed only after username is filled and submit is clicked)",
+            type=str,
+            default="SIMPLE",
             required=False,
         )
         parser.add_argument(

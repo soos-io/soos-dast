@@ -200,6 +200,17 @@ class DASTAuth:
         if self.config.auth_username:
             username_element = self.fill_username()
 
+        if self.config.auth_form_type == 'MULTI_STEP':
+            log(f"Waiting for {self.config.auth_password_field_name} element to load")
+            sleep(5)
+        
+        if self.config.auth_form_type == 'MULTI_PAGE':
+            continue_button = self.find_element(self.config.auth_first_submit_field_name, "submit", "//*[@type='submit' or @type='button' or button]" )
+            actions = ActionChains(self.driver)
+            actions.move_to_element(continue_button).click().perform()
+            log(f"Clicked the first submit element")
+            sleep(5)
+
         # fill out the password field
         if self.config.auth_password:
             try:

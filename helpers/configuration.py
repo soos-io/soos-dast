@@ -14,6 +14,7 @@ class DASTConfig:
     auth_password: Optional[str] = None
     auth_otp_secret: Optional[str] = None
     auth_submit_action: Optional[str] = None
+    auth_form_type: Optional[str] = None
     auth_token_endpoint: Optional[str] = None
     auth_bearer_token: Optional[str] = None
     auth_username_field_name: Optional[str] = None
@@ -45,6 +46,7 @@ class DASTConfig:
             self.auth_password = self._get_zap_param('auth.password') or EMPTY_STRING
             self.auth_otp_secret = self._get_zap_param('auth.otpsecret') or EMPTY_STRING
             self.auth_submit_action = self._get_zap_param('auth.submit_action') or 'click'
+            self.auth_form_type = self._get_zap_param('auth.form_type') or 'SIMPLE'
             self.auth_token_endpoint = self._get_zap_param('auth.token_endpoint') or EMPTY_STRING
             self.auth_bearer_token = self._get_zap_param('auth.bearer_token') or EMPTY_STRING
             self.auth_username_field_name = self._get_zap_param('auth.username_field') or 'username'
