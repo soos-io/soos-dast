@@ -57,8 +57,9 @@ The basic command to run a baseline scan would look like:
 | `--authUsernameField` | None | Username input id to use in auth apps |
 | `--authPasswordField` | None | Password input id to use in auth apps |
 | `--authSubmitField` | None | Submit button id to use in auth apps |
-| `--authFirstSubmitField` | None | First submit button id to use in auth apps (for multi-page forms) |
-| `--authFormType` | SIMPLE | SIMPLE (all fields are displayed at once), MULTI_STEP (Password field is displayed only after username is filled), or MULTI_PAGE (Password field is displayed only after username is filled and submit is clicked) |
+| `--authSecondSubmitField` | None | Second submit button id to use in auth apps (for multi-page forms) |
+| `--authFormType` | simple | simple (all fields are displayed at once), wait_for_password (Password field is displayed only after username is filled), or multi_page (Password field is displayed only after username is filled and submit is clicked) |
+| `--authDelayTime` | Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page) |
 | `--authSubmitAction` | None | Submit action to perform on form filled. Options: click or submit |
 | `--zapOptions` | None | Additional ZAP Options |
 | `--requestCookies` | None | Set Cookie values for the requests to the target URL |
