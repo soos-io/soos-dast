@@ -188,6 +188,7 @@ class DASTAuth:
         log(f"authenticate using webdriver against URL: {self.config.auth_login_url}")
 
         self.driver.get(self.config.auth_login_url)
+        final_submit_button = self.config.auth_submit_field_name
 
         # wait for the page to load
         sleep(5)
@@ -199,6 +200,18 @@ class DASTAuth:
         # fill out the username field
         if self.config.auth_username:
             username_element = self.fill_username()
+
+        if self.config.auth_form_type == 'wait_for_password':
+            log(f"Waiting for {self.config.auth_password_field_name} element to load")
+            sleep(self.config.auth_delay_time)
+        
+        if self.config.auth_form_type == 'multi_page':
+            continue_button = self.find_element(self.config.auth_submit_field_name, "submit", "//*[@type='submit' or @type='button' or button]" )
+            actions = ActionChains(self.driver)
+            actions.move_to_element(continue_button).click().perform()
+            final_submit_button = self.config.auth_submit_second_field_name
+            log(f"Clicked the first submit element for multi page")
+            sleep(self.config.auth_delay_time)
 
         # fill out the password field
         if self.config.auth_password:
@@ -223,12 +236,12 @@ class DASTAuth:
                 # if the OTP field was not found, we probably need to submit to go to the OTP page
                 # login flow: username -> next -> password -> next -> otp -> submit
                 self.submit_form(self.config.auth_submit_action,
-                                 self.config.auth_submit_field_name, self.config.auth_password_field_name)
+                                 final_submit_button, self.config.auth_password_field_name)
                 self.fill_otp()
 
         # submit
         self.submit_form(self.config.auth_submit_action,
-                         self.config.auth_submit_field_name, self.config.auth_password_field_name)
+                        final_submit_button, self.config.auth_password_field_name)
 
         # wait for the page to load
         if self.config.auth_check_element:

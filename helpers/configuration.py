@@ -14,13 +14,15 @@ class DASTConfig:
     auth_password: Optional[str] = None
     auth_otp_secret: Optional[str] = None
     auth_submit_action: Optional[str] = None
+    auth_form_type: Optional[str] = None
+    auth_delay_time: Optional[int] = None
     auth_token_endpoint: Optional[str] = None
     auth_bearer_token: Optional[str] = None
     auth_username_field_name: Optional[str] = None
     auth_password_field_name: Optional[str] = None
     auth_otp_field_name: Optional[str] = None
     auth_submit_field_name: Optional[str] = None
-    auth_first_submit_field_name: Optional[str] = None
+    auth_submit_second_field_name: Optional[str] = None
     auth_check_delay: Optional[float] = None
     auth_check_element: Optional[str] = None
     auth_exclude_urls: Optional[List[str]] = None
@@ -45,6 +47,7 @@ class DASTConfig:
             self.auth_password = self._get_zap_param('auth.password') or EMPTY_STRING
             self.auth_otp_secret = self._get_zap_param('auth.otpsecret') or EMPTY_STRING
             self.auth_submit_action = self._get_zap_param('auth.submit_action') or 'click'
+            self.auth_form_type = self._get_zap_param('auth.form_type') or 'simple'
             self.auth_token_endpoint = self._get_zap_param('auth.token_endpoint') or EMPTY_STRING
             self.auth_bearer_token = self._get_zap_param('auth.bearer_token') or EMPTY_STRING
             self.auth_username_field_name = self._get_zap_param('auth.username_field') or 'username'
@@ -52,7 +55,8 @@ class DASTConfig:
             self.auth_display = self._get_zap_param('auth.display') or EMPTY_STRING
             self.auth_otp_field_name = self._get_zap_param('auth.otp_field') or 'otp'
             self.auth_submit_field_name = self._get_zap_param('auth.submit_field') or 'login'
-            self.auth_first_submit_field_name = self._get_zap_param('auth.first_submit_field') or 'next'
+            self.auth_submit_second_field_name = self._get_zap_param('auth.second_submit_field') or 'login'
+            self.auth_delay_time = self._get_zap_param_float('auth.delay_time') or 0
             self.auth_check_delay = self._get_zap_param_float('auth.check_delay') or 5
             self.auth_check_element = self._get_zap_param('auth.check_element') or EMPTY_STRING
             self.auth_exclude_urls = self._get_zap_param_list('auth.exclude') or list()

@@ -96,8 +96,10 @@ class SOOSDASTAnalysis:
         self.auth_username_field_name: Optional[str] = None
         self.auth_password_field_name: Optional[str] = None
         self.auth_submit_field_name: Optional[str] = None
-        self.auth_first_submit_field_name: Optional[str] = None
+        self.auth_submit_second_field_name: Optional[str] = None
         self.auth_submit_action: Optional[str] = None
+        self.auth_form_type: Optional[str] = None
+        self.auth_delay_time: Optional[int] = None
         self.auth_exclude_urls: Optional[str] = None
         self.auth_display: bool = False
         self.auth_bearer_token: Optional[str] = None
@@ -223,10 +225,14 @@ class SOOSDASTAnalysis:
                 self.auth_password_field_name = value
             elif key == 'authSubmitField':
                 self.auth_submit_field_name = value
-            elif key == 'authFirstSubmitField':
-                self.auth_first_submit_field_name = value
+            elif key == 'authFormSubmitSecondField':
+                self.auth_submit_second_field_name = value
             elif key == 'authSubmitAction':
                 self.auth_submit_action = value
+            elif key == 'authFormType':
+                self.auth_form_type = value
+            elif key == 'authDelayTime':
+                self.auth_delay_time = value
             elif key == "zapOptions":
                 value = array_to_str(value)
                 self.zap_options = value
@@ -328,8 +334,14 @@ class SOOSDASTAnalysis:
             zap_options.append(self.__add_custom_option__(label="auth.display", value=self.auth_display))
         if self.auth_submit_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.submit_field", value=self.auth_submit_field_name))
+        if self.auth_submit_second_field_name is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.second_submit_field", value=self.auth_submit_second_field_name))
         if self.auth_submit_action is not None:
             zap_options.append(self.__add_custom_option__(label="auth.submit_action", value=self.auth_submit_action))
+        if self.auth_form_type is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.form_type", value=self.auth_form_type))
+        if self.auth_delay_time is not None:
+            zap_options.append(self.__add_custom_option__(label="auth.delay_time", value=self.auth_delay_time))
         if self.auth_username_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.username_field", value=self.auth_username_field_name))
         if self.auth_password_field_name is not None:
@@ -789,14 +801,27 @@ class SOOSDASTAnalysis:
             required=False,
         )
         parser.add_argument(
-            "--authFirstSubmitField",
-            help="First submit button id to use in auth apps",
+            "--authSecondSubmitField",
+            help="Second submit button id to use in auth apps (for multi-page forms)",
             required=False,
         )
         parser.add_argument(
             "--authSubmitAction",
             help="Submit action to perform on form filled. Options: click or submit",
             type=str,
+            required=False,
+        )
+        parser.add_argument(
+            "--authFormType",
+            help="simple (all fields are displayed at once), wait_for_password (Password field is displayed only after username is filled), or multi_page (Password field is displayed only after username is filled and submit is clicked)",
+            type=str,
+            default="simple",
+            required=False,
+        )
+        parser.add_argument(
+            "--authDelayTime",
+            help="Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
+            default=Constants.AUTH_DELAY_TIME,
             required=False,
         )
         parser.add_argument(
