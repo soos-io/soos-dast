@@ -225,7 +225,7 @@ class SOOSDASTAnalysis:
                 self.auth_password_field_name = value
             elif key == 'authSubmitField':
                 self.auth_submit_field_name = value
-            elif key == 'authFormSubmitSecondField':
+            elif key == 'authSecondSubmitField':
                 self.auth_submit_second_field_name = value
             elif key == 'authSubmitAction':
                 self.auth_submit_action = value
