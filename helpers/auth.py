@@ -63,6 +63,7 @@ class DASTAuth:
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
+        # NOTE this is needed for the chromedriver path to be found on github actions, where the path is overridden before execution
         if environ['CHROMEDRIVER_DIR'] not in environ['PATH']:
             log(f"adding {environ['CHROMEDRIVER_DIR']} to path {environ['PATH']}")
             environ["PATH"] += pathsep + environ['CHROMEDRIVER_DIR']	
