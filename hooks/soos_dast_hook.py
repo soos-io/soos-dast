@@ -44,5 +44,7 @@ def zap_started(zap, target):
 
 def zap_pre_shutdown(zap):
     log("Overview of spidered URL's:")
-    for url in zap.spider.all_urls:
-        log(f"found: {url}")
+    with open('spidered_urls.txt', 'w') as f:
+        for url in zap.spider.all_urls:
+            f.write(f"{url}\n")
+            log(f"found: {url}")

@@ -1065,6 +1065,12 @@ class SOOSDASTAnalysis:
                                                        )
                 raise Exception(f"An Unexpected error has occurred running the {self.scan_mode} scan")
 
+            # Add the discovered urls to the report
+            discoveredUrls = open('./spidered_urls.txt', 'r').read().splitlines()
+            data = json.load(open(Constants.REPORT_SCAN_RESULT_FILE, 'r'))
+            data['discoveredUrls'] = discoveredUrls
+            json.dump(data, open(Constants.REPORT_SCAN_RESULT_FILE, 'w'))
+
             self.publish_results_to_soos(
                 project_id=soos_dast_start_response.project_id,
                 branch_hash=soos_dast_start_response.branch_hash,
