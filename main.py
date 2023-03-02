@@ -460,7 +460,7 @@ class SOOSDASTAnalysis:
             if self.auth_username is not None:
                 obfuscated_command = obfuscated_command.replace(self.auth_username, "********")
             if self.oauth_token_url is not None:
-                obfuscated_command = obfuscated_command.replace
+                obfuscated_command = obfuscated_command.replace(self.oauth_token_url, "********")
             
             param_values: dict = dict(
                 projectName=self.project_name,
