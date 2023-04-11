@@ -32,6 +32,7 @@ class DASTConfig:
     header: Optional[str] = None
     oauth_token_url: Optional[str] = None
     oauth_parameters: Optional[str] = None
+    disabled_rules: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
@@ -66,6 +67,7 @@ class DASTConfig:
             self.header = self._get_zap_param('request.custom_header') or EMPTY_STRING
             self.oauth_token_url = self._get_zap_param('oauth.token_url') or EMPTY_STRING   
             self.oauth_parameters = self._get_zap_param_list('oauth.parameters') or EMPTY_STRING
+            self.disabled_rules = self._get_zap_param_list('rules.disable') or EMPTY_STRING
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)

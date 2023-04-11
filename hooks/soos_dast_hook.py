@@ -29,6 +29,8 @@ def zap_started(zap, target):
 
         scan_policy = 'Default Policy'
         zap.ascan.update_scan_policy(scanpolicyname=scan_policy, attackstrength="LOW")
+        log(f"disabled rules: {config.disabled_rules}")
+        zap.pscan.disable_scanners(','.join(config.disabled_rules))
 
         auth = DASTAuth(config)
         auth.authenticate(zap, target)

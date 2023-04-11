@@ -110,6 +110,7 @@ class SOOSDASTAnalysis:
         self.github_pat: Optional[str] = None
         self.checkout_dir: Optional[str] = None
         self.sarif_destination: Optional[str] = None
+        self.disable_rules: Optional[str] = None
 
         self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
@@ -266,6 +267,8 @@ class SOOSDASTAnalysis:
                 sys.exit(1)
             elif key == "updateAddons":
                 self.update_addons = True if str.lower(value) == "true" else False
+            elif key == "disableRules":
+                self.disable_rules = array_to_str(value)
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -338,9 +341,9 @@ class SOOSDASTAnalysis:
             zap_options.append(self.__add_custom_option__(label="auth.second_submit_field", value=self.auth_submit_second_field_name))
         if self.auth_submit_action is not None:
             zap_options.append(self.__add_custom_option__(label="auth.submit_action", value=self.auth_submit_action))
-        if self.auth_form_type is not None:
+        if self.auth_form_type is not None and self.auth_username_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.form_type", value=self.auth_form_type))
-        if self.auth_delay_time is not None:
+        if self.auth_delay_time is not None and self.auth_username_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.delay_time", value=self.auth_delay_time))
         if self.auth_username_field_name is not None:
             zap_options.append(self.__add_custom_option__(label="auth.username_field", value=self.auth_username_field_name))
@@ -350,6 +353,8 @@ class SOOSDASTAnalysis:
             zap_options.append(self.__add_custom_option__(label="oauth.token_url", value=self.oauth_token_url))
         if self.oauth_parameters is not None:
             zap_options.append(self.__add_custom_option__(label="oauth.parameters", value=self.oauth_parameters))
+        if self.disable_rules is not None:
+            zap_options.append(self.__add_custom_option__(label="rules.disable", value=self.disable_rules))
         
         # ZAP options should be wrapped with "" when auth or oauth is enabled
         if len(zap_options) > 0 and (self.auth_login_url is not None or self.oauth_token_url is not None):
@@ -380,7 +385,7 @@ class SOOSDASTAnalysis:
         log(f"Github PAT: {str(self.github_pat)}")
         if (self.auth_login_url or self.zap_options or self.request_cookies is not None or
             self.request_header is not None or self.auth_bearer_token is not None or
-            self.oauth_token_url is not None):
+            self.oauth_token_url is not None or self.disable_rules is not None):
             self.__add_zap_options__(args)
 
         self.__add_hook_option__(args)
@@ -966,6 +971,13 @@ class SOOSDASTAnalysis:
             help="Internal use only. Update addons of the zap image.",
             type=str,
             default="False",
+            required=False
+        )
+        parser.add_argument(
+            "--disableRules",
+            help="Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/",
+            nargs="*",
+            default=None,
             required=False
         )
 
