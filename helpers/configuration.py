@@ -33,7 +33,6 @@ class DASTConfig:
     header: Optional[str] = None
     oauth_token_url: Optional[str] = None
     oauth_parameters: Optional[str] = None
-    disabled_rules: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
