@@ -80,7 +80,8 @@ The basic command to run a baseline scan would look like:
 | `--sarifDestination` | None | SARIF destination to upload report in the form of <repo_owner>/<repo_name> |
 | `--sarif` | None | DEPRECATED - SARIF parameter is currently deprecated, please use --outputFormat='sarif' instead |
 | `--oauthTokenUrl` | None | The authentication URL that grants the access_token. |
-| `--oauthParameters` | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
+| `--oauthParameters` | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials")
+| `--disableRules` | None | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
 
 #### Config File Definition
 ``` yaml

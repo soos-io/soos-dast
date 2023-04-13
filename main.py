@@ -110,6 +110,7 @@ class SOOSDASTAnalysis:
         self.github_pat: Optional[str] = None
         self.checkout_dir: Optional[str] = None
         self.sarif_destination: Optional[str] = None
+        self.disable_rules: Optional[str] = None
 
         self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
@@ -266,6 +267,8 @@ class SOOSDASTAnalysis:
                 sys.exit(1)
             elif key == "updateAddons":
                 self.update_addons = True if str.lower(value) == "true" else False
+            elif key == "disableRules":
+                self.disable_rules = array_to_str(value)
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -347,6 +350,8 @@ class SOOSDASTAnalysis:
             os.environ['OAUTH_TOKEN_URL'] = self.oauth_token_url
         if self.oauth_parameters is not None:
             os.environ['OAUTH_PARAMETERS'] = self.oauth_parameters
+        if self.disable_rules is not None:
+            os.environ['DISABLE_RULES'] = self.disable_rules
 
     def __add_hook_option__(self, args: List[str]) -> None:
         args.append(Constants.ZAP_HOOK_OPTION)
@@ -365,7 +370,7 @@ class SOOSDASTAnalysis:
         log(f"Github PAT: {str(self.github_pat)}")
         if (self.auth_login_url or self.zap_options or self.request_cookies is not None or
             self.request_header is not None or self.auth_bearer_token is not None or
-            self.oauth_token_url is not None):
+            self.oauth_token_url is not None or self.disable_rules is not None):
             self.__add_hook_params__()
 
         self.__add_hook_option__(args)
@@ -951,6 +956,13 @@ class SOOSDASTAnalysis:
             help="Internal use only. Update addons of the zap image.",
             type=str,
             default="False",
+            required=False
+        )
+        parser.add_argument(
+            "--disableRules",
+            help="Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/",
+            nargs="*",
+            default=None,
             required=False
         )
 
