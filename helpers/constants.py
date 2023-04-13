@@ -55,6 +55,7 @@ ZAP_FORMAT_OPTION = "-f"
 ZAP_JSON_REPORT_OPTION = "-J"
 ZAP_OTHER_OPTIONS = "-z"
 ZAP_HOOK_OPTION = "--hook"
+ZAP_ACTIVE_SCAN_POLICY_NAME = "Default Policy"
 URI_START_DAST_ANALYSIS_TEMPLATE = (
     "{soos_base_uri}clients/{soos_client_id}/dast-tools/{soos_dast_tool}/analysis"
 )

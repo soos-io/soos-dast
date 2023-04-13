@@ -2,6 +2,7 @@ from helpers.auth import DASTAuth
 from helpers.configuration import DASTConfig
 import helpers.custom_cookies as cookies
 import helpers.custom_headers as headers
+import helpers.constants as Constants
 import sys
 import traceback
 from helpers.utils import log, exit_app
@@ -27,14 +28,13 @@ def zap_started(zap, target):
             # The url can include a valid path, but always reset to spider the host
             target = target[0:target.index('/', 8) + 1]
 
-        scan_policy = 'Default Policy'
-        zap.ascan.update_scan_policy(scanpolicyname=scan_policy, attackstrength="LOW")
-        log(f"disabled rules: {config.disabled_rules}")
-        zap.pscan.disable_scanners(','.join(config.disabled_rules))
+        zap.ascan.update_scan_policy(scanpolicyname=Constants.ZAP_ACTIVE_SCAN_POLICY_NAME, attackstrength="LOW")
+        log(f"disabled rules: {config.disable_rules}")
+        zap.pscan.disable_scanners(','.join(config.disable_rules))
+        zap.ascan.disable_scanners(','.join(config.disable_rules), Constants.ZAP_ACTIVE_SCAN_POLICY_NAME)
 
         auth = DASTAuth(config)
         auth.authenticate(zap, target)
-        log(f"checking cookies request")
         cookies.load(config, zap)
         headers.load(config, zap)
     except Exception:
