@@ -316,57 +316,42 @@ class SOOSDASTAnalysis:
         args.append(Constants.ZAP_JSON_REPORT_OPTION)
         args.append(Constants.REPORT_SCAN_RESULT_FILENAME)
 
-    def __add_zap_options__(self, args: List[str]) -> None:
-        log("Adding Zap Options")
-        args.append(Constants.ZAP_OTHER_OPTIONS)
-
-        zap_options: List[str] = list()
+    def __add_hook_params__(self) -> None:
+        log("Adding hook params", LogLevel.DEBUG)
         if self.auth_login_url is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.loginurl", value=self.auth_login_url))
+            os.environ['AUTH_LOGIN_URL'] = self.auth_login_url
         if self.auth_username is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.username", value=self.auth_username))
+            os.environ['AUTH_USERNAME'] = self.auth_username
         if self.auth_password is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.password", value=self.auth_password))
+            os.environ['AUTH_PASSWORD'] = self.auth_password
         if self.request_cookies is not None:
-            zap_options.append(self.__add_custom_option__(label="request.custom_cookies", value=self.request_cookies))
+            os.environ['CUSTOM_COOKIES'] = self.request_cookies
         if self.request_header is not None:
-            zap_options.append(self.__add_custom_option__(label="request.custom_header", value=self.request_header))
+            os.environ['CUSTOM_HEADER'] = self.request_header
         if self.auth_bearer_token is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.bearer_token", value=self.auth_bearer_token))
+            os.environ['AUTH_BEARER_TOKEN'] = self.auth_bearer_token
         if self.auth_display is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.display", value=self.auth_display))
+            os.environ['AUTH_DISPLAY'] = str(self.auth_display)
         if self.auth_submit_field_name is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.submit_field", value=self.auth_submit_field_name))
+            os.environ['AUTH_SUBMIT_FIELD'] = self.auth_submit_field_name
         if self.auth_submit_second_field_name is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.second_submit_field", value=self.auth_submit_second_field_name))
+            os.environ['AUTH_SECOND_SUBMIT_FIELD'] = self.auth_submit_second_field_name
         if self.auth_submit_action is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.submit_action", value=self.auth_submit_action))
-        if self.auth_form_type is not None and self.auth_username_field_name is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.form_type", value=self.auth_form_type))
-        if self.auth_delay_time is not None and self.auth_username_field_name is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.delay_time", value=self.auth_delay_time))
+            os.environ['AUTH_SUBMIT_ACTION'] = self.auth_submit_action
+        if self.auth_form_type is not None:
+            os.environ['AUTH_FORM_TYPE'] = self.auth_form_type
+        if self.auth_delay_time is not None:
+            os.environ['AUTH_DELAY_TIME'] = str(self.auth_delay_time)
         if self.auth_username_field_name is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.username_field", value=self.auth_username_field_name))
+            os.environ['AUTH_USERNAME_FIELD'] = self.auth_username_field_name
         if self.auth_password_field_name is not None:
-            zap_options.append(self.__add_custom_option__(label="auth.password_field", value=self.auth_password_field_name))
+            os.environ['AUTH_PASSWORD_FIELD'] = self.auth_password_field_name
         if self.oauth_token_url is not None:
-            zap_options.append(self.__add_custom_option__(label="oauth.token_url", value=self.oauth_token_url))
+            os.environ['OAUTH_TOKEN_URL'] = self.oauth_token_url
         if self.oauth_parameters is not None:
-            zap_options.append(self.__add_custom_option__(label="oauth.parameters", value=self.oauth_parameters))
+            os.environ['OAUTH_PARAMETERS'] = self.oauth_parameters
         if self.disable_rules is not None:
-            zap_options.append(self.__add_custom_option__(label="rules.disable", value=self.disable_rules))
-        
-        # ZAP options should be wrapped with "" when auth or oauth is enabled
-        if len(zap_options) > 0 and (self.auth_login_url is not None or self.oauth_token_url is not None):
-            zap_options.insert(0, "\"")
-            zap_options.append("\"")
-            
-
-
-        args.append(" ".join(zap_options))
-
-    def __add_custom_option__(self, label, value) -> str:
-        return f"{label}='{value}'"
+            os.environ['DISABLE_RULES'] = self.disable_rules
 
     def __add_hook_option__(self, args: List[str]) -> None:
         args.append(Constants.ZAP_HOOK_OPTION)
@@ -386,7 +371,7 @@ class SOOSDASTAnalysis:
         if (self.auth_login_url or self.zap_options or self.request_cookies is not None or
             self.request_header is not None or self.auth_bearer_token is not None or
             self.oauth_token_url is not None or self.disable_rules is not None):
-            self.__add_zap_options__(args)
+            self.__add_hook_params__()
 
         self.__add_hook_option__(args)
 

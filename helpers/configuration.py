@@ -1,6 +1,7 @@
 from helpers.constants import EMPTY_STRING
 from helpers.utils import log
 import sys
+import os
 import traceback
 from typing import Optional, List
 
@@ -32,7 +33,7 @@ class DASTConfig:
     header: Optional[str] = None
     oauth_token_url: Optional[str] = None
     oauth_parameters: Optional[str] = None
-    disabled_rules: Optional[str] = None
+    disable_rules: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
@@ -43,60 +44,39 @@ class DASTConfig:
             self.extra_zap_params = extra_zap_params
             log(f"Extra params passed by ZAP: {self.extra_zap_params}")
 
-            self.auth_login_url = self._get_zap_param('auth.loginurl') or EMPTY_STRING
-            self.auth_username = self._get_zap_param('auth.username') or EMPTY_STRING
-            self.auth_password = self._get_zap_param('auth.password') or EMPTY_STRING
-            self.auth_otp_secret = self._get_zap_param('auth.otpsecret') or EMPTY_STRING
-            self.auth_submit_action = self._get_zap_param('auth.submit_action') or 'click'
-            self.auth_form_type = self._get_zap_param('auth.form_type') or 'simple'
-            self.auth_token_endpoint = self._get_zap_param('auth.token_endpoint') or EMPTY_STRING
-            self.auth_bearer_token = self._get_zap_param('auth.bearer_token') or EMPTY_STRING
-            self.auth_username_field_name = self._get_zap_param('auth.username_field') or 'username'
-            self.auth_password_field_name = self._get_zap_param('auth.password_field') or 'password'
-            self.auth_display = self._get_zap_param('auth.display') or EMPTY_STRING
-            self.auth_otp_field_name = self._get_zap_param('auth.otp_field') or 'otp'
-            self.auth_submit_field_name = self._get_zap_param('auth.submit_field') or 'login'
-            self.auth_submit_second_field_name = self._get_zap_param('auth.second_submit_field') or 'login'
-            self.auth_delay_time = self._get_zap_param_float('auth.delay_time') or 0
-            self.auth_check_delay = self._get_zap_param_float('auth.check_delay') or 5
-            self.auth_check_element = self._get_zap_param('auth.check_element') or EMPTY_STRING
-            self.auth_exclude_urls = self._get_zap_param_list('auth.exclude') or list()
-            self.auth_include_urls = self._get_zap_param_list('auth.include') or list()
-            self.xss_collector = self._get_zap_param('xss.collector') or EMPTY_STRING
-            self.cookies = self._get_zap_param('request.custom_cookies') or EMPTY_STRING
-            self.header = self._get_zap_param('request.custom_header') or EMPTY_STRING
-            self.oauth_token_url = self._get_zap_param('oauth.token_url') or EMPTY_STRING   
-            self.oauth_parameters = self._get_zap_param_list('oauth.parameters') or EMPTY_STRING
-            self.disabled_rules = self._get_zap_param_list('rules.disable') or EMPTY_STRING
+            self.auth_login_url = os.environ.get('AUTH_LOGIN_URL') or EMPTY_STRING
+            self.auth_username = os.environ.get('AUTH_USERNAME') or EMPTY_STRING
+            self.auth_password = os.environ.get('AUTH_PASSWORD') or EMPTY_STRING
+            self.auth_otp_secret = os.environ.get('AUTH_OTP_SECRET') or EMPTY_STRING
+            self.auth_submit_action = os.environ.get('AUTH_SUBMIT_ACTION') or 'click'
+            self.auth_form_type = os.environ.get('AUTH_FORM_TYPE') or 'simple'
+            self.auth_token_endpoint = os.environ.get('AUTH_TOKEN_ENDPOINT') or EMPTY_STRING
+            self.auth_bearer_token = os.environ.get('AUTH_BEARER_TOKEN') or EMPTY_STRING
+            self.auth_username_field_name = os.environ.get('AUTH_USERNAME_FIELD') or 'username'
+            self.auth_password_field_name = os.environ.get('AUTH_PASSWORD_FIELD') or 'password'
+            self.auth_display = os.environ.get('AUTH_DISPLAY') or EMPTY_STRING
+            self.auth_otp_field_name = os.environ.get('AUTH_OTP_FIELD') or 'otp'
+            self.auth_submit_field_name = os.environ.get('AUTH_SUBMIT_FIELD') or 'login'
+            self.auth_submit_second_field_name =  os.environ.get('AUTH_SECOND_SUBMIT_FIELD') or 'login'
+            self.auth_delay_time = float(os.environ.get('AUTH_DELAY_TIME') or 0)
+            self.auth_check_delay = float(os.environ.get('AUTH_CHECK_DELAY') or 5)
+            self.auth_check_element = os.environ.get('AUTH_CHECK_ELEMENT') or EMPTY_STRING
+            self.auth_exclude_urls = self._get_hook_param_list(os.environ.get('AUTH_EXCLUDE_URLS')) or list()
+            self.auth_include_urls = self._get_hook_param_list(os.environ.get('AUTH_INCLUDE_URLS')) or list()
+            self.xss_collector = os.environ.get('XSS_COLLECTOR') or EMPTY_STRING
+            self.cookies = os.environ.get('CUSTOM_COOKIES') or EMPTY_STRING
+            self.header = os.environ.get('CUSTOM_HEADER') or EMPTY_STRING
+            self.oauth_token_url = os.environ.get('OAUTH_TOKEN_URL') or EMPTY_STRING
+            self.oauth_parameters = self._get_hook_param_list(os.environ.get('OAUTH_PARAMETERS')) or EMPTY_STRING
+            self.disable_rules = self._get_hook_param_list(os.environ.get('DISABLE_RULES')) or EMPTY_STRING
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)
             sys.exit(1)
 
-    def _get_zap_param(self, key):
-        for param in self.extra_zap_params:
-            if param.find(key) > -1:
-                value = param[len(key) + 1:]
-                log(f"_get_zap_param {key}: {value}")
-                return value
-
-    def _get_zap_param_list(self, key):
-        for param in self.extra_zap_params:
-            if param.find(key) > -1:
-                value = list(filter(None, param[len(key) + 1:].split(',')))
-                log(f"_get_zap_param_list {key}: {value}")
-                return [s.strip() for s in value]
-
-    def _get_zap_param_boolean(self, key):
-        for param in self.extra_zap_params:
-            if param.find(key) > -1:
-                value = param[len(key) + 1:] in ['1', 'True', 'true']
-                log(f"_get_zap_param_boolean {key}: {value}")
-                return value
-
-    def _get_zap_param_float(self, key):
-        for param in self.extra_zap_params:
-            if param.find(key) > -1:
-                value = float(param[len(key) + 1:])
-                log(f"_get_zap_param_float {key}: {value}")
-                return value
+    def _get_hook_param_list(self, value):
+            if value is None:
+                return []
+            value = list(filter(None, value.split(',')))
+            log(f"_get_hook_param_list {value}")
+            return [s.strip() for s in value]
