@@ -68,7 +68,7 @@ class DASTConfig:
             self.header = os.environ.get('CUSTOM_HEADER') or EMPTY_STRING
             self.oauth_token_url = os.environ.get('OAUTH_TOKEN_URL') or EMPTY_STRING
             self.oauth_parameters = self._get_hook_param_list(os.environ.get('OAUTH_PARAMETERS')) or EMPTY_STRING
-            self.disable_rules = self._get_hook_param_list(os.environ.get('DISABLE_RULES')) or EMPTY_STRING
+            self.disable_rules = self._get_hook_param_list(os.environ.get('DISABLE_RULES')) or None
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)
