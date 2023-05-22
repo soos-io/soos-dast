@@ -2,7 +2,7 @@ name: Publish to AWS ECR
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
