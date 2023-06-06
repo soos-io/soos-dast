@@ -11,7 +11,5 @@ config:
   apiURL: 'https://api.soos.io/api/'
   debug: false
   ajaxSpider: false
-  fullScan:
-    minutes: ''
   apiScan:
     format: 'openapi'

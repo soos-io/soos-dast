@@ -97,8 +97,6 @@ config:
   context:
     file: '' # Optional
     user: '' # Optional
-  fullScan:
-    minutes: ''
   apiScan:
     format: 'openapi'
 ```
@@ -107,7 +105,7 @@ config:
 
 ### Baseline
 
-It runs the [ZAP](https://www.zaproxy.org/) spider against the specified target for (by default) 1 minute and then waits for the passive scanning to complete before reporting the results.
+It runs the [ZAP](https://www.zaproxy.org/docs/docker/about/) spider against the specified target for (by default) 1 minute and then waits for the passive scanning to complete before reporting the results.
 
 This means that the script doesn't perform any actual ‘attacks’ and will run for a relatively short period of time (a few minutes at most).
 
@@ -117,7 +115,7 @@ This mode is intended to be ideal to run in a `CI/CD` environment, even against 
 
 ### Full Scan
 
-It runs the [ZAP](https://www.zaproxy.org/) spider against the specified target (by default with no time limit) followed by an optional ajax spider scan and then a full `Active Scan` before reporting the results.
+It runs the [ZAP](https://www.zaproxy.org/docs/docker/about/) spider against the specified target (by default with no time limit) followed by an optional ajax spider scan and then a full `Active Scan` before reporting the results.
 
 This means that the script does perform actual ‘attacks’ and can potentially run for a long period of time. You should NOT use it on web applications that you do not own. `Active Scan` can only find certain types of vulnerabilities. Logical vulnerabilities, such as broken access control, will not be found by any active or automated vulnerability scanning. Manual penetration testing should always be performed in addition to active scanning to find all types of vulnerabilities.
 

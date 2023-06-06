@@ -35,8 +35,7 @@ FILE_READ_MODE = "r"
 FILE_WRITE_MODE = "x"
 UTF_8_ENCODING = "utf-8"
 
-
-# OWASP ZAP Constants
+# OWASP ZAP Constants - for command line options, see https://www.zaproxy.org/docs/docker/full-scan/
 REPORT_SCAN_RESULT_FILENAME = "report.json"
 REPORT_SCAN_RESULT_FILE = "/zap/wrk/" + REPORT_SCAN_RESULT_FILENAME
 PY_CMD = "python3"
@@ -48,7 +47,7 @@ ZAP_TARGET_URL_OPTION = "-t"
 ZAP_MINIMUM_LEVEL_OPTION = "-l"
 ZAP_RULES_FILE_OPTION = "-c"
 ZAP_CONTEXT_FILE_OPTION = "-n"
-ZAP_MINUTES_DELAY_OPTION = "-m"
+ZAP_SPIDER_MINUTES_OPTION = "-m"
 ZAP_DEBUG_OPTION = "-d"
 ZAP_AJAX_SPIDER_OPTION = "-j"
 ZAP_FORMAT_OPTION = "-f"
