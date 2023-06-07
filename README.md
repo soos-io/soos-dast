@@ -97,8 +97,6 @@ config:
   context:
     file: '' # Optional
     user: '' # Optional
-  fullScan:
-    minutes: ''
   apiScan:
     format: 'openapi'
 ```
@@ -107,7 +105,7 @@ config:
 
 ### Baseline
 
-It runs the [ZAP](https://www.zaproxy.org/) spider against the specified target for (by default) 1 minute and then waits for the passive scanning to complete before reporting the results.
+It runs the [ZAP](https://www.zaproxy.org/docs/docker/about/) spider against the specified target for (by default) 1 minute and then waits for the passive scanning to complete before reporting the results.
 
 This means that the script doesn't perform any actual ‘attacks’ and will run for a relatively short period of time (a few minutes at most).
 
@@ -117,7 +115,7 @@ This mode is intended to be ideal to run in a `CI/CD` environment, even against 
 
 ### Full Scan
 
-It runs the [ZAP](https://www.zaproxy.org/) spider against the specified target (by default with no time limit) followed by an optional ajax spider scan and then a full `Active Scan` before reporting the results.
+It runs the [ZAP](https://www.zaproxy.org/docs/docker/about/) spider against the specified target (by default with no time limit) followed by an optional ajax spider scan and then a full `Active Scan` before reporting the results.
 
 This means that the script does perform actual ‘attacks’ and can potentially run for a long period of time. You should NOT use it on web applications that you do not own. `Active Scan` can only find certain types of vulnerabilities. Logical vulnerabilities, such as broken access control, will not be found by any active or automated vulnerability scanning. Manual penetration testing should always be performed in addition to active scanning to find all types of vulnerabilities.
 
@@ -126,6 +124,19 @@ By default, it reports all alerts as WARNings but you can specify a config file 
 ### API Scan
 
 It is tuned for performing scans against APIs defined by `openapi`, `soap`, or `graphql` via either a local file or a URL.
+
+To point to a local file, use the following syntax:
+```
+docker run -v <absolute-path-to-local-file>:/zap/wrk/:rw -it --rm soosio/dast --clientId=<client>--apiKey=<apiKey> --projectName=<api project name> --scanMode=apiscan --apiScanFormat=openapi swagger.yaml
+```
+
+Be sure the local file still points to the live endpoint of your API. E.g. for `openapi` YAML, you would set the `servers` section:
+```
+servers:
+  - url: https://myapi.example.com
+```
+
+NOTE: The DNS name of the API being scanned must be resolved by the Docker container. Use an IP address if this is not possible.
 
 It imports the definition that you specify and then runs an `Active Scan` against the URLs found. The `Active Scan` is tuned to APIs, so it doesn't bother looking for things like `XSSs`.
 

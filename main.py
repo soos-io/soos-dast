@@ -63,8 +63,7 @@ class SOOSDASTAnalysis:
         self.debug_mode: bool = False
         self.app_version: Optional[str] = None
         self.ajax_spider_scan: bool = False
-        self.spider: bool = False
-        self.minutes_delay: Optional[str] = None
+        self.spider_minutes: Optional[int] = 120
         self.report_request_headers: bool = False
         self.on_failure: Optional[str] = None
         self.update_addons: bool = False
@@ -80,7 +79,6 @@ class SOOSDASTAnalysis:
         self.zap_options: Optional[str] = None
         self.request_cookies: Optional[str] = None
         self.request_header: Optional[str] = None
-
 
         # Hardcoded values, used for analysis metadata
         self.dast_analysis_tool: str = Constants.DEFAULT_DAST_TOOL
@@ -173,10 +171,8 @@ class SOOSDASTAnalysis:
                 self.context_file = value
             elif key == "contextUser":
                 self.user_context = value
-            elif key == "fullScan":
-                self.minutes_delay = value["minutes"]
             elif key == "fullScanMinutes":
-                self.minutes_delay = value
+                self.spider_minutes = value
             elif key == "apiScan":
                 self.api_scan_format = value["format"]
             elif key == "apiScanFormat":
@@ -295,10 +291,10 @@ class SOOSDASTAnalysis:
         if is_true(self.ajax_spider_scan):
             args.append(Constants.ZAP_AJAX_SPIDER_OPTION)
 
-    def __add_minutes_delay_option__(self, args: List[str]) -> None:
-        if has_value(self.minutes_delay):
-            args.append(Constants.ZAP_MINUTES_DELAY_OPTION)
-            args.append(self.minutes_delay)
+    def __add_spider_minutes_option__(self, args: List[str]) -> None:
+        if has_value(self.spider_minutes):
+            args.append(Constants.ZAP_SPIDER_MINUTES_OPTION)
+            args.append(self.spider_minutes)
 
     def __add_format_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.api_scan_format):
@@ -362,7 +358,7 @@ class SOOSDASTAnalysis:
         self.__add_rules_file_option__(args)
         self.__add_context_file_option__(args)
         self.__add_ajax_spider_scan_option__(args)
-        self.__add_minutes_delay_option__(args)
+        self.__add_spider_minutes_option__(args)
         log("Add ZAP Options?")
         log(f"Auth Login: {str(self.auth_login_url)}")
         log(f"Zap Options: {str(self.zap_options)}")
