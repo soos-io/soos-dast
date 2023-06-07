@@ -127,7 +127,7 @@ It is tuned for performing scans against APIs defined by `openapi`, `soap`, or `
 
 To point to a local file, use the following syntax:
 ```
-docker run -v <absolute-path-to-local-file>:/zap/wrk/:rw -it --rm soosio/dast --clientId=<client>--apiKey=<apiKey> --projectName=<api project name> --scanMode=apiscan --apiURL=https://api.soos.io/api/ --apiScanFormat=openapi swagger.yaml
+docker run -v <absolute-path-to-local-file>:/zap/wrk/:rw -it --rm soosio/dast --clientId=<client>--apiKey=<apiKey> --projectName=<api project name> --scanMode=apiscan --apiScanFormat=openapi swagger.yaml
 ```
 
 Be sure the local file still points to the live endpoint of your API. E.g. for `openapi` YAML, you would set the `servers` section:
