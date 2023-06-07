@@ -125,6 +125,11 @@ By default, it reports all alerts as WARNings but you can specify a config file 
 
 It is tuned for performing scans against APIs defined by `openapi`, `soap`, or `graphql` via either a local file or a URL.
 
+To point to a local file, use the following syntax:
+```
+docker run -v <absolute-path-to-local-file>:/zap/wrk/:rw -it --rm soosio/dast --clientId=<client>--apiKey=<apiKey> --projectName=<api project name> --scanMode=apiscan --apiURL=https://api.soos.io/api/ --apiScanFormat=openapi swagger.yaml
+```
+
 It imports the definition that you specify and then runs an `Active Scan` against the URLs found. The `Active Scan` is tuned to APIs, so it doesn't bother looking for things like `XSSs`.
 
 It also includes 2 scripts that:
