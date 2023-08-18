@@ -38,7 +38,6 @@ The basic command to run a baseline scan would look like:
 | `--apiKey` | None | SOOS API Key - get yours from https://app.soos.io/integrate/sca |
 | `--projectName` | None | Project Name - this is what will be displayed in the SOOS app |
 | `--scanMode` | baseline | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
-| `--apiURL` | https://api.soos.io/api/ | SOOS API URL - Intended for internal use only, do not modify. |
 | `--debug` | False | Enable to show debug messages. |
 | `--ajaxSpider` | None | Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/ |
 | `--rules` | None | Rules file to use to INFO, IGNORE or FAIL warnings |
