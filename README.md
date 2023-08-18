@@ -90,7 +90,6 @@ config:
   apiKey: 'SOOS_API_KEY' # Required - SOOS API Key provided by the Application
   projectName: 'Project Name' # Required
   scanMode: 'baseline' # Required - DAST Scan mode. Values available: baseline, fullscan, and apiscan
-  apiURL: 'https://app.soos.io/api/' # Required - The SOOS API URL
   debug: true # Optional - Enable console log debugging. Default: false 
   ajaxSpider: false # Optional - Enable Ajax Spider scanning - Useful for Modern Web Apps
   rules: '' # Optional - 
