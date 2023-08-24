@@ -428,13 +428,12 @@ class SOOSDASTAnalysis:
             log(f"SOOS URL Endpoint: {api_url}")
 
             # Validate required fields
-            if (
-                    self.project_name is None
-                    or len(self.project_name) == 0
-                    or self.scan_mode is None
-                    or len(self.scan_mode) == 0
-            ):
-                log("projectName and scanMode are required", LogLevel.ERROR)
+            if self.project_name is None or len(self.project_name) == 0:
+                log("projectName is required", LogLevel.ERROR)
+                sys.exit(1)
+
+            if self.scan_mode is None or len(self.scan_mode) == 0:
+                log("scanMode is required", LogLevel.ERROR)
                 sys.exit(1)
 
             # Obfuscate sensitive data
