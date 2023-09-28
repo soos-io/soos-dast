@@ -52,7 +52,7 @@ ZAP_DEBUG_OPTION = "-d"
 ZAP_AJAX_SPIDER_OPTION = "-j"
 ZAP_FORMAT_OPTION = "-f"
 ZAP_JSON_REPORT_OPTION = "-J"
-ZAP_OTHER_OPTIONS = "-z"
+ZAP_OPTIONS = "-z"
 ZAP_HOOK_OPTION = "--hook"
 # NOTE: ZAP, when performing a 'fullscan', creates a policy called "Default Policy" - it's needed to specify that name in order to change the scan rules.
 ZAP_ACTIVE_SCAN_POLICY_NAME = "Default Policy"
