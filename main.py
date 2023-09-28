@@ -164,11 +164,8 @@ class SOOSDASTAnalysis:
                 self.debug_mode = True
             elif key == "ajaxSpider":
                 self.ajax_spider_scan = True
-            elif key == "context":
-                self.context_file = value["file"]
-                self.user_context = value["user"]
             elif key == "contextFile":
-                self.context_file = value
+                self.context_file = array_to_str(value)
             elif key == "contextUser":
                 self.user_context = value
             elif key == "fullScanMinutes":
