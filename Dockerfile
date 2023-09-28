@@ -27,7 +27,7 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
 
 # Set up Chrome version to be used
-ARG CHROME_VERSION="100.0.4896.88-1"
+ARG CHROME_VERSION="117.0.5938.132-1"
 
 # Set up the Chrome PPA
 RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \ 

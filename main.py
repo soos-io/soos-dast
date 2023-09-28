@@ -364,7 +364,7 @@ class SOOSDASTAnalysis:
         log(f"Zap Options: {str(self.zap_options)}")
         log(f"Cookies: {str(self.request_cookies)}")
         log(f"Github PAT: {str(self.github_pat)}")
-        if (self.auth_login_url or self.zap_options or self.request_cookies is not None or
+        if (self.auth_login_url or self.request_cookies is not None or
             self.request_header is not None or self.auth_bearer_token is not None or
             self.oauth_token_url is not None or self.disable_rules is not None):
             self.__add_hook_params__()
@@ -1031,6 +1031,9 @@ class SOOSDASTAnalysis:
                             
             if self.update_addons:
                 command = f"{command} --updateAddons"
+
+            if self.zap_options:
+                command = f"{command} {Constants.ZAP_OPTIONS} \"{self.zap_options}\""
 
             log(f"Executing {self.scan_mode} scan")
             soos_dast_start_response = self.__make_soos_start_analysis_request__(command)
