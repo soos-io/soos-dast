@@ -365,8 +365,7 @@ class SOOSDASTAnalysis:
             self.request_header is not None or self.auth_bearer_token is not None or
             self.oauth_token_url is not None or self.disable_rules is not None):
             self.__add_hook_params__()
-
-        self.__add_hook_option__(args)
+            self.__add_hook_option__(args)
 
         self.__add_report_file__(args)
        
