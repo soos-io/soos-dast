@@ -159,7 +159,7 @@ class SOOSDASTAnalysis:
                 valid_required(key, value)
                 self.fail_on_error = value
             elif key == "rules":
-                self.rules_file = value
+                self.rules_file = array_to_str(value)
             elif key == "debug":
                 self.debug_mode = True
             elif key == "ajaxSpider":
