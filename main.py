@@ -361,10 +361,9 @@ class SOOSDASTAnalysis:
         self.__add_context_file_option__(args)
         self.__add_ajax_spider_scan_option__(args)
         self.__add_spider_minutes_option__(args)
-        log("Add ZAP Options?")
+
         log(f"Auth Login: {str(self.auth_login_url)}")
         log(f"Zap Options: {str(self.zap_options)}")
-        log(f"Other Options: {str(self.other_options)}")
         log(f"Cookies: {str(self.request_cookies)}")
         log(f"Github PAT: {str(self.github_pat)}")
         if (self.scan_mode != Constants.API_SCAN):
@@ -372,7 +371,7 @@ class SOOSDASTAnalysis:
             self.__add_hook_option__(args)
 
         self.__add_report_file__(args)
-       
+      
         return " ".join(args)
 
     def baseline_scan(self) -> str:
@@ -1043,7 +1042,8 @@ class SOOSDASTAnalysis:
                 command = f"{command} {Constants.ZAP_OPTIONS} \"{self.zap_options}\""
 
             if self.other_options:
-                command = f"{command} {self.zap_options}"
+                log(f"Other Options: {str(self.other_options)}")
+                command = f"{command} {self.other_options}"
 
             log(f"Executing {self.scan_mode} scan")
             soos_dast_start_response = self.__make_soos_start_analysis_request__(command)
