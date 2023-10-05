@@ -110,6 +110,9 @@ class SOOSDASTAnalysis:
         self.sarif_destination: Optional[str] = None
         self.disable_rules: Optional[str] = None
 
+        # allows passing other command line options directly to the script
+        self.other_options: Optional[str] = None
+
         self.scan_mode_map: Dict = {
             Constants.BASELINE: self.baseline_scan,
             Constants.FULL_SCAN: self.full_scan,
@@ -262,6 +265,8 @@ class SOOSDASTAnalysis:
                 self.update_addons = True if str.lower(value) == "true" else False
             elif key == "disableRules":
                 self.disable_rules = array_to_str(value)
+            elif key == "otherOptions":
+                self.other_options = array_to_str(value)
 
     def __add_target_url_option__(self, args: List[str]) -> NoReturn:
         if has_value(self.target_url):
@@ -359,6 +364,7 @@ class SOOSDASTAnalysis:
         log("Add ZAP Options?")
         log(f"Auth Login: {str(self.auth_login_url)}")
         log(f"Zap Options: {str(self.zap_options)}")
+        log(f"Other Options: {str(self.other_options)}")
         log(f"Cookies: {str(self.request_cookies)}")
         log(f"Github PAT: {str(self.github_pat)}")
         if (self.scan_mode != Constants.API_SCAN):
@@ -954,6 +960,13 @@ class SOOSDASTAnalysis:
             default=None,
             required=False
         )
+        parser.add_argument(
+            "--otherOptions",
+            help="Other command line arguments sent directly to the script for items not supported by other command line arguments",
+            type=str,
+            nargs="*",
+            required=False,
+        )
 
         # parse help argument
         if "-hf" in sys.argv or "--helpFormatted" in sys.argv:
@@ -1028,6 +1041,9 @@ class SOOSDASTAnalysis:
 
             if self.zap_options:
                 command = f"{command} {Constants.ZAP_OPTIONS} \"{self.zap_options}\""
+
+            if self.other_options:
+                command = f"{command} {self.zap_options}"
 
             log(f"Executing {self.scan_mode} scan")
             soos_dast_start_response = self.__make_soos_start_analysis_request__(command)
