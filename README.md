@@ -81,6 +81,7 @@ The basic command to run a baseline scan would look like:
 | `--oauthTokenUrl` | None | The authentication URL that grants the access_token. |
 | `--oauthParameters` | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials")
 | `--disableRules` | None | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
+| `--otherOptions` | None | Additional command line arguments for items not supported by the set of parameters above |
 
 #### Config File Definition
 ``` yaml
