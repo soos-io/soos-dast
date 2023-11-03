@@ -1,0 +1,30 @@
+export const FILE_ENCODING = "utf8";
+export const SOOS_API_KEY_ENV_VAR = "SOOS_API_KEY";
+export const SOOS_CLIENT_ID_ENV_VAR = "SOOS_CLIENT_ID";
+export const AUTH_DELAY_TIME = 5;
+export const SARIF_FILE = "results.sarif";
+
+// ZAP related constants
+export const PY_CMD = "python3";
+export const BASE_LINE_SCRIPT = "/zap/zap-baseline.py";
+export const FULL_SCAN_SCRIPT = "/zap/zap-full-scan.py";
+export const API_SCAN_SCRIPT = "/zap/zap-api-scan.py";
+export const CONFIG_FILE_FOLDER = "/zap/config/";
+export const ZAP_TARGET_URL_OPTION = "-t";
+export const ZAP_RULES_FILE_OPTION = "-c";
+export const ZAP_CONTEXT_FILE_OPTION = "-n";
+export const ZAP_SPIDER_MINUTES_OPTION = "-m";
+export const ZAP_DEBUG_OPTION = "-d";
+export const ZAP_AJAX_SPIDER_OPTION = "-j";
+export const ZAP_FORMAT_OPTION = "-f";
+export const ZAP_JSON_REPORT_OPTION = "-J";
+export const ZAP_OPTIONS = "-z";
+export const ZAP_HOOK_OPTION = "--hook";
+export const ZAP_ACTIVE_SCAN_POLICY_NAME = "Default Policy";
+export const ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP/scripts/scripts/httpsender/";
+export const REPORT_SCAN_RESULT_FILENAME = "report.json";
+export const REPORT_SCAN_RESULT_FILE = `/zap/wrk/${REPORT_SCAN_RESULT_FILENAME}`;
+export const ZAP_CUSTOM_HOOK_SCRIPT = "src/hooks/soos_zap_hook.py";
+export const SPIDERED_URLS_FILE_PATH = "./spidered_urls.txt";
+export const DAST_TOOL = "zap";
+export const DAST_TOOL_VERSION = "2.12";

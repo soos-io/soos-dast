@@ -1,12 +1,14 @@
-from helpers.auth import DASTAuth
-from helpers.configuration import DASTConfig
-import helpers.custom_cookies as cookies
-import helpers.custom_headers as headers
-import helpers.constants as Constants
 import sys
 import traceback
-from helpers.utils import log, exit_app
 from typing import List
+
+from src.hooks.helpers.auth import authenticate
+from src.hooks.helpers.configuration import DASTConfig
+from src.hooks.helpers.utils import log, exit_app
+from src.hooks.helpers import custom_cookies as cookies
+from src.hooks.helpers import custom_headers as headers
+from src.hooks.helpers import constants as Constants
+import src.hooks.helpers.globals as globals
 
 config = DASTConfig()
 
@@ -15,14 +17,14 @@ config = DASTConfig()
 def start_docker_zap(docker_image, port, extra_zap_params, mount_dir):
     config.load_config(extra_zap_params)
 
-
 # Triggered when running from the Docker image
 def start_zap(port, extra_zap_params):
     config.load_config(extra_zap_params)
 
 
 def zap_started(zap, target):
-    log(f"zap_started_hook is running")
+    log("zap_started_hook is running")
+    globals.initialize()
     try:
         # ZAP Docker scripts reset the target to the root URL
         if target.count('/') > 2:
@@ -38,8 +40,7 @@ def zap_started(zap, target):
             zap.ascan.disable_scanners(','.join(ascan_disabled_rules), Constants.ZAP_ACTIVE_SCAN_POLICY_NAME)
             log(f"disabled rules: {config.disable_rules}")
 
-        auth = DASTAuth(config)
-        auth.authenticate(zap, target)
+        authenticate(zap, target, config)
         cookies.load(config, zap)
         headers.load(config, zap)
     except Exception:
@@ -47,6 +48,11 @@ def zap_started(zap, target):
         sys.exit(1)
 
     return zap, target
+
+def zap_import_context(zap, context_file):
+    log("zap_import_context_hook is running")
+    log(f"importing context from file: {context_file}")
+    zap.context.remove_context(globals.context_name)
 
 def zap_pre_shutdown(zap):
     log("Overview of spidered URL's:")

@@ -1,30 +1,39 @@
-# if the image or tag changes, make sure to update the scan structure tool name and version
 FROM soosio/zap2docker-soos as base
 
 USER root
 
-COPY ./main.py ./requirements.txt ./VERSION.txt ./
-COPY ./helpers helpers/
-COPY ./hooks hooks/
-COPY ./model model/
-COPY ./scripts/httpsender /home/zap/.ZAP/scripts/scripts/httpsender/
-RUN chmod 777 /home/zap/.ZAP/scripts/scripts/httpsender/
+# Install nodejs version based on NODE_MAJOR
+ENV NODE_MAJOR 18
+RUN apt-get update
+RUN apt-get install -y ca-certificates curl gnupg
+RUN mkdir -p /etc/apt/keyrings
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+RUN apt-get update
+RUN apt-get install -y nodejs
 
-COPY ./reports/traditional-json /zap/reports/traditional-json
-COPY ./reports/traditional-json-headers /zap/reports/traditional-json-headers
-RUN chmod -R 444 /zap/reports/traditional-json
-RUN chmod -R 444 /zap/reports/traditional-json-headers
+COPY ./src/ ./src/
+COPY ./tsconfig.json ./
+COPY ./package.json ./
 
-RUN pip3 install -r requirements.txt && mkdir /zap/wrk && cd /opt \
-	&& wget -qO- -O geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz \
-	&& tar -xvzf geckodriver.tar.gz \
-	&& chmod +x geckodriver \
-	&& ln -s /opt/geckodriver /usr/bin/geckodriver \
-	&& export PATH=$PATH:/usr/bin/geckodriver
+RUN pip3 install -r ./src/hooks/requirements.txt
 
-# Set up the Chrome PPA
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
+RUN mkdir /zap/wrk && cd /opt \
+    && wget -qO- -O geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz \
+    && tar -xvzf geckodriver.tar.gz \
+    && chmod +x geckodriver \
+    && ln -s /opt/geckodriver /usr/bin/geckodriver \
+    && export PATH=$PATH:/usr/bin/geckodriver
+
+RUN cd /zap/plugin && \
+	rm -rf ascanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/ascanrules-v49/ascanrules-release-49.zap && \
+    rm -rf ascanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/ascanrulesBeta-v44/ascanrulesBeta-beta-44.zap && \
+	rm -rf commonlib-* && wget https://github.com/zaproxy/zap-extensions/releases/download/commonlib-v1.12.0/commonlib-release-1.12.0.zap && \
+	rm -rf network-* && wget https://github.com/zaproxy/zap-extensions/releases/download/network-v0.6.0/network-beta-0.6.0.zap && \
+	rm -rf oast-* && wget https://github.com/zaproxy/zap-extensions/releases/download/oast-v0.14.0/oast-beta-0.14.0.zap && \
+	rm -rf pscanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrules-v44/pscanrules-release-44.zap && \
+    rm -rf pscanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrulesBeta-v31/pscanrulesBeta-beta-31.zap && \
+	chown -R zap:zap /zap
 
 # Set up Chrome version to be used
 ARG CHROME_VERSION="114.0.5735.133-1"
@@ -47,22 +56,13 @@ RUN unzip $CHROMEDRIVER_DIR/chromedriver* -d $CHROMEDRIVER_DIR
 # Put Chromedriver into the PATH
 ENV PATH $CHROMEDRIVER_DIR:$PATH
 
-RUN cd /zap/plugin && \
-	rm -rf ascanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/ascanrules-v49/ascanrules-release-49.zap && \
-    rm -rf ascanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/ascanrulesBeta-v44/ascanrulesBeta-beta-44.zap && \
-	rm -rf commonlib-* && wget https://github.com/zaproxy/zap-extensions/releases/download/commonlib-v1.12.0/commonlib-release-1.12.0.zap && \
-	rm -rf network-* && wget https://github.com/zaproxy/zap-extensions/releases/download/network-v0.6.0/network-beta-0.6.0.zap && \
-	rm -rf oast-* && wget https://github.com/zaproxy/zap-extensions/releases/download/oast-v0.14.0/oast-beta-0.14.0.zap && \
-	rm -rf pscanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrules-v44/pscanrules-release-44.zap && \
-    rm -rf pscanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrulesBeta-v31/pscanrulesBeta-beta-31.zap && \
-	chown -R zap:zap /zap
-	
+COPY ./src/reports/traditional-json /zap/reports/traditional-json
+COPY ./src/reports/traditional-json-headers /zap/reports/traditional-json-headers
+RUN chmod -R 444 /zap/reports/traditional-json
+RUN chmod -R 444 /zap/reports/traditional-json-headers
 
-FROM base as test
-COPY ./tests tests/
+RUN npm install
 
-ENTRYPOINT ["python3", "-m", "unittest", "tests/tests.py"]
+RUN npm run build
 
-FROM base as production
-
-ENTRYPOINT ["python3", "main.py"]
+ENTRYPOINT ["node", "dist/index.js"]

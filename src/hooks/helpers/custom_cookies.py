@@ -2,9 +2,9 @@ import sys
 import traceback
 import json
 
-from helpers.configuration import DASTConfig
-from helpers.constants import ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH
-from helpers.utils import log, process_custom_cookie_header_data
+from src.hooks.helpers.configuration import DASTConfig
+from src.hooks.helpers.constants import ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH
+from src.hooks.helpers.utils import log, process_custom_cookie_header_data
 
 
 def load(config: DASTConfig, zap):

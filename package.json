@@ -1,0 +1,43 @@
+{
+  "name": "soos-dast",
+  "version": "1.0.0",
+  "description": "SOOS DAST - The affordable no limit web vulnerability scanner",
+  "main": "index.js",
+  "scripts": {
+    "setup:install": "npm install",
+    "setup:clean-install": "npm ci",
+    "setup:update": "npx npm-check -u",
+    "setup:clean": "npx rimraf node_modules && npx rimraf package-lock.json",
+    "build": "tsc",
+    "build:clean": "npx rimraf build",
+    "format": "prettier ./src --check",
+    "format:fix": "prettier ./src --write",
+    "typecheck": "tsc --noEmit",
+    "test:coverage": "npm run test -- --reporter xunit --reporter-option output=ResultsFile.xml",
+    "check": "npm run format && npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "@soos-io/api-client": "0.1.5-pre.4",
+    "argparse": "^2.0.1",
+    "axios": "^0.27.2",
+    "tslib": "^2.6.2",
+    "zaproxy": "^2.0.0-rc.3"
+  },
+  "devDependencies": {
+    "@types/argparse": "^2.0.11",
+    "@types/glob": "^8.1.0",
+    "@types/node": "^20.6.3",
+    "prettier": "^2.8.8",
+    "typescript": "^5.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soos-io/soos-dast.git"
+  },
+  "author": "SOOS",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/soos-io/soos-dast/issues"
+  },
+  "homepage": "https://github.com/soos-io/soos-dast#readme"
+}
