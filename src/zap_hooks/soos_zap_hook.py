@@ -4,7 +4,7 @@ from typing import List
 
 from src.zap_hooks.helpers.auth_context import authenticate
 from src.zap_hooks.helpers.configuration import DASTConfig
-from src.zap_hooks.helpers.utilities import log, exit_app
+from src.zap_hooks.helpers.utilities import log, exit_app, LogLevel
 from src.zap_hooks.helpers import custom_cookies as cookies
 from src.zap_hooks.helpers import custom_headers as headers
 from src.zap_hooks.helpers import constants as Constants
@@ -39,8 +39,13 @@ def zap_started(zap, target):
             zap.pscan.disable_scanners(','.join(pscan_disabled_rules))
             zap.ascan.disable_scanners(','.join(ascan_disabled_rules), Constants.ZAP_ACTIVE_SCAN_POLICY_NAME)
             log(f"disabled rules: {config.disable_rules}")
-
-        authenticate(zap, target, config)
+        if config.auth_login_url or config.auth_bearer_token or config.auth_token_endpoint or config.oauth_token_url:
+            authenticate(zap, target, config)
+        else:
+            log(
+                'No login URL, Token Endpoint or Bearer token provided - skipping authentication',
+                log_level=LogLevel.WARN
+            )
         cookies.load(config, zap)
         headers.load(config, zap)
     except Exception:

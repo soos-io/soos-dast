@@ -79,16 +79,13 @@ def setup_webdriver() -> webdriver.Chrome:
     return driver
 
 def authenticate(zap, target, config):
-    skip_cleanup = False
     try:
         if zap is not None:
             setup_context(zap, target, config)
 
         if config.auth_login_url:
             driver_instance = setup_webdriver()
-
             login(driver_instance, config)
-
             set_authentication(zap, target, driver_instance, config)
         elif config.auth_bearer_token:
             add_authorization_header(
@@ -97,20 +94,13 @@ def authenticate(zap, target, config):
             login_from_token_endpoint(zap, config)
         elif config.oauth_token_url:
             login_from_oauth_token_url(zap, config)
-        else:
-            skip_cleanup = True
-            log(
-                'No login URL, Token Endpoint or Bearer token provided - skipping authentication',
-                log_level=LogLevel.WARN
-            )
 
     except Exception:
         log(f"error in authenticate: {print_exc()}", log_level=LogLevel.ERROR)
     finally:
         if config.auth_verification_url:
-            validate_authentication_url(driver_instance, config.auth_verification_url)
-        if not skip_cleanup:            
-            cleanup(driver_instance)
+            validate_authentication_url(driver_instance, config.auth_verification_url)         
+        cleanup(driver_instance)
 
 def set_authentication(zap, target, driver, config):
     log('Finding authentication cookies')

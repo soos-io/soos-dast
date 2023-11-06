@@ -8,8 +8,8 @@ from src.zap_hooks.helpers.utilities import log, process_custom_cookie_header_da
 
 
 def load(config: DASTConfig, zap):
-    log(f"loading cookies: {config.cookies}")
     if config.cookies:
+        log(f"loading cookies: {config.cookies}")
         script_name: str = 'request_cookies'
         request_cookies_script_path = f"{ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH}{script_name}.js"
 
