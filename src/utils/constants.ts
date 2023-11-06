@@ -1,4 +1,3 @@
-export const FILE_ENCODING = "utf8";
 export const SOOS_API_KEY_ENV_VAR = "SOOS_API_KEY";
 export const SOOS_CLIENT_ID_ENV_VAR = "SOOS_CLIENT_ID";
 export const AUTH_DELAY_TIME = 5;

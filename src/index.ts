@@ -1,9 +1,7 @@
-import { ZapCommandGenerator } from "./utils/ZapCommandGenerator";
+import { ZAPCommandGenerator } from "./utils/ZAPCommandGenerator";
 import * as fs from "fs";
 import FormData from "form-data";
 import { spawn, execSync } from "child_process";
-import { Logger } from "./utils/Logger";
-import { convertStringToB64, getEnvVariable, isUrlAvailable } from "./utils/utilities";
 import {
   AUTH_DELAY_TIME,
   DAST_TOOL,
@@ -14,18 +12,15 @@ import {
   SPIDERED_URLS_FILE_PATH,
 } from "./utils/constants";
 import { ArgumentParser } from "argparse";
-import {
-  ApiScanFormat,
-  FormTypes,
-  LogLevel,
-  OnFailure,
-  OutputFormat,
-  ScanMode,
-  SubmitActions,
-} from "./utils/enums";
+import { ApiScanFormat, FormTypes, OnFailure, ScanMode, SubmitActions } from "./utils/enums";
 import { exit } from "process";
 import SOOSAnalysisApiClient from "@soos-io/api-client/dist/api/SOOSAnalysisApiClient";
-import { ScanStatus, ScanType, soosLogger } from "@soos-io/api-client";
+import {
+  getEnvVariable,
+  isUrlAvailable,
+  convertStringToB64,
+} from "@soos-io/api-client/dist/utilities";
+import { ScanStatus, ScanType, soosLogger, LogLevel, OutputFormat } from "@soos-io/api-client";
 
 export interface SOOSDASTAnalysisArgs {
   apiKey: string;
@@ -387,7 +382,7 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    logger.info("Parsing arguments");
+    soosLogger.info("Parsing arguments");
     return parser.parse_args();
   }
 
@@ -397,8 +392,8 @@ class SOOSDASTAnalysis {
     let analysisId: string | undefined;
     const soosApiClient = new SOOSAnalysisApiClient(this.args.apiKey, this.args.apiURL);
     try {
-      logger.info("Starting SOOS DAST Analysis");
-      logger.info(`Creating scan for project ${this.args.projectName}...`);
+      soosLogger.info("Starting SOOS DAST Analysis");
+      soosLogger.info(`Creating scan for project ${this.args.projectName}...`);
       const result = await soosApiClient.createScan({
         clientId: this.args.clientId,
         projectName: this.args.projectName,
@@ -421,9 +416,9 @@ class SOOSDASTAnalysis {
       branchHash = result.branchHash;
       analysisId = result.analysisId;
 
-      global.logger.info(`Checking if url '${this.args.targetURL}' is available...`);
+      soosLogger.info(`Checking if url '${this.args.targetURL}' is available...`);
       if (!(await isUrlAvailable(this.args.targetURL))) {
-        logger.error(`The URL ${this.args.targetURL} is not available.`);
+        soosLogger.error(`The URL ${this.args.targetURL} is not available.`);
         exit(1);
       }
 
@@ -437,12 +432,12 @@ class SOOSDASTAnalysis {
         execSync("cp -R /zap/reports/traditional-json /root/.ZAP/reports/traditional-json");
       }
 
-      const zapCommandGenerator = new ZapCommandGenerator(this.args);
+      const zapCommandGenerator = new ZAPCommandGenerator(this.args);
       const command = zapCommandGenerator.runCommandGeneration(this.args.scanMode);
-      logger.info(`Running command: ${command}`);
+      soosLogger.info(`Running command: ${command}`);
       await SOOSDASTAnalysis.runZap(command);
       const runSuccess = fs.existsSync(REPORT_SCAN_RESULT_FILE);
-      logger.info(`Scan finished with success: ${runSuccess}`);
+      soosLogger.info(`Scan finished with success: ${runSuccess}`);
 
       const discoveredUrls =
         fs.existsSync(SPIDERED_URLS_FILE_PATH) && fs.statSync(SPIDERED_URLS_FILE_PATH).isFile()
@@ -465,7 +460,7 @@ class SOOSDASTAnalysis {
         ),
         "base64Manifest"
       );
-      logger.info(`Uploading scan result for project ${this.args.projectName}...`);
+      soosLogger.info(`Uploading scan result for project ${this.args.projectName}...`);
       await soosApiClient.uploadScanToolResult({
         clientId: this.args.clientId,
         projectHash,
@@ -476,7 +471,7 @@ class SOOSDASTAnalysis {
       });
 
       if (this.args.outputFormat !== undefined) {
-        logger.info(`Generating SARIF report  ${this.args.projectName}...`);
+        soosLogger.info(`Generating SARIF report  ${this.args.projectName}...`);
         const output = await soosApiClient.getFormattedScanResult({
           clientId: this.args.clientId,
           projectHash,
@@ -486,8 +481,8 @@ class SOOSDASTAnalysis {
           outputFormat: this.args.outputFormat,
         });
         if (output) {
-          logger.info(`Output ('${this.args.outputFormat}' format):`);
-          logger.info(JSON.stringify(output, null, 2));
+          soosLogger.info(`Output ('${this.args.outputFormat}' format):`);
+          soosLogger.info(JSON.stringify(output, null, 2));
         }
       }
     } catch (error) {
@@ -501,7 +496,7 @@ class SOOSDASTAnalysis {
           status: ScanStatus.Error,
           message: `Error while performing scan.`,
         });
-      logger.error(error);
+      soosLogger.error(error);
       exit(1);
     }
   }
@@ -525,17 +520,14 @@ class SOOSDASTAnalysis {
   }
 
   static async createAndRun(): Promise<void> {
-    global.logger = new Logger();
     try {
       const args = this.parseArgs();
-      global.logger.setMinLogLevel(args.logLevel);
-      global.logger.setVerbose(args.verbose);
       soosLogger.setMinLogLevel(args.logLevel);
       soosLogger.setVerbose(args.verbose);
       const soosDASTAnalysis = new SOOSDASTAnalysis(args);
       await soosDASTAnalysis.runAnalysis();
     } catch (error) {
-      logger.error(`Error on createAndRun: ${error}`);
+      soosLogger.error(`Error on createAndRun: ${error}`);
       exit(1);
     }
   }

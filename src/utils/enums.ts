@@ -10,20 +10,6 @@ export enum ApiScanFormat {
   GraphQL = "GraphQL",
 }
 
-export enum LogLevel {
-  PASS = 0,
-  IGNORE = 1,
-  INFO = 2,
-  WARN = 3,
-  FAIL = 4,
-  DEBUG = 5,
-  ERROR = 6,
-}
-
-export enum OutputFormat {
-  SARIF = "SARIF",
-}
-
 export enum SubmitActions {
   Submit = "submit",
   Click = "click",
