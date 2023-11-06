@@ -6,6 +6,10 @@ export const CONSTANTS = {
   AUTH: {
     DELAY_TIME: 5,
   },
+  STATUS: {
+    DELAY_TIME: 5,
+    MAX_ATTEMPTS: 10,
+  },
   FILES: {
     SARIF: "results.sarif",
     REPORT_SCAN_RESULT_FILENAME: "report.json",

@@ -9,6 +9,7 @@ import {
   getEnvVariable,
   isUrlAvailable,
   convertStringToB64,
+  sleep,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -503,6 +504,14 @@ class SOOSDASTAnalysis {
           }
         }
       }
+
+      if (this.args.onFailure === OnFailure.Fail) {
+        await this.waitForScanToFinish({
+          apiClient: soosApiClient,
+          scanStatusUrl: result.scanStatusUrl,
+          attempt: 0,
+        });
+      }
     } catch (error) {
       soosLogger.error(error);
       if (projectHash && branchHash && analysisId && !scanDone)
@@ -517,6 +526,49 @@ class SOOSDASTAnalysis {
         });
       soosLogger.error("There was an error while performing the scan. Exiting script.");
       exit(1);
+    }
+  }
+
+  async waitForScanToFinish({
+    apiClient,
+    scanStatusUrl,
+    attempt,
+  }: {
+    apiClient: SOOSAnalysisApiClient;
+    scanStatusUrl: string;
+    attempt: number;
+  }): Promise<void> {
+    const status = await apiClient.getScanStatus({ scanStatusUrl });
+
+    if (!status.isComplete) {
+      soosLogger.info(`Scan status: ${status.status}...`);
+      if (attempt >= CONSTANTS.STATUS.MAX_ATTEMPTS) {
+        soosLogger.error("Max attempts reached. for fetching scan status.");
+        soosLogger.error("Failing the build.");
+        process.exit(1);
+      }
+      await sleep(CONSTANTS.STATUS.DELAY_TIME);
+      return this.waitForScanToFinish({ apiClient, scanStatusUrl, attempt: attempt++ });
+    }
+
+    if (status.status === ScanStatus.FailedWithIssues) {
+      soosLogger.info("Analysis complete - Failures reported");
+      soosLogger.info("Failing the build.");
+      process.exit(1);
+    } else if (status.status === ScanStatus.Incomplete) {
+      soosLogger.info(
+        "Analysis Incomplete. It may have been cancelled or superseded by another scan."
+      );
+      soosLogger.info("Failing the build.");
+      process.exit(1);
+    } else if (status.status === ScanStatus.Error) {
+      soosLogger.info("Analysis Error.");
+      soosLogger.info("Failing the build.");
+      process.exit(1);
+    } else if (scanStatusUrl === "finished") {
+      return;
+    } else {
+      process.exit(0);
     }
   }
 
