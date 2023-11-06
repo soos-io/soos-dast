@@ -35,14 +35,14 @@ class ColorStreamHandler(logging.StreamHandler):
         if self.is_tty and colorize:
             color, attr = self.level_map[record.levelno]
             prefix = colored(
-                str("[" + record.levelname + "]").ljust(18), color, attrs=attr
+                str("[" + record.levelname + "]"), color, attrs=attr
             )
             if hasattr(record, "highlight") and record.highlight:
                 record.msg = colored(record.msg, color, attrs=["bold", "reverse"])
         else:
-            prefix = str("[" + record.levelname + "]").ljust(18)
+            prefix = str("[" + record.levelname + "]")
 
-        record.msg = prefix + record.msg
+        record.msg = f"{prefix} {record.msg}"
 
         logging.StreamHandler.emit(self, record)
 class CustomFormatter(logging.Formatter):

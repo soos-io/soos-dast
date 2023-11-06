@@ -371,7 +371,18 @@ class SOOSDASTAnalysis {
     let analysisId: string | undefined;
     const soosApiClient = new SOOSAnalysisApiClient(this.args.apiKey, this.args.apiURL);
     try {
-      soosLogger.info("Starting SOOS DAST Analysis");
+      soosLogger.info(`Project Name: ${this.args.projectName}`);
+      soosLogger.info(`Scan Mode: ${this.args.scanMode}`);
+      soosLogger.info(`API URL: ${this.args.apiURL}`);
+      soosLogger.info(`Target URL: ${this.args.targetURL}`);
+      soosLogger.logLineSeparator();
+
+      soosLogger.info(`Checking if url '${this.args.targetURL}' is available...`);
+      if (!(await isUrlAvailable(this.args.targetURL))) {
+        soosLogger.error(`The URL ${this.args.targetURL} is not available.`);
+        exit(1);
+      }
+
       soosLogger.info(`Creating scan for project ${this.args.projectName}...`);
       const result = await soosApiClient.createScan({
         clientId: this.args.clientId,
@@ -394,12 +405,6 @@ class SOOSDASTAnalysis {
       projectHash = result.projectHash;
       branchHash = result.branchHash;
       analysisId = result.analysisId;
-
-      soosLogger.info(`Checking if url '${this.args.targetURL}' is available...`);
-      if (!(await isUrlAvailable(this.args.targetURL))) {
-        soosLogger.error(`The URL ${this.args.targetURL} is not available.`);
-        exit(1);
-      }
 
       execSync("mkdir -p ~/.ZAP/reports /root/.ZAP/reports");
 
@@ -447,6 +452,8 @@ class SOOSDASTAnalysis {
         ),
         "base64Manifest"
       );
+      soosLogger.logLineSeparator();
+      soosLogger.info(`Starting report results processing`);
       soosLogger.info(`Uploading scan result for project ${this.args.projectName}...`);
       await soosApiClient.uploadScanToolResult({
         clientId: this.args.clientId,
@@ -456,6 +463,7 @@ class SOOSDASTAnalysis {
         scanId: analysisId,
         resultFile: formData,
       });
+      soosLogger.info(`Scan result uploaded successfully`);
 
       scanDone = true;
 
@@ -491,6 +499,10 @@ class SOOSDASTAnalysis {
           attempt: 0,
         });
       }
+
+      soosLogger.logLineSeparator();
+      soosLogger.info(`SOOS DAST Analysis finished successfully`);
+      soosLogger.info(`Project URL: ${result.scanUrl}`);
     } catch (error) {
       soosLogger.error(error);
       if (projectHash && branchHash && analysisId && !scanDone)
@@ -553,7 +565,8 @@ class SOOSDASTAnalysis {
 
   static async runZap(command: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log("Running ZAP");
+      soosLogger.logLineSeparator();
+      soosLogger.info("Running ZAP");
       const zapProcess = spawn(command, {
         shell: true,
         stdio: "inherit",
@@ -570,10 +583,15 @@ class SOOSDASTAnalysis {
   }
 
   static async createAndRun(): Promise<void> {
+    soosLogger.info("Starting SOOS DAST Analysis");
+    soosLogger.logLineSeparator();
     try {
       const args = this.parseArgs();
       soosLogger.setMinLogLevel(args.logLevel);
       soosLogger.setVerbose(args.verbose);
+      soosLogger.info("Configuration read");
+      soosLogger.verboseDebug(args);
+      soosLogger.logLineSeparator();
       const soosDASTAnalysis = new SOOSDASTAnalysis(args);
       await soosDASTAnalysis.runAnalysis();
     } catch (error) {
