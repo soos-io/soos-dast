@@ -10,7 +10,14 @@ import {
   isUrlAvailable,
   convertStringToB64,
 } from "@soos-io/api-client/dist/utilities";
-import { ScanStatus, ScanType, soosLogger, LogLevel, OutputFormat } from "@soos-io/api-client";
+import {
+  ScanStatus,
+  ScanType,
+  soosLogger,
+  LogLevel,
+  OutputFormat,
+  SOOS_CONSTANTS,
+} from "@soos-io/api-client";
 import { ZAPCommandGenerator, CONSTANTS } from "./utils";
 
 export interface SOOSDASTAnalysisArgs {
@@ -378,6 +385,7 @@ class SOOSDASTAnalysis {
   }
 
   async runAnalysis(): Promise<void> {
+    let scanDone: boolean = false;
     let projectHash: string | undefined;
     let branchHash: string | undefined;
     let analysisId: string | undefined;
@@ -449,7 +457,12 @@ class SOOSDASTAnalysis {
         "file",
         convertStringToB64(
           JSON.stringify(
-            JSON.parse(fs.readFileSync(CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE, "utf-8"))
+            JSON.parse(
+              fs.readFileSync(
+                CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE,
+                SOOS_CONSTANTS.FileUploads.Encoding
+              )
+            )
           )
         ),
         "base64Manifest"
@@ -464,6 +477,8 @@ class SOOSDASTAnalysis {
         resultFile: formData,
       });
 
+      scanDone = true;
+
       if (this.args.outputFormat !== undefined) {
         soosLogger.info(`Generating SARIF report  ${this.args.projectName}...`);
         const output = await soosApiClient.getFormattedScanResult({
@@ -477,10 +492,20 @@ class SOOSDASTAnalysis {
         if (output) {
           soosLogger.info(`Output ('${this.args.outputFormat}' format):`);
           soosLogger.info(JSON.stringify(output, null, 2));
+          if (this.args.checkoutDir) {
+            soosLogger.info(
+              `Writing SARIF report to ${this.args.checkoutDir}/${CONSTANTS.FILES.SARIF}`
+            );
+            fs.writeFileSync(
+              `${this.args.checkoutDir}/${CONSTANTS.FILES.SARIF}`,
+              JSON.stringify(output, null, 2)
+            );
+          }
         }
       }
     } catch (error) {
-      if (projectHash && branchHash && analysisId)
+      soosLogger.error(error);
+      if (projectHash && branchHash && analysisId && !scanDone)
         await soosApiClient.updateScanStatus({
           clientId: this.args.clientId,
           projectHash,
@@ -490,7 +515,7 @@ class SOOSDASTAnalysis {
           status: ScanStatus.Error,
           message: `Error while performing scan.`,
         });
-      soosLogger.error(error);
+      soosLogger.error("There was an error while performing the scan. Exiting script.");
       exit(1);
     }
   }
