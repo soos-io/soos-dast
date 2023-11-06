@@ -19,38 +19,40 @@ export class ZAPCommandGenerator {
   }
 
   private addHookParams() {
-    this.addEnvironmentVariable("AUTH_LOGIN_URL", this.config.authLoginURL);
-    this.addEnvironmentVariable("AUTH_USERNAME", this.config.authUsername);
-    this.addEnvironmentVariable("AUTH_PASSWORD", this.config.authPassword);
-    this.addEnvironmentVariable("CUSTOM_COOKIES", this.config.requestCookies);
-    this.addEnvironmentVariable("CUSTOM_HEADER", this.config.requestHeaders);
+    this.addEnvironmentVariable("AUTH_ACTION", this.config.authSubmitAction);
     this.addEnvironmentVariable("AUTH_BEARER_TOKEN", this.config.bearerToken);
-    this.addEnvironmentVariable("AUTH_SUBMIT_FIELD", this.config.authSubmitField);
+    this.addEnvironmentVariable("AUTH_DELAY_TIME", this.config.authDelayTime);
+    this.addEnvironmentVariable("AUTH_FORM_TYPE", this.config.authFormType);
+    this.addEnvironmentVariable("AUTH_LOGIN_URL", this.config.authLoginURL);
+    this.addEnvironmentVariable("AUTH_PASSWORD", this.config.authPassword);
+    this.addEnvironmentVariable("AUTH_PASSWORD_FIELD", this.config.authPasswordField);
     this.addEnvironmentVariable("AUTH_SECOND_SUBMIT_FIELD", this.config.authSecondSubmitField);
     this.addEnvironmentVariable("AUTH_SUBMIT_ACTION", this.config.authSubmitAction);
-    this.addEnvironmentVariable("AUTH_FORM_TYPE", this.config.authFormType);
-    this.addEnvironmentVariable("AUTH_DELAY_TIME", this.config.authDelayTime);
-    this.addEnvironmentVariable("AUTH_VERIFICATION_URL", this.config.authVerificationURL);
+    this.addEnvironmentVariable("AUTH_SUBMIT_FIELD", this.config.authSubmitField);
+    this.addEnvironmentVariable("AUTH_USERNAME", this.config.authUsername);
     this.addEnvironmentVariable("AUTH_USERNAME_FIELD", this.config.authUsernameField);
-    this.addEnvironmentVariable("AUTH_PASSWORD_FIELD", this.config.authPasswordField);
-    this.addEnvironmentVariable("OAUTH_TOKEN_URL", this.config.oauthTokenUrl);
-    this.addEnvironmentVariable("OAUTH_PARAMETERS", this.config.oauthParameters);
+    this.addEnvironmentVariable("AUTH_VERIFICATION_URL", this.config.authVerificationURL);
+    this.addEnvironmentVariable("CUSTOM_COOKIES", this.config.requestCookies);
+    this.addEnvironmentVariable("CUSTOM_HEADER", this.config.requestHeaders);
     this.addEnvironmentVariable("DISABLE_RULES", this.config.disableRules);
+    this.addEnvironmentVariable("OAUTH_PARAMETERS", this.config.oauthParameters);
+    this.addEnvironmentVariable("OAUTH_TOKEN_URL", this.config.oauthTokenUrl);
   }
 
   private generateCommand(args: string[]): string {
-    this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
+    this.addOption(args, CONSTANTS.ZAP.AJAX_SPIDER_OPTION, this.config.ajaxSpider);
     this.addOption(args, CONSTANTS.ZAP.CONTEXT_FILE_OPTION, this.config.contextFile);
     this.addOption(args, CONSTANTS.ZAP.DEBUG_OPTION, this.config.debug);
-    this.addOption(args, CONSTANTS.ZAP.AJAX_SPIDER_OPTION, this.config.ajaxSpider);
-    this.addOption(args, CONSTANTS.ZAP.SPIDER_MINUTES_OPTION, this.config.fullScanMinutes);
+    this.addOption(args, CONSTANTS.ZAP.HOOK_OPTION, CONSTANTS.FILES.ZAP_CUSTOM_HOOK_SCRIPT);
     this.addOption(
       args,
       CONSTANTS.ZAP.JSON_REPORT_OPTION,
       CONSTANTS.FILES.REPORT_SCAN_RESULT_FILENAME
     );
     this.addOption(args, CONSTANTS.ZAP.OPTIONS, this.config.otherOptions);
-    this.addOption(args, CONSTANTS.ZAP.HOOK_OPTION, CONSTANTS.FILES.ZAP_CUSTOM_HOOK_SCRIPT);
+    this.addOption(args, CONSTANTS.ZAP.SPIDER_MINUTES_OPTION, this.config.fullScanMinutes);
+    this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
+
     this.addHookParams();
 
     return args.join(" ");

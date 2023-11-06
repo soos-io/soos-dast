@@ -8,7 +8,7 @@ import SOOSAnalysisApiClient from "@soos-io/api-client/dist/api/SOOSAnalysisApiC
 import {
   getEnvVariable,
   isUrlAvailable,
-  convertStringToB64,
+  convertStringToBase64,
   sleep,
 } from "@soos-io/api-client/dist/utilities";
 import {
@@ -22,98 +22,59 @@ import {
 import { ZAPCommandGenerator, CONSTANTS } from "./utils";
 
 export interface SOOSDASTAnalysisArgs {
+  ajaxSpider: boolean;
   apiKey: string;
+  apiScanFormat: ApiScanFormat;
   apiURL: string;
   appVersion: string;
+  authDelayTime: number;
+  authFormType: FormTypes;
+  authLoginURL: string;
+  authPassword: string;
+  authPasswordField: string;
+  authSecondSubmitField: string;
+  authSubmitAction: SubmitActions;
+  authSubmitField: string;
+  authUsername: string;
+  authUsernameField: string;
+  authVerificationURL: string;
+  bearerToken: string;
   branchName: string;
-  branchUri: string;
-  buildUri: string;
+  branchURI: string;
+  buildURI: string;
   buildVersion: string;
+  checkoutDir: string;
   clientId: string;
   commitHash: string;
+  contextFile: string;
+  debug: boolean;
+  disableRules: string;
+  fullScanMinutes: number;
   integrationName: string;
   integrationType: string;
   logLevel: LogLevel;
+  oauthParameters: string;
+  oauthTokenUrl: string;
   onFailure: OnFailure;
   operatingEnvironment: string;
+  otherOptions: string;
+  outputFormat: OutputFormat;
   projectName: string;
-  scriptVersion: string;
-  targetURL: string;
-  scanMode: ScanMode;
-  debug: boolean;
-  ajaxSpider: boolean;
-  contextFile: string;
-  fullScanMinutes: number;
-  apiScanFormat: ApiScanFormat;
-  authUsername: string;
-  authPassword: string;
-  authLoginURL: string;
-  authUsernameField: string;
-  authPasswordField: string;
-  authSubmitField: string;
-  authSecondSubmitField: string;
-  authSubmitAction: SubmitActions;
-  authFormType: FormTypes;
-  authDelayTime: number;
-  authVerificationURL: string;
+  reportRequestHeaders: boolean;
   requestCookies: string;
   requestHeaders: string;
-  reportRequestHeaders: boolean;
-  bearerToken: string;
-  oauthTokenUrl: string;
-  oauthParameters: string;
+  scanMode: ScanMode;
+  scriptVersion: string;
+  targetURL: string;
   updateAddons: boolean;
-  disableRules: string;
-  otherOptions: string;
   verbose: boolean;
-  outputFormat: OutputFormat;
-  checkoutDir: string;
 }
+
 class SOOSDASTAnalysis {
   constructor(private args: SOOSDASTAnalysisArgs) {}
 
   static parseArgs(): SOOSDASTAnalysisArgs {
     const parser = new ArgumentParser({ description: "SOOS DAST" });
-
-    parser.add_argument("targetURL", {
-      help: "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
-    });
-
-    parser.add_argument("--clientId", {
-      help: "SOOS Client ID - get yours from https://app.soos.io/integrate/sca",
-      default: getEnvVariable(CONSTANTS.SOOS.CLIENT_ID_ENV_VAR),
-      required: false,
-    });
-
-    parser.add_argument("--apiKey", {
-      help: "SOOS API Key - get yours from https://app.soos.io/integrate/sca",
-      default: getEnvVariable(CONSTANTS.SOOS.API_KEY_ENV_VAR),
-      required: false,
-    });
-
-    parser.add_argument("--projectName", {
-      help: "Project Name - this is what will be displayed in the SOOS app.",
-      required: true,
-    });
-
-    parser.add_argument("--scanMode", {
-      help: "Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
-      default: ScanMode.Baseline,
-      required: false,
-      type: (value: string) => {
-        if (Object.values(ScanMode).includes(value as ScanMode)) {
-          return value as ScanMode;
-        } else {
-          throw new Error(`Invalid scan mode: ${value}`);
-        }
-      },
-    });
-
-    parser.add_argument("--debug", {
-      help: "Enable debug logging for zap.",
-      action: "store_true",
-      required: false,
-    });
 
     parser.add_argument("--ajaxSpider", {
       help: "Enable Ajax Spider.",
@@ -121,15 +82,9 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    parser.add_argument("--contextFile", {
-      help: "Context file which will be loaded prior to scanning the target.",
-      nargs: "*",
-      required: false,
-    });
-
-    parser.add_argument("--fullScanMinutes", {
-      help: "Number of minutes for the spider to run.",
-      default: 120,
+    parser.add_argument("--apiKey", {
+      help: "SOOS API Key - get yours from https://app.soos.io/integrate/sca",
+      default: getEnvVariable(CONSTANTS.SOOS.API_KEY_ENV_VAR),
       required: false,
     });
 
@@ -145,8 +100,40 @@ class SOOSDASTAnalysis {
       },
     });
 
-    parser.add_argument("--authUsername", {
-      help: "Username to use in auth apps.",
+    parser.add_argument("--apiURL", {
+      help: "SOOS API URL - Intended for internal use only, do not modify.",
+      default: "https://api.soos.io/api/",
+      required: false,
+    });
+
+    parser.add_argument("--appVersion", {
+      help: "App Version - Intended for internal use only.",
+      required: false,
+    });
+
+    parser.add_argument("--authDelayTime", {
+      help: "Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
+      default: CONSTANTS.AUTH.DELAY_TIME,
+      required: false,
+    });
+
+    parser.add_argument("--authFormType", {
+      help: `Form type of the login URL options are: simple (all fields are displayed at once),
+             wait_for_password (Password field is displayed only after username is filled),
+             or multi_page (Password field is displayed only after username is filled and submit is clicked).`,
+      default: FormTypes.Simple,
+      required: false,
+      type: (value: string) => {
+        if (Object.values(FormTypes).includes(value as FormTypes)) {
+          return value as FormTypes;
+        } else {
+          throw new Error(`Invalid submit action: ${value}`);
+        }
+      },
+    });
+
+    parser.add_argument("--authLoginURL", {
+      help: "Login URL to use in auth apps.",
       required: false,
     });
 
@@ -155,23 +142,8 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    parser.add_argument("--authLoginURL", {
-      help: "Login URL to use in auth apps.",
-      required: false,
-    });
-
-    parser.add_argument("--authUsernameField", {
-      help: "Username input id to use in auth apps.",
-      required: false,
-    });
-
     parser.add_argument("--authPasswordField", {
       help: "Password input id to use in auth apps.",
-      required: false,
-    });
-
-    parser.add_argument("--authSubmitField", {
-      help: "Submit button id to use in auth apps.",
       required: false,
     });
 
@@ -192,78 +164,23 @@ class SOOSDASTAnalysis {
       },
     });
 
-    parser.add_argument("--authFormType", {
-      help: `Form type of the login URL options are: simple (all fields are displayed at once),
-             wait_for_password (Password field is displayed only after username is filled),
-             or multi_page (Password field is displayed only after username is filled and submit is clicked).`,
-      default: FormTypes.Simple,
+    parser.add_argument("--authSubmitField", {
+      help: "Submit button id to use in auth apps.",
       required: false,
-      type: (value: string) => {
-        if (Object.values(FormTypes).includes(value as FormTypes)) {
-          return value as FormTypes;
-        } else {
-          throw new Error(`Invalid submit action: ${value}`);
-        }
-      },
+    });
+
+    parser.add_argument("--authUsername", {
+      help: "Username to use in auth apps.",
+      required: false,
+    });
+
+    parser.add_argument("--authUsernameField", {
+      help: "Username input id to use in auth apps.",
+      required: false,
     });
 
     parser.add_argument("--authVerificationURL", {
       help: "URL used to verify authentication success. If authentication fails when this URL is provided, the scan will be terminated.",
-      required: false,
-    });
-
-    parser.add_argument("--authDelayTime", {
-      help: "Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
-      default: CONSTANTS.AUTH.DELAY_TIME,
-      required: false,
-    });
-
-    parser.add_argument("--requestCookies", {
-      help: "Set Cookie values for the requests to the target URL",
-      nargs: "*",
-      required: false,
-    });
-
-    parser.add_argument("--requestHeaders", {
-      help: "Set extra headers for the requests to the target URL",
-      nargs: "*",
-      required: false,
-    });
-
-    parser.add_argument("--onFailure", {
-      help: "Action to perform when the scan fails. Options: fail_the_build, continue_on_failure.",
-      default: OnFailure.Continue,
-      required: false,
-      type: (value: string) => {
-        if (Object.values(OnFailure).includes(value as OnFailure)) {
-          return value as OnFailure;
-        } else {
-          throw new Error(`Invalid submit action: ${value}`);
-        }
-      },
-    });
-
-    parser.add_argument("--outputFormat", {
-      help: "Output format for vulnerabilities: only the value SARIF is available at the moment",
-      required: false,
-      type: (value: string) => {
-        if (value in OutputFormat) {
-          return OutputFormat[value as keyof typeof OutputFormat];
-        } else {
-          throw new Error(`Invalid output format: ${value}`);
-        }
-      },
-    });
-
-    parser.add_argument("--checkoutDir", {
-      help: "Directory where the SARIF file will be created, used by Github Actions.",
-      required: false,
-      nargs: "*",
-    });
-
-    parser.add_argument("--reportRequestHeaders", {
-      help: "Include request/response headers data in report.",
-      default: true,
       required: false,
     });
 
@@ -272,19 +189,56 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    parser.add_argument("--oauthTokenUrl", {
-      help: "The authentication URL to use to obtain an OAuth token.",
+    parser.add_argument("--branchName", {
+      help: "The name of the branch from the SCM System.",
+      default: null,
       required: false,
     });
 
-    parser.add_argument("--oauthParameters", {
-      help: 'Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials")',
+    parser.add_argument("--branchURI", {
+      help: "The URI to the branch from the SCM System.",
+      default: null,
+      required: false,
+    });
+
+    parser.add_argument("--buildURI", {
+      help: "URI to CI build info.",
+      default: null,
+      required: false,
+    });
+
+    parser.add_argument("--buildVersion", {
+      help: "Version of application build artifacts.",
+      default: null,
+      required: false,
+    });
+
+    parser.add_argument("--checkoutDir", {
+      help: "Directory where the SARIF file will be created, used by Github Actions.",
       required: false,
       nargs: "*",
     });
 
-    parser.add_argument("--updateAddons", {
-      help: "Internal use only. Update ZAP addons.",
+    parser.add_argument("--clientId", {
+      help: "SOOS Client ID - get yours from https://app.soos.io/integrate/sca",
+      default: getEnvVariable(CONSTANTS.SOOS.CLIENT_ID_ENV_VAR),
+      required: false,
+    });
+
+    parser.add_argument("--commitHash", {
+      help: "The commit hash value from the SCM System.",
+      default: null,
+      required: false,
+    });
+
+    parser.add_argument("--contextFile", {
+      help: "Context file which will be loaded prior to scanning the target.",
+      nargs: "*",
+      required: false,
+    });
+
+    parser.add_argument("--debug", {
+      help: "Enable debug logging for ZAP.",
       action: "store_true",
       required: false,
     });
@@ -295,14 +249,19 @@ class SOOSDASTAnalysis {
       nargs: "*",
     });
 
-    parser.add_argument("--otherOptions", {
-      help: "Other Options to pass to zap.",
+    parser.add_argument("--fullScanMinutes", {
+      help: "Number of minutes for the spider to run.",
+      default: 120,
       required: false,
     });
 
-    parser.add_argument("--apiURL", {
-      help: "SOOS API URL - Intended for internal use only, do not modify.",
-      default: "https://api.soos.io/api/",
+    parser.add_argument("--integrationName", {
+      help: "Integration Name - Intended for internal use only.",
+      required: false,
+    });
+
+    parser.add_argument("--integrationType", {
+      help: "Integration Type - Intended for internal use only.",
       required: false,
     });
 
@@ -319,59 +278,79 @@ class SOOSDASTAnalysis {
       },
     });
 
-    parser.add_argument("--integrationName", {
-      help: "Integration Name - Intended for internal use only.",
+    parser.add_argument("--onFailure", {
+      help: "Action to perform when the scan fails. Options: fail_the_build, continue_on_failure.",
+      default: OnFailure.Continue,
       required: false,
-    });
-
-    parser.add_argument("--integrationType", {
-      help: "Integration Type - Intended for internal use only.",
-      required: false,
-    });
-
-    parser.add_argument("--scriptVersion", {
-      help: "Script Version - Intended for internal use only.",
-      required: false,
-    });
-
-    parser.add_argument("--appVersion", {
-      help: "App Version - Intended for internal use only.",
-      required: false,
-    });
-
-    parser.add_argument("--commitHash", {
-      help: "The commit hash value from the SCM System.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--branchName", {
-      help: "The name of the branch from the SCM System.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--branchURI", {
-      help: "The URI to the branch from the SCM System.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--buildVersion", {
-      help: "Version of application build artifacts.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--buildURI", {
-      help: "URI to CI build info.",
-      default: null,
-      required: false,
+      type: (value: string) => {
+        if (Object.values(OnFailure).includes(value as OnFailure)) {
+          return value as OnFailure;
+        } else {
+          throw new Error(`Invalid submit action: ${value}`);
+        }
+      },
     });
 
     parser.add_argument("--operatingEnvironment", {
       help: "Set Operating environment for information purposes only.",
       default: null,
+      required: false,
+    });
+
+    parser.add_argument("targetURL", {
+      help: "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
+    });
+
+    parser.add_argument("--outputFormat", {
+      help: "Output format for vulnerabilities: only the value SARIF is available at the moment",
+      required: false,
+      type: (value: string) => {
+        if (value in OutputFormat) {
+          return OutputFormat[value as keyof typeof OutputFormat];
+        } else {
+          throw new Error(`Invalid output format: ${value}`);
+        }
+      },
+    });
+
+    parser.add_argument("--projectName", {
+      help: "Project Name - this is what will be displayed in the SOOS app.",
+      required: true,
+    });
+
+    parser.add_argument("--requestCookies", {
+      help: "Set Cookie values for the requests to the target URL",
+      nargs: "*",
+      required: false,
+    });
+
+    parser.add_argument("--requestHeaders", {
+      help: "Set extra headers for the requests to the target URL",
+      nargs: "*",
+      required: false,
+    });
+
+    parser.add_argument("--reportRequestHeaders", {
+      help: "Include request/response headers data in report.",
+      default: true,
+      required: false,
+    });
+
+    parser.add_argument("--scanMode", {
+      help: "Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
+      default: ScanMode.Baseline,
+      required: false,
+      type: (value: string) => {
+        if (Object.values(ScanMode).includes(value as ScanMode)) {
+          return value as ScanMode;
+        } else {
+          throw new Error(`Invalid scan mode: ${value}`);
+        }
+      },
+    });
+
+    parser.add_argument("--scriptVersion", {
+      help: "Script Version - Intended for internal use only.",
       required: false,
     });
 
@@ -400,8 +379,8 @@ class SOOSDASTAnalysis {
         commitHash: this.args.commitHash,
         branch: this.args.branchName,
         buildVersion: this.args.buildVersion,
-        buildUri: this.args.buildUri,
-        branchUri: this.args.branchUri,
+        buildUri: this.args.buildURI,
+        branchUri: this.args.branchURI,
         integrationType: this.args.integrationType,
         operatingEnvironment: this.args.operatingEnvironment,
         integrationName: this.args.integrationName,
@@ -456,7 +435,7 @@ class SOOSDASTAnalysis {
       formData.append("resultVersion", data["@version"]);
       formData.append(
         "file",
-        convertStringToB64(
+        convertStringToBase64(
           JSON.stringify(
             JSON.parse(
               fs.readFileSync(
@@ -543,7 +522,7 @@ class SOOSDASTAnalysis {
     if (!status.isComplete) {
       soosLogger.info(`Scan status: ${status.status}...`);
       if (attempt >= CONSTANTS.STATUS.MAX_ATTEMPTS) {
-        soosLogger.error("Max attempts reached. for fetching scan status.");
+        soosLogger.error("Max attempts reached fetching scan status.");
         soosLogger.error("Failing the build.");
         process.exit(1);
       }
