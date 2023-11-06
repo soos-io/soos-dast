@@ -78,7 +78,7 @@ class SOOSDASTAnalysis {
     const parser = new ArgumentParser({ description: "SOOS DAST" });
 
     parser.add_argument("--ajaxSpider", {
-      help: "Enable Ajax Spider.",
+      help: "Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/.",
       action: "store_true",
       required: false,
     });
