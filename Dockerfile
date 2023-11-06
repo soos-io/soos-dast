@@ -16,7 +16,7 @@ COPY ./src/ ./src/
 COPY ./tsconfig.json ./
 COPY ./package.json ./
 
-RUN pip3 install -r ./src/hooks/requirements.txt
+RUN pip3 install -r ./src/zap_hooks/requirements.txt
 
 RUN mkdir /zap/wrk && cd /opt \
     && wget -qO- -O geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz \

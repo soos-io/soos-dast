@@ -11,7 +11,7 @@ export const CONSTANTS = {
     REPORT_SCAN_RESULT_FILENAME: "report.json",
     REPORT_SCAN_RESULT_FILE: "/zap/wrk/report.json",
     SPIDERED_URLS_FILE_PATH: "./spidered_urls.txt",
-    ZAP_CUSTOM_HOOK_SCRIPT: "src/hooks/soos_zap_hook.py",
+    ZAP_CUSTOM_HOOK_SCRIPT: "src/zap_hooks/soos_zap_hook.py",
   },
   ZAP: {
     COMMAND: "python3",

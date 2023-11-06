@@ -2,13 +2,13 @@ import sys
 import traceback
 from typing import List
 
-from src.hooks.helpers.auth import authenticate
-from src.hooks.helpers.configuration import DASTConfig
-from src.hooks.helpers.utils import log, exit_app
-from src.hooks.helpers import custom_cookies as cookies
-from src.hooks.helpers import custom_headers as headers
-from src.hooks.helpers import constants as Constants
-import src.hooks.helpers.globals as globals
+from src.zap_hooks.helpers.auth_context import authenticate
+from src.zap_hooks.helpers.configuration import DASTConfig
+from src.zap_hooks.helpers.utilities import log, exit_app
+from src.zap_hooks.helpers import custom_cookies as cookies
+from src.zap_hooks.helpers import custom_headers as headers
+from src.zap_hooks.helpers import constants as Constants
+import src.zap_hooks.helpers.globals as globals
 
 config = DASTConfig()
 

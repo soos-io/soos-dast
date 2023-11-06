@@ -1,7 +1,7 @@
 from enum import Enum
 from logging import DEBUG, INFO, WARN, ERROR, CRITICAL
 
-from src.hooks.helpers.log import console
+from src.zap_hooks.helpers.logging import console
 
 
 class LogLevel(Enum):

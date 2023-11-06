@@ -16,12 +16,11 @@ from seleniumwire import webdriver
 import zap_common
 import logging
 
-from src.hooks.helpers.browserstorage import BrowserStorage
-from src.hooks.helpers.utils import array_to_dict, log
-from src.hooks.model.log_level import LogLevel
-from src.hooks.helpers.log import LoggingFilter
-from src.hooks.helpers import constants as Constants
-import src.hooks.helpers.globals as globals
+from src.zap_hooks.helpers.browserstorage import BrowserStorage
+from src.zap_hooks.helpers.utilities import array_to_dict, log
+from src.zap_hooks.model.log_level import LogLevel
+from src.zap_hooks.helpers.logging import LoggingFilter
+import src.zap_hooks.helpers.globals as globals
 
 
 def setup_context(zap, target, config):

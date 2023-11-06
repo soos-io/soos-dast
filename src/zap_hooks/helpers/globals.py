@@ -1,4 +1,4 @@
-from src.hooks.helpers.constants import ZAP_AUTH_CONTEXT
+from src.zap_hooks.helpers.constants import ZAP_AUTH_CONTEXT
 def initialize(): 
     global context_name
     global context_id

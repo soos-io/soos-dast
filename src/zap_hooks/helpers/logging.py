@@ -7,7 +7,7 @@ import sys
 from termcolor import colored
 from datetime import datetime
 
-from src.hooks.helpers import constants as Constants
+from src.zap_hooks.helpers import constants as Constants
 
 
 class ColorStreamHandler(logging.StreamHandler):

@@ -3,9 +3,9 @@ import sys
 import traceback
 from typing import Optional, List
 
-from src.hooks.helpers.constants import EMPTY_STRING
-from src.hooks.helpers.utils import log
-from src.hooks.model.log_level import LogLevel
+from src.zap_hooks.helpers.constants import EMPTY_STRING
+from src.zap_hooks.helpers.utilities import log
+from src.zap_hooks.model.log_level import LogLevel
 
 
 

@@ -4,9 +4,9 @@ from typing import Dict, Iterable, NoReturn
 from requests import Response
 from requests.exceptions import HTTPError
 
-import src.hooks.helpers.constants as Constants
-from src.hooks.model.log_level import LogLevel, loggerFunc
-from src.hooks.model.target_availability_check import TargetAvailabilityCheck
+import src.zap_hooks.helpers.constants as Constants
+from src.zap_hooks.model.log_level import LogLevel, loggerFunc
+from src.zap_hooks.model.target_availability_check import TargetAvailabilityCheck
 
 
 UTF_8: str = 'utf-8'
