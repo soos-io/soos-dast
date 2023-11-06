@@ -68,6 +68,7 @@ export interface SOOSDASTAnalysisArgs {
   targetURL: string;
   updateAddons: boolean;
   verbose: boolean;
+  zapOptions: string;
 }
 
 class SOOSDASTAnalysis {
@@ -301,6 +302,12 @@ class SOOSDASTAnalysis {
       help: "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
     });
 
+    parser.add_argument("--otherOptions", {
+      help: "Other command line arguments sent directly to the script for items not supported by other command line arguments",
+      required: false,
+      nargs: "*",
+    });
+
     parser.add_argument("--outputFormat", {
       help: "Output format for vulnerabilities: only the value SARIF is available at the moment",
       required: false,
@@ -358,6 +365,12 @@ class SOOSDASTAnalysis {
       help: "Enable verbose logging.",
       action: "store_true",
       required: false,
+    });
+
+    parser.add_argument("--zapOptions", {
+      help: "Additional ZAP Options",
+      required: false,
+      nargs: "*",
     });
 
     soosLogger.info("Parsing arguments");
