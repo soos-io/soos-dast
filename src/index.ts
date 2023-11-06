@@ -1,16 +1,6 @@
-import { ZAPCommandGenerator } from "./utils/ZAPCommandGenerator";
 import * as fs from "fs";
 import FormData from "form-data";
 import { spawn, execSync } from "child_process";
-import {
-  AUTH_DELAY_TIME,
-  DAST_TOOL,
-  DAST_TOOL_VERSION,
-  REPORT_SCAN_RESULT_FILE,
-  SOOS_API_KEY_ENV_VAR,
-  SOOS_CLIENT_ID_ENV_VAR,
-  SPIDERED_URLS_FILE_PATH,
-} from "./utils/constants";
 import { ArgumentParser } from "argparse";
 import { ApiScanFormat, FormTypes, OnFailure, ScanMode, SubmitActions } from "./utils/enums";
 import { exit } from "process";
@@ -21,6 +11,7 @@ import {
   convertStringToB64,
 } from "@soos-io/api-client/dist/utilities";
 import { ScanStatus, ScanType, soosLogger, LogLevel, OutputFormat } from "@soos-io/api-client";
+import { ZAPCommandGenerator, CONSTANTS } from "./utils";
 
 export interface SOOSDASTAnalysisArgs {
   apiKey: string;
@@ -82,13 +73,13 @@ class SOOSDASTAnalysis {
 
     parser.add_argument("--clientId", {
       help: "SOOS Client ID - get yours from https://app.soos.io/integrate/sca",
-      default: getEnvVariable(SOOS_CLIENT_ID_ENV_VAR),
+      default: getEnvVariable(CONSTANTS.SOOS.CLIENT_ID_ENV_VAR),
       required: false,
     });
 
     parser.add_argument("--apiKey", {
       help: "SOOS API Key - get yours from https://app.soos.io/integrate/sca",
-      default: getEnvVariable(SOOS_API_KEY_ENV_VAR),
+      default: getEnvVariable(CONSTANTS.SOOS.API_KEY_ENV_VAR),
       required: false,
     });
 
@@ -215,7 +206,7 @@ class SOOSDASTAnalysis {
 
     parser.add_argument("--authDelayTime", {
       help: "Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
-      default: AUTH_DELAY_TIME,
+      default: CONSTANTS.AUTH.DELAY_TIME,
       required: false,
     });
 
@@ -409,8 +400,8 @@ class SOOSDASTAnalysis {
         scriptVersion: null,
         contributingDeveloperAudit: undefined,
         scanType: ScanType.DAST,
-        toolName: DAST_TOOL,
-        toolVersion: DAST_TOOL_VERSION,
+        toolName: CONSTANTS.DAST.TOOL,
+        toolVersion: CONSTANTS.DAST.TOOL_VERSION,
       });
       projectHash = result.projectHash;
       branchHash = result.branchHash;
@@ -436,27 +427,30 @@ class SOOSDASTAnalysis {
       const command = zapCommandGenerator.runCommandGeneration(this.args.scanMode);
       soosLogger.info(`Running command: ${command}`);
       await SOOSDASTAnalysis.runZap(command);
-      const runSuccess = fs.existsSync(REPORT_SCAN_RESULT_FILE);
+      const runSuccess = fs.existsSync(CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE);
       soosLogger.info(`Scan finished with success: ${runSuccess}`);
 
       const discoveredUrls =
-        fs.existsSync(SPIDERED_URLS_FILE_PATH) && fs.statSync(SPIDERED_URLS_FILE_PATH).isFile()
+        fs.existsSync(CONSTANTS.FILES.SPIDERED_URLS_FILE_PATH) &&
+        fs.statSync(CONSTANTS.FILES.SPIDERED_URLS_FILE_PATH).isFile()
           ? fs
-              .readFileSync(SPIDERED_URLS_FILE_PATH, "utf-8")
+              .readFileSync(CONSTANTS.FILES.SPIDERED_URLS_FILE_PATH, "utf-8")
               .split("\n")
               .filter((url) => url.trim() !== "")
           : [];
 
-      const data = JSON.parse(fs.readFileSync(REPORT_SCAN_RESULT_FILE, "utf-8"));
+      const data = JSON.parse(fs.readFileSync(CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE, "utf-8"));
       data["discoveredUrls"] = discoveredUrls;
-      fs.writeFileSync(REPORT_SCAN_RESULT_FILE, JSON.stringify(data, null, 4));
+      fs.writeFileSync(CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE, JSON.stringify(data, null, 4));
       const formData = new FormData();
 
       formData.append("resultVersion", data["@version"]);
       formData.append(
         "file",
         convertStringToB64(
-          JSON.stringify(JSON.parse(fs.readFileSync(REPORT_SCAN_RESULT_FILE, "utf-8")))
+          JSON.stringify(
+            JSON.parse(fs.readFileSync(CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE, "utf-8"))
+          )
         ),
         "base64Manifest"
       );

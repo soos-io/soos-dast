@@ -1,21 +1,5 @@
 import { SOOSDASTAnalysisArgs } from "..";
-import {
-  API_SCAN_SCRIPT,
-  BASE_LINE_SCRIPT,
-  FULL_SCAN_SCRIPT,
-  PY_CMD,
-  REPORT_SCAN_RESULT_FILENAME,
-  ZAP_AJAX_SPIDER_OPTION,
-  ZAP_CONTEXT_FILE_OPTION,
-  ZAP_CUSTOM_HOOK_SCRIPT,
-  ZAP_DEBUG_OPTION,
-  ZAP_FORMAT_OPTION,
-  ZAP_HOOK_OPTION,
-  ZAP_JSON_REPORT_OPTION,
-  ZAP_OPTIONS,
-  ZAP_SPIDER_MINUTES_OPTION,
-  ZAP_TARGET_URL_OPTION,
-} from "./constants";
+import { CONSTANTS } from "./constants";
 import { ScanMode } from "./enums";
 
 export class ZAPCommandGenerator {
@@ -55,34 +39,38 @@ export class ZAPCommandGenerator {
   }
 
   private generateCommand(args: string[]): string {
-    this.addOption(args, ZAP_TARGET_URL_OPTION, this.config.targetURL);
-    this.addOption(args, ZAP_CONTEXT_FILE_OPTION, this.config.contextFile);
-    this.addOption(args, ZAP_DEBUG_OPTION, this.config.debug);
-    this.addOption(args, ZAP_AJAX_SPIDER_OPTION, this.config.ajaxSpider);
-    this.addOption(args, ZAP_SPIDER_MINUTES_OPTION, this.config.fullScanMinutes);
-    this.addOption(args, ZAP_JSON_REPORT_OPTION, REPORT_SCAN_RESULT_FILENAME);
-    this.addOption(args, ZAP_OPTIONS, this.config.otherOptions);
-    this.addOption(args, ZAP_HOOK_OPTION, ZAP_CUSTOM_HOOK_SCRIPT);
+    this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
+    this.addOption(args, CONSTANTS.ZAP.CONTEXT_FILE_OPTION, this.config.contextFile);
+    this.addOption(args, CONSTANTS.ZAP.DEBUG_OPTION, this.config.debug);
+    this.addOption(args, CONSTANTS.ZAP.AJAX_SPIDER_OPTION, this.config.ajaxSpider);
+    this.addOption(args, CONSTANTS.ZAP.SPIDER_MINUTES_OPTION, this.config.fullScanMinutes);
+    this.addOption(
+      args,
+      CONSTANTS.ZAP.JSON_REPORT_OPTION,
+      CONSTANTS.FILES.REPORT_SCAN_RESULT_FILENAME
+    );
+    this.addOption(args, CONSTANTS.ZAP.OPTIONS, this.config.otherOptions);
+    this.addOption(args, CONSTANTS.ZAP.HOOK_OPTION, CONSTANTS.FILES.ZAP_CUSTOM_HOOK_SCRIPT);
     this.addHookParams();
 
     return args.join(" ");
   }
 
   private baselineScan(): string {
-    const args = [PY_CMD, BASE_LINE_SCRIPT];
+    const args = [CONSTANTS.ZAP.COMMAND, CONSTANTS.ZAP.SCRIPTS.BASE_LINE];
     return this.generateCommand(args);
   }
 
   private fullScan(): string {
-    const args = [PY_CMD, FULL_SCAN_SCRIPT];
-    this.addOption(args, ZAP_TARGET_URL_OPTION, this.config.targetURL);
+    const args = [CONSTANTS.ZAP.COMMAND, CONSTANTS.ZAP.SCRIPTS.FULL_SCAN];
+    this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
     return this.generateCommand(args);
   }
 
   private apiScan(): string {
-    const args = [PY_CMD, API_SCAN_SCRIPT];
-    this.addOption(args, ZAP_TARGET_URL_OPTION, this.config.targetURL);
-    this.addOption(args, ZAP_FORMAT_OPTION, this.config.apiScanFormat);
+    const args = [CONSTANTS.ZAP.COMMAND, CONSTANTS.ZAP.SCRIPTS.API_SCAN];
+    this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
+    this.addOption(args, CONSTANTS.ZAP.FORMAT_OPTION, this.config.apiScanFormat);
     return this.generateCommand(args);
   }
 
