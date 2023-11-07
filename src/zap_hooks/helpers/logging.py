@@ -1,12 +1,13 @@
 """
 Logger classes for the ZAP CLI.
 """
-
 import logging
 import sys
-from helpers import constants as Constants
 
 from termcolor import colored
+from datetime import datetime
+
+from src.zap_hooks.helpers import constants as Constants
 
 
 class ColorStreamHandler(logging.StreamHandler):
@@ -34,16 +35,23 @@ class ColorStreamHandler(logging.StreamHandler):
         if self.is_tty and colorize:
             color, attr = self.level_map[record.levelno]
             prefix = colored(
-                str("[" + record.levelname + "]").ljust(18), color, attrs=attr
+                str("[" + record.levelname + "]"), color, attrs=attr
             )
             if hasattr(record, "highlight") and record.highlight:
                 record.msg = colored(record.msg, color, attrs=["bold", "reverse"])
         else:
-            prefix = str("[" + record.levelname + "]").ljust(18)
+            prefix = str("[" + record.levelname + "]")
 
-        record.msg = prefix + record.msg
+        record.msg = f"{prefix} {record.msg}"
 
         logging.StreamHandler.emit(self, record)
+class CustomFormatter(logging.Formatter):
+    """Custom Formatter to match the TypeScript timestamp style."""
+
+    def formatTime(self, record, datefmt=None):
+        utc_time = datetime.utcfromtimestamp(record.created)
+        t = utc_time.strftime("%Y-%m-%d %I:%M:%S %p")
+        return f"{t} UTC"
 
 
 class ConsoleLogger(logging.Logger):
@@ -53,18 +61,21 @@ class ConsoleLogger(logging.Logger):
         super(ConsoleLogger, self).__init__(name)
         self.setLevel(logging.DEBUG)
         handler = ColorStreamHandler(sys.stdout)
-        handler.setFormatter(logging.Formatter(fmt=Constants.LOG_FORMAT, datefmt="%m/%d/%Y %I:%M:%S %p %Z"))
+        formatter = CustomFormatter(fmt=Constants.LOG_FORMAT)
+        handler.setFormatter(formatter)
         self.addHandler(handler)
         self.propagate = False
 
+class LoggingFilter(logging.Filter):
+    """Filter out logs from the console logger."""
 
-# Save the current logger
+    def filter(self, record):
+        return record.name not in Constants.FILTER_LOGS
+    
 default_logger_class = logging.getLoggerClass()
 
-# Console logging for CLI
 logging.setLoggerClass(ConsoleLogger)
 console = logging.getLogger("SOOS DAST")
-console.setLevel(level=logging.INFO)
+console.setLevel(logging.INFO)
 
-# Restore the previous logger
 logging.setLoggerClass(default_logger_class)

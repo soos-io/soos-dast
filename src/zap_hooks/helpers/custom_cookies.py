@@ -2,14 +2,14 @@ import sys
 import traceback
 import json
 
-from helpers.configuration import DASTConfig
-from helpers.constants import ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH
-from helpers.utils import log, process_custom_cookie_header_data
+from src.zap_hooks.helpers.configuration import DASTConfig
+from src.zap_hooks.helpers.constants import ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH
+from src.zap_hooks.helpers.utilities import log, process_custom_cookie_header_data
 
 
 def load(config: DASTConfig, zap):
-    log(f"loading cookies: {config.cookies}")
     if config.cookies:
+        log(f"loading cookies: {config.cookies}")
         script_name: str = 'request_cookies'
         request_cookies_script_path = f"{ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH}{script_name}.js"
 

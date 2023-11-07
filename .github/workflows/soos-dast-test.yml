@@ -1,0 +1,20 @@
+name: Build and Test Docker Image
+
+on:
+  pull_request: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and Test Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: soosio/dast:${{ github.sha }}
+      - name: Run Tests
+        run: |
+          docker run soosio/dast:${{ github.sha }} --clientId=${{secrets.SOOS_CLIENT_ID}} --apiKey=${{secrets.SOOS_API_KEY}} --apiURL="https://dev-api.soos.io/api/" --projectName="soos-dast" https://soos.io

@@ -1,11 +1,12 @@
-from helpers.constants import EMPTY_STRING
-from helpers.utils import log
-import sys
 import os
+import sys
 import traceback
 from typing import Optional, List
 
-from model.log_level import LogLevel
+from src.zap_hooks.helpers.constants import EMPTY_STRING
+from src.zap_hooks.helpers.utilities import log
+from src.zap_hooks.model.log_level import LogLevel
+
 
 
 class DASTConfig:
@@ -26,6 +27,7 @@ class DASTConfig:
     auth_submit_second_field_name: Optional[str] = None
     auth_check_delay: Optional[float] = None
     auth_check_element: Optional[str] = None
+    auth_verification_url: Optional[str] = None
     auth_exclude_urls: Optional[List[str]] = None
     auth_include_urls: Optional[List[str]] = None
     xss_collector: Optional[str] = None
@@ -54,13 +56,13 @@ class DASTConfig:
             self.auth_bearer_token = os.environ.get('AUTH_BEARER_TOKEN') or EMPTY_STRING
             self.auth_username_field_name = os.environ.get('AUTH_USERNAME_FIELD') or 'username'
             self.auth_password_field_name = os.environ.get('AUTH_PASSWORD_FIELD') or 'password'
-            self.auth_display = os.environ.get('AUTH_DISPLAY') or EMPTY_STRING
             self.auth_otp_field_name = os.environ.get('AUTH_OTP_FIELD') or 'otp'
             self.auth_submit_field_name = os.environ.get('AUTH_SUBMIT_FIELD') or 'login'
             self.auth_submit_second_field_name =  os.environ.get('AUTH_SECOND_SUBMIT_FIELD') or 'login'
             self.auth_delay_time = float(os.environ.get('AUTH_DELAY_TIME') or 0)
             self.auth_check_delay = float(os.environ.get('AUTH_CHECK_DELAY') or 5)
             self.auth_check_element = os.environ.get('AUTH_CHECK_ELEMENT') or EMPTY_STRING
+            self.auth_verification_url = os.environ.get('AUTH_VERIFICATION_URL') or EMPTY_STRING
             self.auth_exclude_urls = self._get_hook_param_list(os.environ.get('AUTH_EXCLUDE_URLS')) or list()
             self.auth_include_urls = self._get_hook_param_list(os.environ.get('AUTH_INCLUDE_URLS')) or list()
             self.xss_collector = os.environ.get('XSS_COLLECTOR') or EMPTY_STRING

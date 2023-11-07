@@ -1,8 +1,9 @@
-from traceback import print_exc
-from helpers.configuration import DASTConfig
-from helpers.utils import log, read_file
 from random import randint
 from sys import exit
+from traceback import print_exc
+
+from src.zap_hooks.helpers.configuration import DASTConfig
+from src.zap_hooks.helpers.utilities import log, read_file
 
 
 def load(config: DASTConfig, zap):

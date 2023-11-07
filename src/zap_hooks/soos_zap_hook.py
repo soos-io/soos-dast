@@ -1,12 +1,14 @@
-from helpers.auth import DASTAuth
-from helpers.configuration import DASTConfig
-import helpers.custom_cookies as cookies
-import helpers.custom_headers as headers
-import helpers.constants as Constants
 import sys
 import traceback
-from helpers.utils import log, exit_app
 from typing import List
+
+from src.zap_hooks.helpers.auth_context import authenticate
+from src.zap_hooks.helpers.configuration import DASTConfig
+from src.zap_hooks.helpers.utilities import log, exit_app, LogLevel
+from src.zap_hooks.helpers import custom_cookies as cookies
+from src.zap_hooks.helpers import custom_headers as headers
+from src.zap_hooks.helpers import constants as Constants
+import src.zap_hooks.helpers.globals as globals
 
 config = DASTConfig()
 
@@ -15,14 +17,14 @@ config = DASTConfig()
 def start_docker_zap(docker_image, port, extra_zap_params, mount_dir):
     config.load_config(extra_zap_params)
 
-
 # Triggered when running from the Docker image
 def start_zap(port, extra_zap_params):
     config.load_config(extra_zap_params)
 
 
 def zap_started(zap, target):
-    log(f"zap_started_hook is running")
+    log("zap_started_hook is running")
+    globals.initialize()
     try:
         # ZAP Docker scripts reset the target to the root URL
         if target.count('/') > 2:
@@ -37,16 +39,24 @@ def zap_started(zap, target):
             zap.pscan.disable_scanners(','.join(pscan_disabled_rules))
             zap.ascan.disable_scanners(','.join(ascan_disabled_rules), Constants.ZAP_ACTIVE_SCAN_POLICY_NAME)
             log(f"disabled rules: {config.disable_rules}")
-
-        auth = DASTAuth(config)
-        auth.authenticate(zap, target)
+        if config.auth_login_url or config.auth_bearer_token or config.auth_token_endpoint or config.oauth_token_url:
+            authenticate(zap, target, config)
+        else:
+            log(
+                'No login URL, Token Endpoint or Bearer token provided - skipping authentication',
+                log_level=LogLevel.WARN
+            )
         cookies.load(config, zap)
         headers.load(config, zap)
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
-        sys.exit(1)
 
     return zap, target
+
+def zap_import_context(zap, context_file):
+    log("zap_import_context_hook is running")
+    log(f"importing context from file: {context_file}")
+    zap.context.remove_context(globals.context_name)
 
 def zap_pre_shutdown(zap):
     log("Overview of spidered URL's:")
