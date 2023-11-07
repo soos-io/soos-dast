@@ -10,11 +10,6 @@ def log(message: str, log_level: LogLevel = LogLevel.INFO) -> None:
     logFunc(str(message))
 
 
-def print_line_separator() -> None:
-    print(
-        "----------------------------------------------------------------------------------------------------------"
-    )
-
 def exit_app(e) -> NoReturn:
     log(str(e), LogLevel.ERROR)
     exit(1)

@@ -50,7 +50,6 @@ def zap_started(zap, target):
         headers.load(config, zap)
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
-        sys.exit(1)
 
     return zap, target
 

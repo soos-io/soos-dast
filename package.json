@@ -13,8 +13,8 @@
     "format": "prettier ./src --check",
     "format:fix": "prettier ./src --write",
     "typecheck": "tsc --noEmit",
-    "test:coverage": "npm run test -- --reporter xunit --reporter-option output=ResultsFile.xml",
-    "check": "npm run format && npm run typecheck && npm run test"
+    "check": "npm run format && npm run typecheck && npm outdate",
+    "outdated": "npm outdated"
   },
   "dependencies": {
     "@soos-io/api-client": "0.1.5",
