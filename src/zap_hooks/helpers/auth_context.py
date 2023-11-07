@@ -175,7 +175,7 @@ def login_from_token_endpoint(zap, config):
     if "token" in data:
         auth_header = f"Bearer {data['token']}"
     elif "token_type" in data:
-        auth_header = f"{data['token_type']} {data['token_type']}"
+        auth_header = f"{data['token_type']} {data['access_token']}"
     elif "access" in data:
             auth_header = f"Bearer {data['access']}"
     else:
