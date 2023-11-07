@@ -176,6 +176,10 @@ def login_from_token_endpoint(zap, config):
         auth_header = f"Bearer {data['token']}"
     elif "token_type" in data:
         auth_header = f"{data['token_type']} {data['token_type']}"
+    elif "access" in data:
+            auth_header = f"Bearer {data['access']}"
+    else:
+        raise Exception(f"Unhandled auth response: {str(data)}" )
 
     if auth_header:
         add_authorization_header(zap, auth_header)
