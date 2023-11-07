@@ -10,6 +10,7 @@ import {
   isUrlAvailable,
   convertStringToBase64,
   sleep,
+  obfuscateProperties,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -603,7 +604,17 @@ class SOOSDASTAnalysis {
       soosLogger.setMinLogLevel(args.logLevel);
       soosLogger.setVerbose(args.verbose);
       soosLogger.info("Configuration read");
-      soosLogger.verboseDebug(args);
+      soosLogger.verboseDebug(
+        JSON.stringify(
+          obfuscateProperties(args as unknown as Record<string, unknown>, [
+            "apiKey",
+            "authPassword",
+            "bearerToken",
+          ]),
+          null,
+          2
+        )
+      );
       soosLogger.logLineSeparator();
       const soosDASTAnalysis = new SOOSDASTAnalysis(args);
       await soosDASTAnalysis.runAnalysis();
