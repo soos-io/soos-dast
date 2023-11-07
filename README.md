@@ -32,25 +32,25 @@ The basic command to run a baseline scan would look like:
 | Argument | Default | Description |
 | --- | --- | --- |
 | `--ajaxSpider` | None | Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/ |
-| `--apiKey` | None | SOOS API Key - get yours from https://app.soos.io/integrate/sca |
+| `--apiKey` | None | SOOS API Key - get yours from https://app.soos.io/integrate/dast |
 | `--appVersion` | None | App Version - Intended for internal use only. |
 | `--authDelayTime` | 5 | Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page) |
 | `--authFormType` | simple | simple (all fields are displayed at once), wait_for_password (Password field is displayed only after username is filled), or multi_page (Password field is displayed only after username is filled and submit is clicked) |
-| `--authLoginURL` | None | Login url to use in auth apps |
-| `--authPassword` | None | Password to use in auth apps |
-| `--authPasswordField` | None | Password input id to use in auth apps |
-| `--authSecondSubmitField` | None | Second submit button id to use in auth apps (for multi-page forms) |
+| `--authLoginURL` | None | Login url to use when authentication is required |
+| `--authPassword` | None | Password to use when authentication is required |
+| `--authPasswordField` | None | Password input id to use when authentication is required |
+| `--authSecondSubmitField` | None | Second submit button id to use when authentication is required (for multi-page forms) |
 | `--authSubmitAction` | None | Submit action to perform on form filled. Options: click or submit |
-| `--authSubmitField` | None | Submit button id to use in auth apps |
-| `--authUsername` | None | Username to use in auth apps |
-| `--authUsernameField` | None | Username input id to use in auth apps |
+| `--authSubmitField` | None | Submit button id to use when authentication is required |
+| `--authUsername` | None | Username to use when authentication is required |
+| `--authUsernameField` | None | Username input id to use when authentication is required |
 | `--bearerToken` | None | Bearer token to authenticate |
 | `--branchName` | None | The name of the branch from the SCM System |
 | `--branchURI` | None | The URI to the branch from the SCM System |
 | `--buildURI` | None | URI to CI build info |
 | `--buildVersion` | None | Version of application build artifacts |
 | `--checkoutDir` | None | Checkout directory to locate SARIF report |
-| `--clientId` | None | SOOS Client ID - get yours from https://app.soos.io/integrate/sca |
+| `--clientId` | None | SOOS Client ID - get yours from https://app.soos.io/integrate/dast |
 | `--commitHash` | None | The commit hash value from the SCM System |
 | `--contextFile` | None | Context file which will be loaded prior to scanning the target |
 | `--debug` | False | Enable debug logging for ZAP. |

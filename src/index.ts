@@ -135,22 +135,22 @@ class SOOSDASTAnalysis {
     });
 
     parser.add_argument("--authLoginURL", {
-      help: "Login URL to use in auth apps.",
+      help: "Login URL to use when authentication is required.",
       required: false,
     });
 
     parser.add_argument("--authPassword", {
-      help: "Password to use in auth apps.",
+      help: "Password to use when authentication is required.",
       required: false,
     });
 
     parser.add_argument("--authPasswordField", {
-      help: "Password input id to use in auth apps.",
+      help: "Password input id to use when authentication is required.",
       required: false,
     });
 
     parser.add_argument("--authSecondSubmitField", {
-      help: "Second submit button id to use in auth apps.",
+      help: "Second submit button id to use when authentication is required.",
       required: false,
     });
 
@@ -167,17 +167,17 @@ class SOOSDASTAnalysis {
     });
 
     parser.add_argument("--authSubmitField", {
-      help: "Submit button id to use in auth apps.",
+      help: "Submit button id to use when authentication is required.",
       required: false,
     });
 
     parser.add_argument("--authUsername", {
-      help: "Username to use in auth apps.",
+      help: "Username to use when authentication is required.",
       required: false,
     });
 
     parser.add_argument("--authUsernameField", {
-      help: "Username input id to use in auth apps.",
+      help: "Username input id to use when authentication is required.",
       required: false,
     });
 
@@ -299,10 +299,6 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    parser.add_argument("targetURL", {
-      help: "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
-    });
-
     parser.add_argument("--otherOptions", {
       help: "Other command line arguments sent directly to the script for items not supported by other command line arguments",
       required: false,
@@ -372,6 +368,10 @@ class SOOSDASTAnalysis {
       help: "Additional ZAP Options",
       required: false,
       nargs: "*",
+    });
+
+    parser.add_argument("targetURL", {
+      help: "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
     });
 
     soosLogger.info("Parsing arguments");
