@@ -21,6 +21,7 @@ import {
   SOOS_CONSTANTS,
 } from "@soos-io/api-client";
 import { ZAPCommandGenerator, CONSTANTS } from "./utils";
+import { getEnumValue } from "./utils/utilities";
 
 export interface SOOSDASTAnalysisArgs {
   ajaxSpider: boolean;
@@ -94,11 +95,7 @@ class SOOSDASTAnalysis {
       help: "Target API format, OpenAPI, SOAP or GraphQL.",
       required: false,
       type: (value: string) => {
-        if (Object.values(ApiScanFormat).includes(value as ApiScanFormat)) {
-          return value as ApiScanFormat;
-        } else {
-          throw new Error(`Invalid Api Scan Format: ${value}`);
-        }
+        return getEnumValue(ApiScanFormat, value);
       },
     });
 
@@ -126,11 +123,7 @@ class SOOSDASTAnalysis {
       default: FormTypes.Simple,
       required: false,
       type: (value: string) => {
-        if (Object.values(FormTypes).includes(value as FormTypes)) {
-          return value as FormTypes;
-        } else {
-          throw new Error(`Invalid submit action: ${value}`);
-        }
+        return getEnumValue(FormTypes, value);
       },
     });
 
@@ -158,11 +151,7 @@ class SOOSDASTAnalysis {
       help: "Submit action to perform on form filled. Options: click or submit.",
       required: false,
       type: (value: string) => {
-        if (Object.values(SubmitActions).includes(value as SubmitActions)) {
-          return value as SubmitActions;
-        } else {
-          throw new Error(`Invalid submit action: ${value}`);
-        }
+        return getEnumValue(SubmitActions, value);
       },
     });
 
@@ -272,11 +261,7 @@ class SOOSDASTAnalysis {
       default: LogLevel.INFO,
       required: false,
       type: (value: string) => {
-        if (value in LogLevel) {
-          return LogLevel[value as keyof typeof LogLevel];
-        } else {
-          throw new Error(`Invalid log level: ${value}`);
-        }
+        return getEnumValue(LogLevel, value);
       },
     });
 
@@ -296,11 +281,7 @@ class SOOSDASTAnalysis {
       default: OnFailure.Continue,
       required: false,
       type: (value: string) => {
-        if (Object.values(OnFailure).includes(value as OnFailure)) {
-          return value as OnFailure;
-        } else {
-          throw new Error(`Invalid submit action: ${value}`);
-        }
+        return getEnumValue(OnFailure, value);
       },
     });
 
@@ -320,11 +301,7 @@ class SOOSDASTAnalysis {
       help: "Output format for vulnerabilities: only the value SARIF is available at the moment",
       required: false,
       type: (value: string) => {
-        if (value in OutputFormat) {
-          return OutputFormat[value as keyof typeof OutputFormat];
-        } else {
-          throw new Error(`Invalid output format: ${value}`);
-        }
+        return getEnumValue(OutputFormat, value);
       },
     });
 
@@ -356,11 +333,7 @@ class SOOSDASTAnalysis {
       default: ScanMode.Baseline,
       required: false,
       type: (value: string) => {
-        if (Object.values(ScanMode).includes(value as ScanMode)) {
-          return value as ScanMode;
-        } else {
-          throw new Error(`Invalid scan mode: ${value}`);
-        }
+        return getEnumValue(ScanMode, value);
       },
     });
 
@@ -447,6 +420,7 @@ class SOOSDASTAnalysis {
       }
 
       const zapCommandGenerator = new ZAPCommandGenerator(this.args);
+      soosLogger.info(`Generating ZAP command... ${this.args.scanMode}`);
       const command = zapCommandGenerator.runCommandGeneration(this.args.scanMode);
       soosLogger.info(`Running command: ${command}`);
       await SOOSDASTAnalysis.runZap(command);
