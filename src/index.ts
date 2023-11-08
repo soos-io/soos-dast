@@ -11,6 +11,7 @@ import {
   convertStringToBase64,
   sleep,
   obfuscateProperties,
+  ensureEnumValue,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -21,7 +22,6 @@ import {
   SOOS_CONSTANTS,
 } from "@soos-io/api-client";
 import { ZAPCommandGenerator, CONSTANTS } from "./utils";
-import { getEnumValue } from "./utils/utilities";
 
 export interface SOOSDASTAnalysisArgs {
   ajaxSpider: boolean;
@@ -95,7 +95,7 @@ class SOOSDASTAnalysis {
       help: "Target API format, OpenAPI, SOAP or GraphQL.",
       required: false,
       type: (value: string) => {
-        return getEnumValue(ApiScanFormat, value);
+        return ensureEnumValue(ApiScanFormat, value);
       },
     });
 
@@ -123,7 +123,7 @@ class SOOSDASTAnalysis {
       default: FormTypes.Simple,
       required: false,
       type: (value: string) => {
-        return getEnumValue(FormTypes, value);
+        return ensureEnumValue(FormTypes, value);
       },
     });
 
@@ -151,7 +151,7 @@ class SOOSDASTAnalysis {
       help: "Submit action to perform on form filled. Options: click or submit.",
       required: false,
       type: (value: string) => {
-        return getEnumValue(SubmitActions, value);
+        return ensureEnumValue(SubmitActions, value, "Click");
       },
     });
 
@@ -261,7 +261,7 @@ class SOOSDASTAnalysis {
       default: LogLevel.INFO,
       required: false,
       type: (value: string) => {
-        return getEnumValue(LogLevel, value);
+        return ensureEnumValue(LogLevel, value);
       },
     });
 
@@ -281,7 +281,7 @@ class SOOSDASTAnalysis {
       default: OnFailure.Continue,
       required: false,
       type: (value: string) => {
-        return getEnumValue(OnFailure, value);
+        return ensureEnumValue(OnFailure, value);
       },
     });
 
@@ -301,7 +301,7 @@ class SOOSDASTAnalysis {
       help: "Output format for vulnerabilities: only the value SARIF is available at the moment",
       required: false,
       type: (value: string) => {
-        return getEnumValue(OutputFormat, value);
+        return ensureEnumValue(OutputFormat, value);
       },
     });
 
@@ -333,7 +333,7 @@ class SOOSDASTAnalysis {
       default: ScanMode.Baseline,
       required: false,
       type: (value: string) => {
-        return getEnumValue(ScanMode, value);
+        return ensureEnumValue(ScanMode, value);
       },
     });
 

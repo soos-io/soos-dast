@@ -16,7 +16,7 @@
     "check": "npm run format && npm run typecheck && npm outdated"
   },
   "dependencies": {
-    "@soos-io/api-client": "0.1.5",
+    "@soos-io/api-client": "0.1.6",
     "argparse": "^2.0.1",
     "axios": "^0.27.2",
     "tslib": "^2.6.2"
