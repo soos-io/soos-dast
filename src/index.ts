@@ -280,6 +280,17 @@ class SOOSDASTAnalysis {
       },
     });
 
+    parser.add_argument("--oauthParameters", {
+      help: `Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials").`,
+      required: false,
+      nargs: "*",
+    });
+
+    parser.add_argument("--oauthTokenUrl", {
+      help: "The authentication URL that grants the access_token.",
+      required: false,
+    });
+
     parser.add_argument("--onFailure", {
       help: "Action to perform when the scan fails. Options: fail_the_build, continue_on_failure.",
       default: OnFailure.Continue,
@@ -356,6 +367,11 @@ class SOOSDASTAnalysis {
     parser.add_argument("--scriptVersion", {
       help: "Script Version - Intended for internal use only.",
       required: false,
+    });
+
+    parser.add_argument("--updateAddons", {
+      help: "Update ZAP Addons - Update ZAP Addons before running the scan.",
+      action: "store_true",
     });
 
     parser.add_argument("--verbose", {

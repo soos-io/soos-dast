@@ -58,6 +58,10 @@ export class ZAPCommandGenerator {
       args.push(this.config.otherOptions);
     }
 
+    if (this.config.updateAddons) {
+      args.push(CONSTANTS.ZAP.UPDATE_ADDONS_OPTION);
+    }
+
     return args.join(" ");
   }
 
