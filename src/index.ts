@@ -151,7 +151,7 @@ class SOOSDASTAnalysis {
       help: "Submit action to perform on form filled. Options: click or submit.",
       required: false,
       type: (value: string) => {
-        return ensureEnumValue(SubmitActions, value, "Click");
+        return ensureEnumValue(SubmitActions, value);
       },
     });
 
