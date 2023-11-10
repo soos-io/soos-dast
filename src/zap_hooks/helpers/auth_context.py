@@ -79,6 +79,7 @@ def setup_webdriver() -> webdriver.Chrome:
     return driver
 
 def authenticate(zap, target, config):
+    clear_driver = False
     try:
         if zap is not None:
             setup_context(zap, target, config)
@@ -87,6 +88,7 @@ def authenticate(zap, target, config):
             driver_instance = setup_webdriver()
             login(driver_instance, config)
             set_authentication(zap, target, driver_instance, config)
+            clear_driver = True
         elif config.auth_bearer_token:
             add_authorization_header(
                 zap, f"Bearer {config.auth_bearer_token}")
@@ -99,8 +101,9 @@ def authenticate(zap, target, config):
         log(f"error in authenticate: {print_exc()}", log_level=LogLevel.ERROR)
     finally:
         if config.auth_verification_url:
-            validate_authentication_url(driver_instance, config.auth_verification_url)         
-        cleanup(driver_instance)
+            validate_authentication_url(driver_instance, config.auth_verification_url)      
+        if (clear_driver):
+            cleanup(driver_instance)
 
 def set_authentication(zap, target, driver, config):
     log('Finding authentication cookies')
