@@ -62,7 +62,6 @@ export interface SOOSDASTAnalysisArgs {
   otherOptions: string;
   outputFormat: OutputFormat;
   projectName: string;
-  reportRequestHeaders: boolean;
   requestCookies: string;
   requestHeaders: string;
   scanMode: ScanMode;
@@ -322,12 +321,6 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    parser.add_argument("--reportRequestHeaders", {
-      help: "Include request/response headers data in report.",
-      action: "store_true",
-      required: false,
-    });
-
     parser.add_argument("--scanMode", {
       help: "Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
       default: ScanMode.Baseline,
@@ -411,13 +404,8 @@ class SOOSDASTAnalysis {
 
       execSync("mkdir -p ~/.ZAP/reports /root/.ZAP/reports");
 
-      if (this.args.reportRequestHeaders) {
-        execSync("cp -R /zap/reports/traditional-json-headers ~/.ZAP/reports/traditional-json");
-        execSync("cp -R /zap/reports/traditional-json-headers /root/.ZAP/reports/traditional-json");
-      } else {
-        execSync("cp -R /zap/reports/traditional-json ~/.ZAP/reports/traditional-json");
-        execSync("cp -R /zap/reports/traditional-json /root/.ZAP/reports/traditional-json");
-      }
+      execSync("cp -R /zap/reports/traditional-json-headers ~/.ZAP/reports/traditional-json");
+      execSync("cp -R /zap/reports/traditional-json-headers /root/.ZAP/reports/traditional-json");
 
       const zapCommandGenerator = new ZAPCommandGenerator(this.args);
       soosLogger.info(`Generating ZAP command... ${this.args.scanMode}`);
