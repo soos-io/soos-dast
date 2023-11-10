@@ -66,7 +66,6 @@ The basic command to run a baseline scan would look like:
 | `--otherOptions` | None | Additional command line arguments for items not supported by the set of parameters above |
 | `--outputFormat` | None | Output format for vulnerabilities: only the value SARIF is available at the moment |
 | `--projectName` | None | Project Name - this is what will be displayed in the SOOS app |
-| `--reportRequestHeaders` | None | Include request/response headers data in report |
 | `--requestCookies` | None | Set Cookie values for the requests to the target URL |
 | `--requestHeaders` | None | Set extra Header requests |
 | `--scanMode` | baseline | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
