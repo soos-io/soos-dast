@@ -56,9 +56,7 @@ RUN unzip $CHROMEDRIVER_DIR/chromedriver* -d $CHROMEDRIVER_DIR
 # Put Chromedriver into the PATH
 ENV PATH $CHROMEDRIVER_DIR:$PATH
 
-COPY ./src/reports/traditional-json /zap/reports/traditional-json
 COPY ./src/reports/traditional-json-headers /zap/reports/traditional-json-headers
-RUN chmod -R 444 /zap/reports/traditional-json
 RUN chmod -R 444 /zap/reports/traditional-json-headers
 
 RUN npm install
