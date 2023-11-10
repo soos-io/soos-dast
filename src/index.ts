@@ -324,7 +324,7 @@ class SOOSDASTAnalysis {
 
     parser.add_argument("--reportRequestHeaders", {
       help: "Include request/response headers data in report.",
-      default: true,
+      action: "store_true",
       required: false,
     });
 
