@@ -18,7 +18,7 @@ export const CONSTANTS = {
     CLIENT_ID_ENV_VAR: "SOOS_CLIENT_ID",
   },
   STATUS: {
-    DELAY_TIME: 5,
+    DELAY_TIME: 5000,
     MAX_ATTEMPTS: 10,
   },
   ZAP: {

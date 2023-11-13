@@ -12,6 +12,7 @@ import {
   sleep,
   obfuscateProperties,
   ensureEnumValue,
+  ensureValue,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -256,7 +257,7 @@ class SOOSDASTAnalysis {
     });
 
     parser.add_argument("--logLevel", {
-      help: "Minimum level to show logs: PASS, IGNORE, INFO, WARN or FAIL.",
+      help: "Minimum level to show logs: PASS, IGNORE, INFO, WARN, FAIL, DEBUG, ERROR.",
       default: LogLevel.INFO,
       required: false,
       type: (value: string) => {
@@ -593,6 +594,8 @@ class SOOSDASTAnalysis {
           2
         )
       );
+      ensureValue(args.clientId, "clientId");
+      ensureValue(args.apiKey, "apiKey");
       soosLogger.logLineSeparator();
       const soosDASTAnalysis = new SOOSDASTAnalysis(args);
       await soosDASTAnalysis.runAnalysis();

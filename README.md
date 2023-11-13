@@ -59,6 +59,7 @@ The basic command to run a baseline scan would look like:
 | `--help`, `-h` | ==SUPPRESS== | show this help message and exit |
 | `--integrationName` | None | Integration Name - Intended for internal use only. |
 | `--integrationType` | None | Integration Type - Intended for internal use only. |
+| `--logLevel` | None | Minimum level to show logs: PASS, IGNORE, INFO, WARN, FAIL, DEBUG, ERROR. |
 | `--oauthParameters` | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
 | `--oauthTokenUrl` | None | The authentication URL that grants the access_token. |
 | `--onFailure` | continue_on_failure | Action to perform when the scan fails. Options: fail_the_build, continue_on_failure |
