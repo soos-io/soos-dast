@@ -258,7 +258,7 @@ class SOOSDASTAnalysis {
 
     parser.add_argument("--logLevel", {
       help: "Minimum level to show logs: PASS, IGNORE, INFO, WARN, FAIL, DEBUG, ERROR.",
-      default: LogLevel.INFO,
+      default: "INFO",
       required: false,
       type: (value: string) => {
         return ensureEnumValue(LogLevel, value);
