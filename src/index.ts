@@ -580,7 +580,7 @@ class SOOSDASTAnalysis {
     soosLogger.logLineSeparator();
     try {
       const args = this.parseArgs();
-      soosLogger.setMinLogLevel(args.logLevel);
+      soosLogger.setMinLogLevel(LogLevel[args.logLevel as unknown as keyof typeof LogLevel]);
       soosLogger.setVerbose(args.verbose);
       soosLogger.info("Configuration read");
       soosLogger.verboseDebug(
