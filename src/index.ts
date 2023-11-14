@@ -249,7 +249,6 @@ class SOOSDASTAnalysis {
     parser.add_argument("--integrationName", {
       help: "Integration Name - Intended for internal use only.",
       required: false,
-      default: CONSTANTS.SOOS.DEFAULT_INTEGRATION_NAME,
     });
 
     parser.add_argument("--integrationType", {
