@@ -254,11 +254,12 @@ class SOOSDASTAnalysis {
     parser.add_argument("--integrationType", {
       help: "Integration Type - Intended for internal use only.",
       required: false,
+      default: CONSTANTS.SOOS.DEFAULT_INTEGRATION_TYPE,
     });
 
     parser.add_argument("--logLevel", {
       help: "Minimum level to show logs: PASS, IGNORE, INFO, WARN, FAIL, DEBUG, ERROR.",
-      default: "INFO",
+      default: LogLevel.INFO,
       required: false,
       type: (value: string) => {
         return ensureEnumValue(LogLevel, value);
@@ -583,7 +584,7 @@ class SOOSDASTAnalysis {
     soosLogger.logLineSeparator();
     try {
       const args = this.parseArgs();
-      soosLogger.setMinLogLevel(LogLevel[args.logLevel as unknown as keyof typeof LogLevel]);
+      soosLogger.setMinLogLevel(args.logLevel);
       soosLogger.setVerbose(args.verbose);
       soosLogger.info("Configuration read");
       soosLogger.verboseDebug(
