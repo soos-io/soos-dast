@@ -375,9 +375,12 @@ class SOOSDASTAnalysis {
       soosLogger.logLineSeparator();
 
       soosLogger.info(`Checking if url '${this.args.targetURL}' is available...`);
-      if (!(await isUrlAvailable(this.args.targetURL))) {
-        soosLogger.error(`The URL ${this.args.targetURL} is not available.`);
-        exit(1);
+      if (this.args.scanMode !== ScanMode.ApiScan) {
+        const urlAvailable = await isUrlAvailable(this.args.targetURL);
+        if (!urlAvailable) {
+          soosLogger.error(`The URL ${this.args.targetURL} is not available.`);
+          exit(1);
+        }
       }
 
       soosLogger.info(`Creating scan for project ${this.args.projectName}...`);
