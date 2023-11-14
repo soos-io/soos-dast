@@ -5,9 +5,9 @@ export enum ScanMode {
 }
 
 export enum ApiScanFormat {
-  OpenAPI = "OpenAPI",
-  SOAP = "SOAP",
-  GraphQL = "GraphQL",
+  OpenAPI = "openapi",
+  SOAP = "soap",
+  GraphQL = "graphql",
 }
 
 export enum SubmitActions {
