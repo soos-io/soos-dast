@@ -12,7 +12,7 @@ import {
   sleep,
   obfuscateProperties,
   ensureEnumValue,
-  ensureValue,
+  ensureNonEmptyValue,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -102,6 +102,9 @@ class SOOSDASTAnalysis {
     parser.add_argument("--apiURL", {
       help: "SOOS API URL - Intended for internal use only, do not modify.",
       default: "https://api.soos.io/api/",
+      type: (value: string) => {
+        return ensureNonEmptyValue(value, "apiURL");
+      },
       required: false,
     });
 
@@ -309,6 +312,9 @@ class SOOSDASTAnalysis {
     parser.add_argument("--projectName", {
       help: "Project Name - this is what will be displayed in the SOOS app.",
       required: true,
+      type: (value: string) => {
+        return ensureNonEmptyValue(value, "projectName");
+      },
     });
 
     parser.add_argument("--requestCookies", {
@@ -598,8 +604,8 @@ class SOOSDASTAnalysis {
           2
         )
       );
-      ensureValue(args.clientId, "clientId");
-      ensureValue(args.apiKey, "apiKey");
+      ensureNonEmptyValue(args.clientId, "clientId");
+      ensureNonEmptyValue(args.apiKey, "apiKey");
       soosLogger.logLineSeparator();
       const soosDASTAnalysis = new SOOSDASTAnalysis(args);
       await soosDASTAnalysis.runAnalysis();
