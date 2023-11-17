@@ -70,7 +70,6 @@ export interface SOOSDASTAnalysisArgs {
   targetURL: string;
   updateAddons: boolean;
   verbose: boolean;
-  zapOptions: string;
 }
 
 class SOOSDASTAnalysis {
@@ -352,12 +351,6 @@ class SOOSDASTAnalysis {
       help: "Enable verbose logging.",
       action: "store_true",
       required: false,
-    });
-
-    parser.add_argument("--zapOptions", {
-      help: "Additional ZAP Options",
-      required: false,
-      nargs: "*",
     });
 
     parser.add_argument("targetURL", {

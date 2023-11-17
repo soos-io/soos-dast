@@ -33,7 +33,6 @@ export const CONSTANTS = {
     HOOK_OPTION: "--hook",
     HTTP_SENDER_SCRIPTS_FOLDER_PATH: "/home/zap/.ZAP/scripts/scripts/httpsender/",
     JSON_REPORT_OPTION: "-J",
-    OPTIONS: "-z",
     RULES_FILE_OPTION: "-c",
     SCRIPTS: {
       API_SCAN: "/zap/zap-api-scan.py",
