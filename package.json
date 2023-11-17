@@ -18,7 +18,6 @@
   "dependencies": {
     "@soos-io/api-client": "0.1.8",
     "argparse": "^2.0.1",
-    "axios": "^0.27.2",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
