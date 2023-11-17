@@ -49,7 +49,7 @@ export class ZAPCommandGenerator {
       CONSTANTS.ZAP.JSON_REPORT_OPTION,
       CONSTANTS.FILES.REPORT_SCAN_RESULT_FILENAME
     );
-    this.addOption(args, CONSTANTS.ZAP.OPTIONS, this.config.zapOptions);
+
     this.addOption(args, CONSTANTS.ZAP.SPIDER_MINUTES_OPTION, this.config.fullScanMinutes);
     this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
     this.addHookParams();
