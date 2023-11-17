@@ -72,7 +72,6 @@ The basic command to run a baseline scan would look like:
 | `--requestHeaders` | None | Set extra Header requests |
 | `--scanMode` | baseline | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
 | `--scriptVersion` | None | Script Version - Intended for internal use only. |
-| `--zapOptions` | None | Additional ZAP Options |
 
 ## Scan Modes
 
