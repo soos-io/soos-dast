@@ -102,6 +102,9 @@ class SOOSDASTAnalysis {
     parser.add_argument("--apiURL", {
       help: "SOOS API URL - Intended for internal use only, do not modify.",
       default: "https://api.soos.io/api/",
+      type: (value: string) => {
+        return ensureValue(value, "apiURL");
+      },
       required: false,
     });
 
@@ -309,6 +312,9 @@ class SOOSDASTAnalysis {
     parser.add_argument("--projectName", {
       help: "Project Name - this is what will be displayed in the SOOS app.",
       required: true,
+      type: (value: string) => {
+        return ensureValue(value, "projectName");
+      },
     });
 
     parser.add_argument("--requestCookies", {
