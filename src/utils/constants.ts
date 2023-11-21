@@ -23,17 +23,13 @@ export const CONSTANTS = {
     MAX_ATTEMPTS: 10,
   },
   ZAP: {
-    ACTIVE_SCAN_POLICY_NAME: "Default Policy",
     AJAX_SPIDER_OPTION: "-j",
     COMMAND: "python3",
-    CONFIG_FILE_FOLDER: "/zap/config/",
     CONTEXT_FILE_OPTION: "-n",
     DEBUG_OPTION: "-d",
     FORMAT_OPTION: "-f",
     HOOK_OPTION: "--hook",
-    HTTP_SENDER_SCRIPTS_FOLDER_PATH: "/home/zap/.ZAP/scripts/scripts/httpsender/",
     JSON_REPORT_OPTION: "-J",
-    RULES_FILE_OPTION: "-c",
     SCRIPTS: {
       API_SCAN: "/zap/zap-api-scan.py",
       BASE_LINE: "/zap/zap-baseline.py",
