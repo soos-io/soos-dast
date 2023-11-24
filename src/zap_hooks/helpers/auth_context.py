@@ -134,18 +134,18 @@ def set_authentication(zap, target, driver, config):
     add_token_from_browser_storage(zap, sessionStorage, config)
 
 def validate_authentication_url(driver, url):
-    """Validate that the authentication url is called and returns a 200 status code"""
+    """Validate that the authentication url is called during the authentication process and returns a 200/302 status code"""
     log(f"Validating authentication url: {url}")
     url_found = False
     for request in driver.requests:
         if request.response and url in request.url:
             url_found = True
             log(f"Checking response status code {request.response}")
-            if request.response.status_code != 200:
-                log(f"Status code is not 200 for {request.url}, it is {request.response.status_code}")
+            if request.response.status_code not in [200, 302]:
+                log(f"Status code is not 200/302 for {request.url}, it is {request.response.status_code}")
                 sys.exit(1)
             else: 
-                log(f"Status code is 200 for {request.url}, authentication was successful")
+                log(f"Status code is {request.response.status_code} for {request.url}, authentication was successful")
     if not url_found:
         log(f"Authentication url {url} was not found, authentication failed.")
         sys.exit(1)
