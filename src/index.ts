@@ -244,7 +244,6 @@ class SOOSDASTAnalysis {
 
     parser.add_argument("--fullScanMinutes", {
       help: "Number of minutes for the spider to run.",
-      default: 1,
       required: false,
     });
 

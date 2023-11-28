@@ -56,7 +56,7 @@ The basic command to run a baseline scan would look like:
 | `--contextFile` | None | Context file which will be loaded prior to scanning the target |
 | `--debug` | False | Enable debug logging for ZAP. |
 | `--disableRules` | None | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
-| `--fullScanMinutes` | 1 | Number of minutes for the spider to run |
+| `--fullScanMinutes` | None | Number of minutes for the spider to run |
 | `--help`, `-h` | ==SUPPRESS== | show this help message and exit |
 | `--integrationName` | None | Integration Name - Intended for internal use only. |
 | `--integrationType` | None | Integration Type - Intended for internal use only. |
