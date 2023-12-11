@@ -7,8 +7,8 @@ export const CONSTANTS = {
     TOOL_VERSION: "2.12",
   },
   FILES: {
-    REPORT_SCAN_RESULT_FILE: "/zap/wrk/report.json",
-    REPORT_SCAN_RESULT_FILENAME: "report.json",
+    REPORT_SCAN_RESULT_FILE: "/zap/wrk/report.zap.json",
+    REPORT_SCAN_RESULT_FILENAME: "report.zap.json",
     SARIF: "results.sarif",
     SPIDERED_URLS_FILE_PATH: "./spidered_urls.txt",
     ZAP_CUSTOM_HOOK_SCRIPT: "src/zap_hooks/soos_zap_hook.py",

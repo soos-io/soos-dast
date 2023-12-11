@@ -21,7 +21,9 @@ import {
   LogLevel,
   OutputFormat,
   SOOS_CONSTANTS,
+  IntegrationName,
 } from "@soos-io/api-client";
+import { version } from "../package.json";
 import { ZAPCommandGenerator, CONSTANTS } from "./utils";
 
 export interface SOOSDASTAnalysisArgs {
@@ -53,7 +55,7 @@ export interface SOOSDASTAnalysisArgs {
   debug: boolean;
   disableRules: string;
   fullScanMinutes: number;
-  integrationName: string;
+  integrationName: IntegrationName;
   integrationType: string;
   logLevel: LogLevel;
   oauthParameters: string;
@@ -250,6 +252,10 @@ class SOOSDASTAnalysis {
     parser.add_argument("--integrationName", {
       help: "Integration Name - Intended for internal use only.",
       required: false,
+      type: (value: string) => {
+        return ensureEnumValue(IntegrationName, value);
+      },
+      default: IntegrationName.SoosDast,
     });
 
     parser.add_argument("--integrationType", {
@@ -339,6 +345,7 @@ class SOOSDASTAnalysis {
     parser.add_argument("--scriptVersion", {
       help: "Script Version - Intended for internal use only.",
       required: false,
+      default: version,
     });
 
     parser.add_argument("--updateAddons", {
