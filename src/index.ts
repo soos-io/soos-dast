@@ -1,18 +1,15 @@
 import * as fs from "fs";
 import FormData from "form-data";
 import { spawn, execSync } from "child_process";
-import { ArgumentParser } from "argparse";
 import { ApiScanFormat, FormTypes, OnFailure, ScanMode, SubmitActions } from "./utils/enums";
 import { exit } from "process";
-import SOOSAnalysisApiClient from "@soos-io/api-client/dist/api/SOOSAnalysisApiClient";
 import {
-  getEnvVariable,
   isUrlAvailable,
   convertStringToBase64,
-  sleep,
   obfuscateProperties,
   ensureEnumValue,
   ensureNonEmptyValue,
+  getExitCodeFromStatus,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -22,9 +19,12 @@ import {
   OutputFormat,
   SOOS_CONSTANTS,
   IntegrationName,
+  IntegrationType,
 } from "@soos-io/api-client";
 import { version } from "../package.json";
 import { ZAPCommandGenerator, CONSTANTS } from "./utils";
+import AnalysisService from "@soos-io/api-client/dist/services/AnalysisService";
+import AnalysisArgumentParser from "@soos-io/api-client/dist/services/AnalysisArgumentParser";
 
 export interface SOOSDASTAnalysisArgs {
   ajaxSpider: boolean;
@@ -56,7 +56,7 @@ export interface SOOSDASTAnalysisArgs {
   disableRules: string;
   fullScanMinutes: number;
   integrationName: IntegrationName;
-  integrationType: string;
+  integrationType: IntegrationType;
   logLevel: LogLevel;
   oauthParameters: string;
   oauthTokenUrl: string;
@@ -78,21 +78,21 @@ class SOOSDASTAnalysis {
   constructor(private args: SOOSDASTAnalysisArgs) {}
 
   static parseArgs(): SOOSDASTAnalysisArgs {
-    const parser = new ArgumentParser({ description: "SOOS DAST" });
+    const analysisArgumentParser = AnalysisArgumentParser.create(ScanType.DAST);
 
-    parser.add_argument("--ajaxSpider", {
+    analysisArgumentParser.addBaseScanArguments(
+      IntegrationName.SoosDast,
+      IntegrationType.Script,
+      version
+    );
+
+    analysisArgumentParser.argumentParser.add_argument("--ajaxSpider", {
       help: "Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/.",
       action: "store_true",
       required: false,
     });
 
-    parser.add_argument("--apiKey", {
-      help: "SOOS API Key - get yours from https://app.soos.io/integrate/sca",
-      default: getEnvVariable(CONSTANTS.SOOS.API_KEY_ENV_VAR),
-      required: false,
-    });
-
-    parser.add_argument("--apiScanFormat", {
+    analysisArgumentParser.argumentParser.add_argument("--apiScanFormat", {
       help: "Target API format, OpenAPI, SOAP or GraphQL.",
       required: false,
       type: (value: string) => {
@@ -100,27 +100,13 @@ class SOOSDASTAnalysis {
       },
     });
 
-    parser.add_argument("--apiURL", {
-      help: "SOOS API URL - Intended for internal use only, do not modify.",
-      default: "https://api.soos.io/api/",
-      type: (value: string) => {
-        return ensureNonEmptyValue(value, "apiURL");
-      },
-      required: false,
-    });
-
-    parser.add_argument("--appVersion", {
-      help: "App Version - Intended for internal use only.",
-      required: false,
-    });
-
-    parser.add_argument("--authDelayTime", {
+    analysisArgumentParser.argumentParser.add_argument("--authDelayTime", {
       help: "Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
       default: CONSTANTS.AUTH.DELAY_TIME,
       required: false,
     });
 
-    parser.add_argument("--authFormType", {
+    analysisArgumentParser.argumentParser.add_argument("--authFormType", {
       help: `Form type of the login URL options are: simple (all fields are displayed at once),
              wait_for_password (Password field is displayed only after username is filled),
              or multi_page (Password field is displayed only after username is filled and submit is clicked).`,
@@ -131,27 +117,27 @@ class SOOSDASTAnalysis {
       },
     });
 
-    parser.add_argument("--authLoginURL", {
+    analysisArgumentParser.argumentParser.add_argument("--authLoginURL", {
       help: "Login URL to use when authentication is required.",
       required: false,
     });
 
-    parser.add_argument("--authPassword", {
+    analysisArgumentParser.argumentParser.add_argument("--authPassword", {
       help: "Password to use when authentication is required.",
       required: false,
     });
 
-    parser.add_argument("--authPasswordField", {
+    analysisArgumentParser.argumentParser.add_argument("--authPasswordField", {
       help: "Password input id to use when authentication is required.",
       required: false,
     });
 
-    parser.add_argument("--authSecondSubmitField", {
+    analysisArgumentParser.argumentParser.add_argument("--authSecondSubmitField", {
       help: "Second submit button id to use when authentication is required.",
       required: false,
     });
 
-    parser.add_argument("--authSubmitAction", {
+    analysisArgumentParser.argumentParser.add_argument("--authSubmitAction", {
       help: "Submit action to perform on form filled. Options: click or submit.",
       required: false,
       type: (value: string) => {
@@ -159,181 +145,90 @@ class SOOSDASTAnalysis {
       },
     });
 
-    parser.add_argument("--authSubmitField", {
+    analysisArgumentParser.argumentParser.add_argument("--authSubmitField", {
       help: "Submit button id to use when authentication is required.",
       required: false,
     });
 
-    parser.add_argument("--authUsername", {
+    analysisArgumentParser.argumentParser.add_argument("--authUsername", {
       help: "Username to use when authentication is required.",
       required: false,
     });
 
-    parser.add_argument("--authUsernameField", {
+    analysisArgumentParser.argumentParser.add_argument("--authUsernameField", {
       help: "Username input id to use when authentication is required.",
       required: false,
     });
 
-    parser.add_argument("--authVerificationURL", {
+    analysisArgumentParser.argumentParser.add_argument("--authVerificationURL", {
       help: "URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated.",
       required: false,
     });
 
-    parser.add_argument("--bearerToken", {
+    analysisArgumentParser.argumentParser.add_argument("--bearerToken", {
       help: "Bearer token, adds a Authentication header with the token value.",
       required: false,
     });
 
-    parser.add_argument("--branchName", {
-      help: "The name of the branch from the SCM System.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--branchURI", {
-      help: "The URI to the branch from the SCM System.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--buildURI", {
-      help: "URI to CI build info.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--buildVersion", {
-      help: "Version of application build artifacts.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--checkoutDir", {
+    analysisArgumentParser.argumentParser.add_argument("--checkoutDir", {
       help: "Directory where the SARIF file will be created, used by Github Actions.",
       required: false,
       nargs: "*",
     });
 
-    parser.add_argument("--clientId", {
-      help: "SOOS Client ID - get yours from https://app.soos.io/integrate/sca",
-      default: getEnvVariable(CONSTANTS.SOOS.CLIENT_ID_ENV_VAR),
-      required: false,
-    });
-
-    parser.add_argument("--commitHash", {
-      help: "The commit hash value from the SCM System.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--contextFile", {
+    analysisArgumentParser.argumentParser.add_argument("--contextFile", {
       help: "Context file which will be loaded prior to scanning the target.",
       nargs: "*",
       required: false,
     });
 
-    parser.add_argument("--debug", {
+    analysisArgumentParser.argumentParser.add_argument("--debug", {
       help: "Enable debug logging for ZAP.",
       action: "store_true",
       required: false,
     });
 
-    parser.add_argument("--disableRules", {
+    analysisArgumentParser.argumentParser.add_argument("--disableRules", {
       help: "Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/",
       required: false,
       nargs: "*",
     });
 
-    parser.add_argument("--fullScanMinutes", {
+    analysisArgumentParser.argumentParser.add_argument("--fullScanMinutes", {
       help: "Number of minutes for the spider to run.",
       required: false,
     });
 
-    parser.add_argument("--integrationName", {
-      help: "Integration Name - Intended for internal use only.",
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(IntegrationName, value);
-      },
-      default: IntegrationName.SoosDast,
-    });
-
-    parser.add_argument("--integrationType", {
-      help: "Integration Type - Intended for internal use only.",
-      required: false,
-      default: CONSTANTS.SOOS.DEFAULT_INTEGRATION_TYPE,
-    });
-
-    parser.add_argument("--logLevel", {
-      help: "Minimum level to show logs: PASS, IGNORE, INFO, WARN, FAIL, DEBUG, ERROR.",
-      default: LogLevel.INFO,
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(LogLevel, value);
-      },
-    });
-
-    parser.add_argument("--oauthParameters", {
+    analysisArgumentParser.argumentParser.add_argument("--oauthParameters", {
       help: `Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials").`,
       required: false,
       nargs: "*",
     });
 
-    parser.add_argument("--oauthTokenUrl", {
+    analysisArgumentParser.argumentParser.add_argument("--oauthTokenUrl", {
       help: "The authentication URL that grants the access_token.",
       required: false,
     });
 
-    parser.add_argument("--onFailure", {
-      help: "Action to perform when the scan fails. Options: fail_the_build, continue_on_failure.",
-      default: OnFailure.Continue,
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(OnFailure, value);
-      },
-    });
-
-    parser.add_argument("--operatingEnvironment", {
-      help: "Set Operating environment for information purposes only.",
-      default: null,
-      required: false,
-    });
-
-    parser.add_argument("--otherOptions", {
+    analysisArgumentParser.argumentParser.add_argument("--otherOptions", {
       help: "Other command line arguments sent directly to the script for items not supported by other command line arguments",
       required: false,
       nargs: "*",
     });
 
-    parser.add_argument("--outputFormat", {
-      help: "Output format for vulnerabilities: only the value SARIF is available at the moment",
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(OutputFormat, value);
-      },
-    });
-
-    parser.add_argument("--projectName", {
-      help: "Project Name - this is what will be displayed in the SOOS app.",
-      required: true,
-      type: (value: string) => {
-        return ensureNonEmptyValue(value, "projectName");
-      },
-    });
-
-    parser.add_argument("--requestCookies", {
+    analysisArgumentParser.argumentParser.add_argument("--requestCookies", {
       help: "Set Cookie values for the requests to the target URL",
       nargs: "*",
       required: false,
     });
 
-    parser.add_argument("--requestHeaders", {
+    analysisArgumentParser.argumentParser.add_argument("--requestHeaders", {
       help: "Set extra headers for the requests to the target URL",
       nargs: "*",
       required: false,
     });
 
-    parser.add_argument("--scanMode", {
+    analysisArgumentParser.argumentParser.add_argument("--scanMode", {
       help: "Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
       default: ScanMode.Baseline,
       required: false,
@@ -342,37 +237,25 @@ class SOOSDASTAnalysis {
       },
     });
 
-    parser.add_argument("--scriptVersion", {
-      help: "Script Version - Intended for internal use only.",
-      required: false,
-      default: version,
-    });
-
-    parser.add_argument("--updateAddons", {
+    analysisArgumentParser.argumentParser.add_argument("--updateAddons", {
       help: "Update ZAP Addons - Update ZAP Addons before running the scan.",
       action: "store_true",
     });
 
-    parser.add_argument("--verbose", {
-      help: "Enable verbose logging.",
-      action: "store_true",
-      required: false,
-    });
-
-    parser.add_argument("targetURL", {
+    analysisArgumentParser.argumentParser.add_argument("targetURL", {
       help: "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
     });
 
     soosLogger.info("Parsing arguments");
-    return parser.parse_args();
+    return analysisArgumentParser.parseArguments();
   }
 
   async runAnalysis(): Promise<void> {
-    let scanDone: boolean = false;
     let projectHash: string | undefined;
     let branchHash: string | undefined;
     let analysisId: string | undefined;
-    const soosApiClient = new SOOSAnalysisApiClient(this.args.apiKey, this.args.apiURL);
+    let scanStatusUrl: string | undefined;
+    const analysisService = AnalysisService.create(this.args.apiKey, this.args.apiURL);
     try {
       soosLogger.info(`Project Name: ${this.args.projectName}`);
       soosLogger.info(`Scan Mode: ${this.args.scanMode}`);
@@ -390,11 +273,11 @@ class SOOSDASTAnalysis {
       }
 
       soosLogger.info(`Creating scan for project ${this.args.projectName}...`);
-      const result = await soosApiClient.createScan({
+      const result = await analysisService.setupScan({
         clientId: this.args.clientId,
         projectName: this.args.projectName,
         commitHash: this.args.commitHash,
-        branch: this.args.branchName,
+        branchName: this.args.branchName,
         buildVersion: this.args.buildVersion,
         buildUri: this.args.buildURI,
         branchUri: this.args.branchURI,
@@ -402,8 +285,8 @@ class SOOSDASTAnalysis {
         operatingEnvironment: this.args.operatingEnvironment,
         integrationName: this.args.integrationName,
         appVersion: this.args.appVersion,
-        scriptVersion: null,
-        contributingDeveloperAudit: undefined,
+        scriptVersion: this.args.scriptVersion,
+        contributingDeveloperAudit: [],
         scanType: ScanType.DAST,
         toolName: CONSTANTS.DAST.TOOL,
         toolVersion: CONSTANTS.DAST.TOOL_VERSION,
@@ -411,6 +294,7 @@ class SOOSDASTAnalysis {
       projectHash = result.projectHash;
       branchHash = result.branchHash;
       analysisId = result.analysisId;
+      scanStatusUrl = result.scanStatusUrl;
 
       execSync("mkdir -p ~/.ZAP/reports /root/.ZAP/reports");
 
@@ -457,111 +341,57 @@ class SOOSDASTAnalysis {
       soosLogger.logLineSeparator();
       soosLogger.info(`Starting report results processing`);
       soosLogger.info(`Uploading scan result for project ${this.args.projectName}...`);
-      await soosApiClient.uploadScanToolResult({
+      await analysisService.analysisApiClient.uploadScanToolResult({
         clientId: this.args.clientId,
         projectHash,
         branchHash,
         scanType: ScanType.DAST,
         scanId: analysisId,
         resultFile: formData,
+        hasMoreThanMaximumFiles: false,
       });
       soosLogger.info(`Scan result uploaded successfully`);
 
-      scanDone = true;
+      const scanStatus = await analysisService.waitForScanToFinish({
+        scanStatusUrl: result.scanStatusUrl,
+        scanUrl: result.scanUrl,
+        scanType: ScanType.DAST,
+      });
 
       if (this.args.outputFormat !== undefined) {
-        soosLogger.info(`Generating SARIF report  ${this.args.projectName}...`);
-        const output = await soosApiClient.getFormattedScanResult({
+        await analysisService.generateFormattedOutput({
           clientId: this.args.clientId,
-          projectHash,
-          branchHash,
+          projectHash: result.projectHash,
+          projectName: this.args.projectName,
+          branchHash: result.branchHash,
           scanType: ScanType.DAST,
-          scanId: analysisId,
+          analysisId: result.analysisId,
           outputFormat: this.args.outputFormat,
-        });
-        if (output) {
-          soosLogger.info(`Output ('${this.args.outputFormat}' format):`);
-          soosLogger.info(JSON.stringify(output, null, 2));
-          if (this.args.checkoutDir) {
-            soosLogger.info(
-              `Writing SARIF report to ${this.args.checkoutDir}/${CONSTANTS.FILES.SARIF}`
-            );
-            fs.writeFileSync(
-              `${this.args.checkoutDir}/${CONSTANTS.FILES.SARIF}`,
-              JSON.stringify(output, null, 2)
-            );
-          }
-        }
-      }
-
-      if (this.args.onFailure === OnFailure.Fail) {
-        await this.waitForScanToFinish({
-          apiClient: soosApiClient,
-          scanStatusUrl: result.scanStatusUrl,
-          attempt: 0,
+          sourceCodePath: this.args.checkoutDir,
+          workingDirectory: this.args.checkoutDir,
         });
       }
 
-      soosLogger.logLineSeparator();
-      soosLogger.info(`SOOS DAST Analysis finished successfully`);
-      soosLogger.info(`Project URL: ${result.scanUrl}`);
+      const exitCode = getExitCodeFromStatus(scanStatus);
+      if (exitCode > 0 && this.args.onFailure === OnFailure.Fail) {
+        soosLogger.warn("Failing the build.");
+      }
+
+      exit(exitCode);
     } catch (error) {
-      soosLogger.error(error);
-      if (projectHash && branchHash && analysisId && !scanDone)
-        await soosApiClient.updateScanStatus({
+      if (projectHash && branchHash && analysisId)
+        await analysisService.updateScanStatus({
           clientId: this.args.clientId,
           projectHash,
           branchHash,
           scanType: ScanType.DAST,
-          scanId: analysisId,
+          analysisId: analysisId,
           status: ScanStatus.Error,
-          message: `Error while performing scan.`,
+          message: "Error while performing scan.",
+          scanStatusUrl,
         });
-      soosLogger.error("There was an error while performing the scan. Exiting script.");
+      soosLogger.error(error);
       exit(1);
-    }
-  }
-
-  async waitForScanToFinish({
-    apiClient,
-    scanStatusUrl,
-    attempt,
-  }: {
-    apiClient: SOOSAnalysisApiClient;
-    scanStatusUrl: string;
-    attempt: number;
-  }): Promise<void> {
-    const status = await apiClient.getScanStatus({ scanStatusUrl });
-
-    if (!status.isComplete) {
-      soosLogger.info(`Scan status: ${status.status}...`);
-      if (attempt >= CONSTANTS.STATUS.MAX_ATTEMPTS) {
-        soosLogger.error("Max attempts reached fetching scan status.");
-        soosLogger.error("Failing the build.");
-        process.exit(1);
-      }
-      await sleep(CONSTANTS.STATUS.DELAY_TIME);
-      return this.waitForScanToFinish({ apiClient, scanStatusUrl, attempt: attempt++ });
-    }
-
-    if (status.status === ScanStatus.FailedWithIssues) {
-      soosLogger.info("Analysis complete - Failures reported");
-      soosLogger.info("Failing the build.");
-      process.exit(1);
-    } else if (status.status === ScanStatus.Incomplete) {
-      soosLogger.info(
-        "Analysis Incomplete. It may have been cancelled or superseded by another scan."
-      );
-      soosLogger.info("Failing the build.");
-      process.exit(1);
-    } else if (status.status === ScanStatus.Error) {
-      soosLogger.info("Analysis Error.");
-      soosLogger.info("Failing the build.");
-      process.exit(1);
-    } else if (scanStatusUrl === "finished") {
-      return;
-    } else {
-      process.exit(0);
     }
   }
 
