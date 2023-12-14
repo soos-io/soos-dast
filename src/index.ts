@@ -251,11 +251,13 @@ class SOOSDASTAnalysis {
   }
 
   async runAnalysis(): Promise<void> {
+    const scanType = ScanType.DAST;
+    const soosAnalysisService = AnalysisService.create(this.args.apiKey, this.args.apiURL);
+
     let projectHash: string | undefined;
     let branchHash: string | undefined;
     let analysisId: string | undefined;
     let scanStatusUrl: string | undefined;
-    const analysisService = AnalysisService.create(this.args.apiKey, this.args.apiURL);
     try {
       soosLogger.info(`Project Name: ${this.args.projectName}`);
       soosLogger.info(`Scan Mode: ${this.args.scanMode}`);
@@ -273,7 +275,7 @@ class SOOSDASTAnalysis {
       }
 
       soosLogger.info(`Creating scan for project ${this.args.projectName}...`);
-      const result = await analysisService.setupScan({
+      const result = await soosAnalysisService.setupScan({
         clientId: this.args.clientId,
         projectName: this.args.projectName,
         commitHash: this.args.commitHash,
@@ -287,7 +289,7 @@ class SOOSDASTAnalysis {
         appVersion: this.args.appVersion,
         scriptVersion: this.args.scriptVersion,
         contributingDeveloperAudit: [],
-        scanType: ScanType.DAST,
+        scanType,
         toolName: CONSTANTS.DAST.TOOL,
         toolVersion: CONSTANTS.DAST.TOOL_VERSION,
       });
@@ -341,30 +343,30 @@ class SOOSDASTAnalysis {
       soosLogger.logLineSeparator();
       soosLogger.info(`Starting report results processing`);
       soosLogger.info(`Uploading scan result for project ${this.args.projectName}...`);
-      await analysisService.analysisApiClient.uploadScanToolResult({
+      await soosAnalysisService.analysisApiClient.uploadScanToolResult({
         clientId: this.args.clientId,
         projectHash,
         branchHash,
-        scanType: ScanType.DAST,
+        scanType,
         scanId: analysisId,
         resultFile: formData,
         hasMoreThanMaximumFiles: false,
       });
       soosLogger.info(`Scan result uploaded successfully`);
 
-      const scanStatus = await analysisService.waitForScanToFinish({
+      const scanStatus = await soosAnalysisService.waitForScanToFinish({
         scanStatusUrl: result.scanStatusUrl,
         scanUrl: result.scanUrl,
-        scanType: ScanType.DAST,
+        scanType,
       });
 
       if (this.args.outputFormat !== undefined) {
-        await analysisService.generateFormattedOutput({
+        await soosAnalysisService.generateFormattedOutput({
           clientId: this.args.clientId,
           projectHash: result.projectHash,
           projectName: this.args.projectName,
           branchHash: result.branchHash,
-          scanType: ScanType.DAST,
+          scanType,
           analysisId: result.analysisId,
           outputFormat: this.args.outputFormat,
           sourceCodePath: this.args.checkoutDir,
@@ -380,11 +382,11 @@ class SOOSDASTAnalysis {
       exit(exitCode);
     } catch (error) {
       if (projectHash && branchHash && analysisId)
-        await analysisService.updateScanStatus({
+        await soosAnalysisService.updateScanStatus({
           clientId: this.args.clientId,
           projectHash,
           branchHash,
-          scanType: ScanType.DAST,
+          scanType,
           analysisId: analysisId,
           status: ScanStatus.Error,
           message: "Error while performing scan.",
