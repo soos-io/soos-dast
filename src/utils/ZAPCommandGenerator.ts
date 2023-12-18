@@ -47,7 +47,7 @@ export class ZAPCommandGenerator {
     this.addOption(
       args,
       CONSTANTS.ZAP.JSON_REPORT_OPTION,
-      CONSTANTS.FILES.REPORT_SCAN_RESULT_FILENAME
+      CONSTANTS.FILES.REPORT_SCAN_RESULT_FILENAME,
     );
 
     this.addOption(args, CONSTANTS.ZAP.SPIDER_MINUTES_OPTION, this.config.fullScanMinutes);
