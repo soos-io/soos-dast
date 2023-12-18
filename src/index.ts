@@ -83,7 +83,7 @@ class SOOSDASTAnalysis {
     analysisArgumentParser.addBaseScanArguments(
       IntegrationName.SoosDast,
       IntegrationType.Script,
-      version
+      version,
     );
 
     analysisArgumentParser.argumentParser.add_argument("--ajaxSpider", {
@@ -210,6 +210,15 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
+    analysisArgumentParser.argumentParser.add_argument("--onFailure", {
+      help: "Action to perform when the scan fails. Options: fail_the_build, continue_on_failure.",
+      default: OnFailure.Continue,
+      required: false,
+      type: (value: string) => {
+        return ensureEnumValue(OnFailure, value);
+      },
+    });
+
     analysisArgumentParser.argumentParser.add_argument("--otherOptions", {
       help: "Other command line arguments sent directly to the script for items not supported by other command line arguments",
       required: false,
@@ -333,12 +342,12 @@ class SOOSDASTAnalysis {
             JSON.parse(
               fs.readFileSync(
                 CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE,
-                SOOS_CONSTANTS.FileUploads.Encoding
-              )
-            )
-          )
+                SOOS_CONSTANTS.FileUploads.Encoding,
+              ),
+            ),
+          ),
         ),
-        "base64Manifest"
+        "base64Manifest",
       );
       soosLogger.logLineSeparator();
       soosLogger.info(`Starting report results processing`);
@@ -432,8 +441,8 @@ class SOOSDASTAnalysis {
             "bearerToken",
           ]),
           null,
-          2
-        )
+          2,
+        ),
       );
       ensureNonEmptyValue(args.clientId, "clientId");
       ensureNonEmptyValue(args.apiKey, "apiKey");
