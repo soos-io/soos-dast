@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import FormData from "form-data";
 import { spawn, execSync } from "child_process";
-import { ApiScanFormat, FormTypes, OnFailure, ScanMode, SubmitActions } from "./utils/enums";
+import { ApiScanFormat, FormTypes, ScanMode, SubmitActions } from "./enums";
 import { exit } from "process";
 import {
   isUrlAvailable,
@@ -9,28 +9,28 @@ import {
   obfuscateProperties,
   ensureEnumValue,
   ensureNonEmptyValue,
-  getExitCodeFromStatus,
+  getAnalysisExitCode,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
   ScanType,
   soosLogger,
-  LogLevel,
   OutputFormat,
   SOOS_CONSTANTS,
   IntegrationName,
   IntegrationType,
 } from "@soos-io/api-client";
 import { version } from "../package.json";
-import { ZAPCommandGenerator, CONSTANTS } from "./utils";
+import { ZAPCommandGenerator } from "./utilities";
 import AnalysisService from "@soos-io/api-client/dist/services/AnalysisService";
-import AnalysisArgumentParser from "@soos-io/api-client/dist/services/AnalysisArgumentParser";
+import AnalysisArgumentParser, {
+  IBaseScanArguments,
+} from "@soos-io/api-client/dist/services/AnalysisArgumentParser";
+import { SOOS_DAST_CONSTANTS } from "./constants";
 
-export interface SOOSDASTAnalysisArgs {
+export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   ajaxSpider: boolean;
-  apiKey: string;
   apiScanFormat: ApiScanFormat;
-  apiURL: string;
   appVersion: string;
   authDelayTime: number;
   authFormType: FormTypes;
@@ -45,33 +45,20 @@ export interface SOOSDASTAnalysisArgs {
   authVerificationURL: string;
   bearerToken: string;
   branchName: string;
-  branchURI: string;
-  buildURI: string;
-  buildVersion: string;
   checkoutDir: string;
-  clientId: string;
-  commitHash: string;
   contextFile: string;
   debug: boolean;
   disableRules: string;
   fullScanMinutes: number;
-  integrationName: IntegrationName;
-  integrationType: IntegrationType;
-  logLevel: LogLevel;
   oauthParameters: string;
   oauthTokenUrl: string;
-  onFailure: OnFailure;
-  operatingEnvironment: string;
   otherOptions: string;
   outputFormat: OutputFormat;
-  projectName: string;
   requestCookies: string;
   requestHeaders: string;
   scanMode: ScanMode;
-  scriptVersion: string;
   targetURL: string;
   updateAddons: boolean;
-  verbose: boolean;
 }
 
 class SOOSDASTAnalysis {
@@ -102,7 +89,7 @@ class SOOSDASTAnalysis {
 
     analysisArgumentParser.argumentParser.add_argument("--authDelayTime", {
       help: "Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
-      default: CONSTANTS.AUTH.DELAY_TIME,
+      default: SOOS_DAST_CONSTANTS.AuthDelayTime,
       required: false,
     });
 
@@ -210,15 +197,6 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    analysisArgumentParser.argumentParser.add_argument("--onFailure", {
-      help: "Action to perform when the scan fails. Options: fail_the_build, continue_on_failure.",
-      default: OnFailure.Continue,
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(OnFailure, value);
-      },
-    });
-
     analysisArgumentParser.argumentParser.add_argument("--otherOptions", {
       help: "Other command line arguments sent directly to the script for items not supported by other command line arguments",
       required: false,
@@ -297,10 +275,21 @@ class SOOSDASTAnalysis {
         integrationName: this.args.integrationName,
         appVersion: this.args.appVersion,
         scriptVersion: this.args.scriptVersion,
-        contributingDeveloperAudit: [],
+        contributingDeveloperAudit:
+          !this.args.contributingDeveloperId ||
+          !this.args.contributingDeveloperSource ||
+          !this.args.contributingDeveloperSourceName
+            ? []
+            : [
+                {
+                  contributingDeveloperId: this.args.contributingDeveloperId,
+                  source: this.args.contributingDeveloperSource,
+                  sourceName: this.args.contributingDeveloperSourceName,
+                },
+              ],
         scanType,
-        toolName: CONSTANTS.DAST.TOOL,
-        toolVersion: CONSTANTS.DAST.TOOL_VERSION,
+        toolName: SOOS_DAST_CONSTANTS.Tool,
+        toolVersion: SOOS_DAST_CONSTANTS.ToolVersion,
       });
       projectHash = result.projectHash;
       branchHash = result.branchHash;
@@ -317,21 +306,26 @@ class SOOSDASTAnalysis {
       const command = zapCommandGenerator.runCommandGeneration(this.args.scanMode);
       soosLogger.info(`Running command: ${command}`);
       await SOOSDASTAnalysis.runZap(command);
-      const runSuccess = fs.existsSync(CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE);
+      const runSuccess = fs.existsSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile);
       soosLogger.info(`Scan finished with success: ${runSuccess}`);
 
       const discoveredUrls =
-        fs.existsSync(CONSTANTS.FILES.SPIDERED_URLS_FILE_PATH) &&
-        fs.statSync(CONSTANTS.FILES.SPIDERED_URLS_FILE_PATH).isFile()
+        fs.existsSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile) &&
+        fs.statSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile).isFile()
           ? fs
-              .readFileSync(CONSTANTS.FILES.SPIDERED_URLS_FILE_PATH, "utf-8")
+              .readFileSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile, "utf-8")
               .split("\n")
               .filter((url) => url.trim() !== "")
           : [];
 
-      const data = JSON.parse(fs.readFileSync(CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE, "utf-8"));
+      const data = JSON.parse(
+        fs.readFileSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile, "utf-8"),
+      );
       data["discoveredUrls"] = discoveredUrls;
-      fs.writeFileSync(CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE, JSON.stringify(data, null, 4));
+      fs.writeFileSync(
+        SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
+        JSON.stringify(data, null, 4),
+      );
       const formData = new FormData();
 
       formData.append("resultVersion", data["@version"]);
@@ -341,7 +335,7 @@ class SOOSDASTAnalysis {
           JSON.stringify(
             JSON.parse(
               fs.readFileSync(
-                CONSTANTS.FILES.REPORT_SCAN_RESULT_FILE,
+                SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
                 SOOS_CONSTANTS.FileUploads.Encoding,
               ),
             ),
@@ -383,11 +377,12 @@ class SOOSDASTAnalysis {
         });
       }
 
-      const exitCode = getExitCodeFromStatus(scanStatus);
-      if (exitCode > 0 && this.args.onFailure === OnFailure.Fail) {
-        soosLogger.warn("Failing the build.");
-      }
-
+      const exitCode = getAnalysisExitCode(
+        scanStatus,
+        this.args.integrationName,
+        this.args.onFailure,
+      );
+      soosLogger.debug(`Exiting with code ${exitCode}`);
       exit(exitCode);
     } catch (error) {
       if (projectHash && branchHash && analysisId)
