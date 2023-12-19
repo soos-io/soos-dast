@@ -376,7 +376,6 @@ class SOOSDASTAnalysis {
           scanType,
           analysisId: result.analysisId,
           outputFormat: this.args.outputFormat,
-          sourceCodePath: this.args.checkoutDir,
           workingDirectory: this.args.checkoutDir,
         });
       }
