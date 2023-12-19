@@ -7,8 +7,6 @@ import {
   isUrlAvailable,
   convertStringToBase64,
   obfuscateProperties,
-  ensureEnumValue,
-  ensureNonEmptyValue,
   getAnalysisExitCode,
 } from "@soos-io/api-client/dist/utilities";
 import {
@@ -31,7 +29,6 @@ import { SOOS_DAST_CONSTANTS } from "./constants";
 export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   ajaxSpider: boolean;
   apiScanFormat: ApiScanFormat;
-  appVersion: string;
   authDelayTime: number;
   authFormType: FormTypes;
   authLoginURL: string;
@@ -44,7 +41,6 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   authUsernameField: string;
   authVerificationURL: string;
   bearerToken: string;
-  branchName: string;
   checkoutDir: string;
   contextFile: string;
   debug: boolean;
@@ -79,13 +75,15 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    analysisArgumentParser.argumentParser.add_argument("--apiScanFormat", {
-      help: "Target API format, OpenAPI, SOAP or GraphQL.",
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(ApiScanFormat, value);
+    analysisArgumentParser.addEnumArgument(
+      analysisArgumentParser.argumentParser,
+      "--apiScanFormat",
+      ApiScanFormat,
+      {
+        help: "Target API format, OpenAPI, SOAP or GraphQL.",
+        required: false,
       },
-    });
+    );
 
     analysisArgumentParser.argumentParser.add_argument("--authDelayTime", {
       help: "Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
@@ -93,16 +91,18 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    analysisArgumentParser.argumentParser.add_argument("--authFormType", {
-      help: `Form type of the login URL options are: simple (all fields are displayed at once),
+    analysisArgumentParser.addEnumArgument(
+      analysisArgumentParser.argumentParser,
+      "--authFormType",
+      FormTypes,
+      {
+        help: `Form type of the login URL options are: simple (all fields are displayed at once),
              wait_for_password (Password field is displayed only after username is filled),
              or multi_page (Password field is displayed only after username is filled and submit is clicked).`,
-      default: FormTypes.Simple,
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(FormTypes, value);
+        default: FormTypes.Simple,
+        required: false,
       },
-    });
+    );
 
     analysisArgumentParser.argumentParser.add_argument("--authLoginURL", {
       help: "Login URL to use when authentication is required.",
@@ -124,13 +124,15 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    analysisArgumentParser.argumentParser.add_argument("--authSubmitAction", {
-      help: "Submit action to perform on form filled. Options: click or submit.",
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(SubmitActions, value);
+    analysisArgumentParser.addEnumArgument(
+      analysisArgumentParser.argumentParser,
+      "--authSubmitAction",
+      SubmitActions,
+      {
+        help: "Submit action to perform on form filled. Options: click or submit.",
+        required: false,
       },
-    });
+    );
 
     analysisArgumentParser.argumentParser.add_argument("--authSubmitField", {
       help: "Submit button id to use when authentication is required.",
@@ -215,14 +217,16 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    analysisArgumentParser.argumentParser.add_argument("--scanMode", {
-      help: "Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
-      default: ScanMode.Baseline,
-      required: false,
-      type: (value: string) => {
-        return ensureEnumValue(ScanMode, value);
+    analysisArgumentParser.addEnumArgument(
+      analysisArgumentParser.argumentParser,
+      "--scanMode",
+      ScanMode,
+      {
+        help: "Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
+        default: ScanMode.Baseline,
+        required: false,
       },
-    });
+    );
 
     analysisArgumentParser.argumentParser.add_argument("--updateAddons", {
       help: "Update ZAP Addons - Update ZAP Addons before running the scan.",
@@ -439,8 +443,6 @@ class SOOSDASTAnalysis {
           2,
         ),
       );
-      ensureNonEmptyValue(args.clientId, "clientId");
-      ensureNonEmptyValue(args.apiKey, "apiKey");
       soosLogger.logLineSeparator();
       const soosDASTAnalysis = new SOOSDASTAnalysis(args);
       await soosDASTAnalysis.runAnalysis();

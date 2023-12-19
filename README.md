@@ -33,7 +33,7 @@ The basic command to run a baseline scan would look like:
 | --- | --- | --- |
 | `--ajaxSpider` | None | Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/ |
 | `--apiKey` | None | SOOS API Key - get yours from https://app.soos.io/integrate/dast |
-| `--appVersion` | None | App Version - Intended for internal use only. |
+| `--appVersion` | N/A | App Version - Intended for internal use only. |
 | `--authDelayTime` | 5 | Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page) |
 | `--authFormType` | simple | simple (all fields are displayed at once), wait_for_password (Password field is displayed only after username is filled), or multi_page (Password field is displayed only after username is filled and submit is clicked) |
 | `--authLoginURL` | None | Login url to use when authentication is required |
@@ -58,8 +58,8 @@ The basic command to run a baseline scan would look like:
 | `--disableRules` | None | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
 | `--fullScanMinutes` | None | Number of minutes for the spider to run |
 | `--help`, `-h` | ==SUPPRESS== | show this help message and exit |
-| `--integrationName` | None | Integration Name - Intended for internal use only. |
-| `--integrationType` | None | Integration Type - Intended for internal use only. |
+| `--integrationName` | N/A | Integration Name - Intended for internal use only. |
+| `--integrationType` | N/A | Integration Type - Intended for internal use only. |
 | `--logLevel` | None | Minimum level to show logs: PASS, IGNORE, INFO, WARN, FAIL, DEBUG, ERROR. |
 | `--oauthParameters` | None | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
 | `--oauthTokenUrl` | None | The authentication URL that grants the access_token. |
@@ -71,7 +71,7 @@ The basic command to run a baseline scan would look like:
 | `--requestCookies` | None | Set Cookie values for the requests to the target URL |
 | `--requestHeaders` | None | Set extra Header requests |
 | `--scanMode` | baseline | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
-| `--scriptVersion` | None | Script Version - Intended for internal use only. |
+| `--scriptVersion` | N/A | Script Version - Intended for internal use only. |
 
 ## Scan Modes
 
