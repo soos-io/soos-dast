@@ -1,6 +1,26 @@
 import { SOOSDASTAnalysisArgs } from "..";
-import { CONSTANTS } from "./constants";
-import { ScanMode } from "./enums";
+import { SOOS_DAST_CONSTANTS } from "../constants";
+import { ScanMode } from "../enums";
+
+const SOOS_ZAP_CONSTANTS = {
+  PythonBin: "python3",
+  Options: {
+    AjaxSpider: "-j",
+    ContextFile: "-n",
+    Debug: "-d",
+    Format: "-f",
+    Hook: "--hook",
+    JsonReport: "-J",
+    SpiderMinutes: "-m",
+    TargetUrl: "-t",
+    UpdateAddons: "--updateAddons",
+  },
+  Scripts: {
+    ApiScan: "/zap/zap-api-scan.py",
+    Baseline: "/zap/zap-baseline.py",
+    FullScan: "/zap/zap-full-scan.py",
+  },
+};
 
 export class ZAPCommandGenerator {
   constructor(private config: SOOSDASTAnalysisArgs) {}
@@ -40,18 +60,18 @@ export class ZAPCommandGenerator {
   }
 
   private generateCommand(args: string[]): string {
-    this.addOption(args, CONSTANTS.ZAP.AJAX_SPIDER_OPTION, this.config.ajaxSpider);
-    this.addOption(args, CONSTANTS.ZAP.CONTEXT_FILE_OPTION, this.config.contextFile);
-    this.addOption(args, CONSTANTS.ZAP.DEBUG_OPTION, this.config.debug);
-    this.addOption(args, CONSTANTS.ZAP.HOOK_OPTION, CONSTANTS.FILES.ZAP_CUSTOM_HOOK_SCRIPT);
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.AjaxSpider, this.config.ajaxSpider);
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.ContextFile, this.config.contextFile);
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.Debug, this.config.debug);
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.Hook, SOOS_DAST_CONSTANTS.Files.ZapHookFile);
     this.addOption(
       args,
-      CONSTANTS.ZAP.JSON_REPORT_OPTION,
-      CONSTANTS.FILES.REPORT_SCAN_RESULT_FILENAME,
+      SOOS_ZAP_CONSTANTS.Options.JsonReport,
+      SOOS_DAST_CONSTANTS.Files.ReportScanResultFilename,
     );
 
-    this.addOption(args, CONSTANTS.ZAP.SPIDER_MINUTES_OPTION, this.config.fullScanMinutes);
-    this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.SpiderMinutes, this.config.fullScanMinutes);
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.TargetUrl, this.config.targetURL);
     this.addHookParams();
 
     if (this.config.otherOptions) {
@@ -59,27 +79,27 @@ export class ZAPCommandGenerator {
     }
 
     if (this.config.updateAddons) {
-      args.push(CONSTANTS.ZAP.UPDATE_ADDONS_OPTION);
+      args.push(SOOS_ZAP_CONSTANTS.Options.UpdateAddons);
     }
 
     return args.join(" ");
   }
 
   private baselineScan(): string {
-    const args = [CONSTANTS.ZAP.COMMAND, CONSTANTS.ZAP.SCRIPTS.BASE_LINE];
+    const args = [SOOS_ZAP_CONSTANTS.PythonBin, SOOS_ZAP_CONSTANTS.Scripts.Baseline];
     return this.generateCommand(args);
   }
 
   private fullScan(): string {
-    const args = [CONSTANTS.ZAP.COMMAND, CONSTANTS.ZAP.SCRIPTS.FULL_SCAN];
-    this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
+    const args = [SOOS_ZAP_CONSTANTS.PythonBin, SOOS_ZAP_CONSTANTS.Scripts.FullScan];
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.TargetUrl, this.config.targetURL);
     return this.generateCommand(args);
   }
 
   private apiScan(): string {
-    const args = [CONSTANTS.ZAP.COMMAND, CONSTANTS.ZAP.SCRIPTS.API_SCAN];
-    this.addOption(args, CONSTANTS.ZAP.TARGET_URL_OPTION, this.config.targetURL);
-    this.addOption(args, CONSTANTS.ZAP.FORMAT_OPTION, this.config.apiScanFormat);
+    const args = [SOOS_ZAP_CONSTANTS.PythonBin, SOOS_ZAP_CONSTANTS.Scripts.ApiScan];
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.TargetUrl, this.config.targetURL);
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.Format, this.config.apiScanFormat);
     return this.generateCommand(args);
   }
 

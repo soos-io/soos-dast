@@ -21,11 +21,6 @@ export enum FormTypes {
   MultiPage = "multi_page",
 }
 
-export enum OnFailure {
-  Continue = "continue_on_failure",
-  Fail = "fail_the_build",
-}
-
 export const ScanModeScripts: Record<ScanMode, string> = {
   [ScanMode.Baseline]: "/zap/zap-baseline.py",
   [ScanMode.FullScan]: "/zap/zap-full-scan.py",
