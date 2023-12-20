@@ -1,6 +1,6 @@
 {
   "name": "soos-dast",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "SOOS DAST - The affordable no limit web vulnerability scanner",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "check": "npm run format && npm run typecheck && npm outdated"
   },
   "dependencies": {
-    "@soos-io/api-client": "0.2.21",
+    "@soos-io/api-client": "0.2.22",
     "argparse": "^2.0.1",
     "glob": "^10.3.10",
     "tslib": "^2.6.2"
