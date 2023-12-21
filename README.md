@@ -56,7 +56,7 @@ The basic command to run a baseline scan would look like:
 | `--debug` |  | Enable debug logging for ZAP. |
 | `--disableRules` |  | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
 | `--fullScanMinutes` |  | Number of minutes for the spider to run |
-| `--logLevel` |  | Minimum level to show logs: PASS, IGNORE, INFO, WARN, FAIL, DEBUG, ERROR. |
+| `--logLevel` |  | Minimum level to show logs: DEBUG INFO, WARN, FAIL, ERROR. |
 | `--oauthParameters` |  | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
 | `--oauthTokenUrl` |  | The authentication URL that grants the access_token. |
 | `--onFailure` | `continue_on_failure` | Action to perform when the scan fails. Options: fail_the_build, continue_on_failure |
