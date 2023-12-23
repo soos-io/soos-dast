@@ -385,7 +385,7 @@ class SOOSDASTAnalysis {
         this.args.integrationName,
         this.args.onFailure,
       );
-      soosLogger.debug(`Exiting with code ${exitCode}`);
+      soosLogger.always(`exit ${exitCode}`);
       exit(exitCode);
     } catch (error) {
       if (projectHash && branchHash && analysisId)
@@ -400,6 +400,7 @@ class SOOSDASTAnalysis {
           scanStatusUrl,
         });
       soosLogger.error(error);
+      soosLogger.always("exit 1");
       exit(1);
     }
   }
@@ -447,6 +448,7 @@ class SOOSDASTAnalysis {
       await soosDASTAnalysis.runAnalysis();
     } catch (error) {
       soosLogger.error(`Error on createAndRun: ${error}`);
+      soosLogger.always("exit 1");
       exit(1);
     }
   }
