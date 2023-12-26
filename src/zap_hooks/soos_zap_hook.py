@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import traceback
 from typing import List
 
@@ -49,6 +50,18 @@ def zap_started(zap, target):
             )
         cookies.load(config, zap)
         headers.load(config, zap)
+        ascan_data = serialize_object(zap.ascan)
+        with open('wrk/ascan_data_start.json', 'w') as file:
+            json.dump(ascan_data, file, indent=4)
+        spider_data = serialize_object(zap.spider)
+        with open('wrk/spider_data_start.json', 'w') as file:
+            json.dump(spider_data, file, indent=4)
+        core_data = serialize_object(zap.core)
+        with open('wrk/core_data_start.json', 'w') as file:
+            json.dump(core_data, file, indent=4)
+        pscan_data = serialize_object(zap.pscan)
+        with open('wrk/pscan_data_start.json', 'w') as file:
+            json.dump(pscan_data, file, indent=4)
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
 
@@ -60,35 +73,40 @@ def zap_import_context(zap, context_file):
     zap.context.remove_context(globals.context_name)
 
 def zap_pre_shutdown(zap):
-    log("printing context list")
-    log(zap.context.context_list)
-    log("saving session")
-    log(zap.core.save_session(name="session_file_test.session", overwrite=True))
-    zap.context.export_context(globals.context_name, "wrk/context_file_test.context")
-
-    log("printing rules configuration")
-    log(zap.ruleConfig.all_rule_configs)
-
-    # Retrieve specific configuration settings
-    spider_max_duration = zap.spider.option_max_duration
-    scanner_threads_per_host = zap.ascan.option_thread_per_host
-    ascan_max_duration = zap.ascan.option_max_scan_duration_in_mins
-    ascan_max_result = zap.ascan.option_max_results_to_list
-    ascan_max_rule_duration = zap.ascan.option_max_rule_duration_in_mins
-    log(f"Current directory is {os.getcwd()}")
-    log(f"printinf files in current directory: {os.listdir()}")
-    # Write configuration settings to a file
-    with open('wrk/zap_config_settings.txt', 'w') as config_file:
-        config_file.write(f"Spider Max Duration: {spider_max_duration}\n")
-        config_file.write(f"Scanner Threads Per Host: {scanner_threads_per_host}\n")
-        config_file.write(f"Active Scan Max Duration: {ascan_max_duration}\n")
-        config_file.write(f"Active Scan Max Result: {ascan_max_result}\n")
-        config_file.write(f"Active Scan Max Rule Duration: {ascan_max_rule_duration}\n")
+    ascan_data = serialize_object(zap.ascan)
+    with open('wrk/ascan_data_pre.json', 'w') as file:
+        json.dump(ascan_data, file, indent=4)
+    spider_data = serialize_object(zap.spider)
+    with open('wrk/spider_data_pre.json', 'w') as file:
+        json.dump(spider_data, file, indent=4)
+    core_data = serialize_object(zap.core)
+    with open('wrk/core_data_pre.json', 'w') as file:
+        json.dump(core_data, file, indent=4)
+    pscan_data = serialize_object(zap.pscan)
+    with open('wrk/pscan_data_pre.json', 'w') as file:
+        json.dump(pscan_data, file, indent=4)
     log("Overview of spidered URL's:")
     with open('spidered_urls.txt', 'w') as f:
         for url in zap.spider.all_urls:
             f.write(f"{url}\n")
             log(f"found: {url}")
+
+def serialize_object(obj):
+    serialized_data = {}
+    for attr in dir(obj):
+        value = getattr(obj, attr)
+        if is_serializable(value):
+            serialized_data[attr] = value
+        else:
+            pass
+    return serialized_data
+
+def is_serializable(value):
+    try:
+        json.dumps(value)
+        return True
+    except (TypeError, OverflowError):
+        return False
 
 def _all_active_scanner_rules(zap, policy_name) -> List[str]: return [scanner['id'] for scanner in zap.ascan.scanners(policy_name)]
 
