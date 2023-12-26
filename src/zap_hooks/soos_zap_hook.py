@@ -1,12 +1,9 @@
-import os
-import sys
-import json
 import traceback
 from typing import List
 
 from src.zap_hooks.helpers.auth_context import authenticate
 from src.zap_hooks.helpers.configuration import DASTConfig
-from src.zap_hooks.helpers.utilities import log, exit_app, LogLevel
+from src.zap_hooks.helpers.utilities import log, exit_app, LogLevel, serialize_and_save
 from src.zap_hooks.helpers import custom_cookies as cookies
 from src.zap_hooks.helpers import custom_headers as headers
 from src.zap_hooks.helpers import constants as Constants
@@ -50,18 +47,12 @@ def zap_started(zap, target):
             )
         cookies.load(config, zap)
         headers.load(config, zap)
-        ascan_data = serialize_object(zap.ascan)
-        with open('wrk/ascan_data_start.json', 'w') as file:
-            json.dump(ascan_data, file, indent=4)
-        spider_data = serialize_object(zap.spider)
-        with open('wrk/spider_data_start.json', 'w') as file:
-            json.dump(spider_data, file, indent=4)
-        core_data = serialize_object(zap.core)
-        with open('wrk/core_data_start.json', 'w') as file:
-            json.dump(core_data, file, indent=4)
-        pscan_data = serialize_object(zap.pscan)
-        with open('wrk/pscan_data_start.json', 'w') as file:
-            json.dump(pscan_data, file, indent=4)
+        if config.debug_mode:
+            serialize_and_save(zap.ascan, 'wrk/ascan_data_start.json')
+            serialize_and_save(zap.spider, 'wrk/spider_data_start.json')
+            serialize_and_save(zap.core, 'wrk/core_data_start.json')
+            serialize_and_save(zap.pscan, 'wrk/pscan_data_start.json')
+            serialize_and_save(zap.context, 'wrk/context_data_start.json')
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
 
@@ -73,40 +64,19 @@ def zap_import_context(zap, context_file):
     zap.context.remove_context(globals.context_name)
 
 def zap_pre_shutdown(zap):
-    ascan_data = serialize_object(zap.ascan)
-    with open('wrk/ascan_data_pre.json', 'w') as file:
-        json.dump(ascan_data, file, indent=4)
-    spider_data = serialize_object(zap.spider)
-    with open('wrk/spider_data_pre.json', 'w') as file:
-        json.dump(spider_data, file, indent=4)
-    core_data = serialize_object(zap.core)
-    with open('wrk/core_data_pre.json', 'w') as file:
-        json.dump(core_data, file, indent=4)
-    pscan_data = serialize_object(zap.pscan)
-    with open('wrk/pscan_data_pre.json', 'w') as file:
-        json.dump(pscan_data, file, indent=4)
+    if config.debug_mode:
+        serialize_and_save(zap.ascan, 'wrk/ascan_data_pre.json')
+        serialize_and_save(zap.spider, 'wrk/spider_data_pre.json')
+        serialize_and_save(zap.core, 'wrk/core_data_pre.json')
+        serialize_and_save(zap.pscan, 'wrk/pscan_data_pre.json')
+        serialize_and_save(zap.context, 'wrk/context_data_pre.json')
     log("Overview of spidered URL's:")
     with open('spidered_urls.txt', 'w') as f:
         for url in zap.spider.all_urls:
             f.write(f"{url}\n")
             log(f"found: {url}")
 
-def serialize_object(obj):
-    serialized_data = {}
-    for attr in dir(obj):
-        value = getattr(obj, attr)
-        if is_serializable(value):
-            serialized_data[attr] = value
-        else:
-            pass
-    return serialized_data
 
-def is_serializable(value):
-    try:
-        json.dumps(value)
-        return True
-    except (TypeError, OverflowError):
-        return False
 
 def _all_active_scanner_rules(zap, policy_name) -> List[str]: return [scanner['id'] for scanner in zap.ascan.scanners(policy_name)]
 
