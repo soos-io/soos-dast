@@ -48,11 +48,11 @@ def zap_started(zap, target):
         cookies.load(config, zap)
         headers.load(config, zap)
         if config.debug_mode:
-            serialize_and_save(zap.ascan, 'wrk/ascan_data_start.json')
-            serialize_and_save(zap.spider, 'wrk/spider_data_start.json')
-            serialize_and_save(zap.core, 'wrk/core_data_start.json')
-            serialize_and_save(zap.pscan, 'wrk/pscan_data_start.json')
-            serialize_and_save(zap.context, 'wrk/context_data_start.json')
+            serialize_and_save(zap.ascan, 'wrk/ascan_data_started.json')
+            serialize_and_save(zap.spider, 'wrk/spider_data_started.json')
+            serialize_and_save(zap.core, 'wrk/core_data_started.json')
+            serialize_and_save(zap.pscan, 'wrk/pscan_data_started.json')
+            serialize_and_save(zap.context, 'wrk/context_data_started.json')
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
 
