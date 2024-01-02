@@ -162,7 +162,6 @@ class SOOSDASTAnalysis {
     analysisArgumentParser.argumentParser.add_argument("--checkoutDir", {
       help: "Directory where the SARIF file will be created, used by Github Actions.",
       required: false,
-      nargs: "*",
     });
 
     analysisArgumentParser.argumentParser.add_argument("--contextFile", {
@@ -204,6 +203,16 @@ class SOOSDASTAnalysis {
       required: false,
       nargs: "*",
     });
+
+    analysisArgumentParser.addEnumArgument(
+      analysisArgumentParser.argumentParser,
+      "--outputFormat",
+      OutputFormat,
+      {
+        help: "Output format for vulnerabilities: only the value SARIF is available at the moment",
+        required: false,
+      },
+    );
 
     analysisArgumentParser.argumentParser.add_argument("--requestCookies", {
       help: "Set Cookie values for the requests to the target URL",
