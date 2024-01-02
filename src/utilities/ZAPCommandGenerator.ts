@@ -57,6 +57,7 @@ export class ZAPCommandGenerator {
     this.addEnvironmentVariable("DISABLE_RULES", this.config.disableRules);
     this.addEnvironmentVariable("OAUTH_PARAMETERS", this.config.oauthParameters);
     this.addEnvironmentVariable("OAUTH_TOKEN_URL", this.config.oauthTokenUrl);
+    if (this.config.debug) this.addEnvironmentVariable("DEBUG_MODE", this.config.debug);
   }
 
   private generateCommand(args: string[]): string {
