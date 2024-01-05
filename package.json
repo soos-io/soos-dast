@@ -1,6 +1,6 @@
 {
   "name": "soos-dast",
-  "version": "2.0.15",
+  "version": "2.0.16",
   "description": "SOOS DAST - The affordable no limit web vulnerability scanner",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "patch-api-client": "npm version patch --no-git-tag-version && npm run setup:clean && npm install @soos-io/api-client@latest --save-exact && npm install && npm run check"
   },
   "dependencies": {
-    "@soos-io/api-client": "0.2.26",
+    "@soos-io/api-client": "0.2.28",
     "argparse": "^2.0.1",
     "glob": "^10.3.10",
     "tslib": "^2.6.2"
