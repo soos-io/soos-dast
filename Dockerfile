@@ -1,4 +1,4 @@
-FROM soosio/zap2docker-soos as base
+FROM soosio/zap2docker-soos:alpha as base
 
 USER root
 
