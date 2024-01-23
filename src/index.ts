@@ -61,13 +61,14 @@ class SOOSDASTAnalysis {
   constructor(private args: SOOSDASTAnalysisArgs) {}
 
   static parseArgs(): SOOSDASTAnalysisArgs {
-    const analysisArgumentParser = AnalysisArgumentParser.create(ScanType.DAST);
-
-    analysisArgumentParser.addBaseScanArguments(
+    const analysisArgumentParser = AnalysisArgumentParser.create(
       IntegrationName.SoosDast,
       IntegrationType.Script,
+      ScanType.DAST,
       version,
     );
+
+    analysisArgumentParser.addBaseScanArguments();
 
     analysisArgumentParser.argumentParser.add_argument("--ajaxSpider", {
       help: "Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/.",
