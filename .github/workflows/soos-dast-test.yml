@@ -17,4 +17,4 @@ jobs:
           tags: soosio/dast:${{ github.sha }}
       - name: Run Tests
         run: |
-          docker run soosio/dast:${{ github.sha }} --clientId=${{secrets.SOOS_CLIENT_ID}} --apiKey=${{secrets.SOOS_API_KEY}} --apiURL="https://dev-api.soos.io/api/" --projectName="soos-dast" https://soos.io
+          docker run soosio/dast:${{ github.sha }} --clientId=${{secrets.SOOS_CLIENT_ID}} --apiKey=${{secrets.SOOS_API_KEY}} --apiURL="https://dev-api.soos.io/api/" --projectName="soos-dast" https://soos.io --debug
