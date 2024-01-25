@@ -1,4 +1,5 @@
 {
+	"@programName": [[${programName}]],
 	"@version": [[${zapVersion}]],
 	"@generated": [[${generatedString}]],
 	"site":[ [#th:block th:each="site, siteState: ${reportData.sites}"][#th:block th:if="${! siteState.first}"],[/th:block]
@@ -7,7 +8,7 @@
 			"@host": "[(${helper.legacyEscapeText(helper.getHostForSite(site), true)})]",
 			"@port": "[(${helper.getPortForSite(site)})]",
 			"@ssl": "[(${helper.isSslSite(site)})]",
-			"alerts": [ [#th:block th:each="alert, alertState: ${helper.getAlertsForSite(alertTree, site)}" th:with="instances=${helper.getAlertInstancesForSite(alertTree, site, alert.name, alert.risk)}"]
+			"alerts": [ [#th:block th:each="alert, alertState: ${helper.getAlertsForSite(alertTree, site)}" th:with="instances=${helper.getAlertInstancesForSite(alertTree, site, alert.pluginId)}"]
 				{
 					"pluginid": "[(${alert.pluginId})]",
 					"alertRef": "[(${alert.alertRef})]",
@@ -18,12 +19,12 @@
 					"riskdesc": "[(${helper.legacyEscapeText(helper.getRiskString(alert.risk) + ' (' + helper.getConfidenceString(alert.confidence) + ')', true)})]",
 					"desc": "[(${helper.legacyEscapeParagraph(alert.description, true)})]",
 					"instances":[ [#th:block th:each="instance, instState: ${instances}" th:unless="${ instState.index > 500}"]
-						[#th:block th:if="${! instState.first}"],[/th:block]
+					[#th:block th:if="${! instState.first}"],[/th:block]
 						{
 							"uri": "[(${helper.legacyEscapeText(instance.uri, true)})]",
 							"method": "[(${helper.legacyEscapeText(instance.method, true)})]",
 							"status-code": [(${instance.message.responseHeader.statusCode})],
-							"param": "[(${helper.legacyEscapeText(instance.param, true)})]",
+							"param": "[(${helper.legacyEscapeTextAlertParam(instance, true)})]",
 							"attack": "[(${helper.legacyEscapeText(instance.attack, true)})]",
 							"evidence": "[(${helper.legacyEscapeText(instance.evidence, true)})]",
 							"request-header": "[(${helper.legacyEscapeText(instance.message.requestHeader, true)})]",
@@ -37,9 +38,16 @@
 					"reference": "[(${helper.legacyEscapeParagraph(alert.reference, true)})]",
 					"cweid": "[(${alert.cweid})]",
 					"wascid": "[(${alert.wascid})]",
-					"sourceid": "[(${alert.sourceHistoryId})]"
-				}[#th:block th:if="${! alertState.last}"],[/th:block][/th:block]
-			]
-		}[/th:block]
+					"sourceid": "[(${alert.sourceHistoryId})]",
+					"tags":[ [#th:block th:each="tag, tagState: ${alert.tags}"][#th:block th:if="${! tagState.first}"],[/th:block]
+										{
+											"tag": [[${tag.key}]],
+										 	"link": [[${tag.value}]]
+										}
+										[/th:block]
+									]
+							}[#th:block th:if="${! alertState.last}"],[/th:block][/th:block]
+					]
+			}[/th:block]
 	]
 }
