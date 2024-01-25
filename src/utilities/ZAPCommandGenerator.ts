@@ -55,6 +55,7 @@ export class ZAPCommandGenerator {
     this.addEnvironmentVariable("CUSTOM_COOKIES", this.config.requestCookies);
     this.addEnvironmentVariable("CUSTOM_HEADER", this.config.requestHeaders);
     this.addEnvironmentVariable("DISABLE_RULES", this.config.disableRules);
+    this.addEnvironmentVariable("EXCLUDE_URLS", this.config.excludeUrls);
     this.addEnvironmentVariable("OAUTH_PARAMETERS", this.config.oauthParameters);
     this.addEnvironmentVariable("OAUTH_TOKEN_URL", this.config.oauthTokenUrl);
     if (this.config.debug) this.addEnvironmentVariable("DEBUG_MODE", this.config.debug);

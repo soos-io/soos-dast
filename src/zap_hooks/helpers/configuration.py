@@ -37,6 +37,7 @@ class DASTConfig:
     oauth_parameters: Optional[str] = None
     disable_rules: Optional[str] = None
     debug_mode: Optional[bool] = False
+    exclude_urls: Optional[List[str]] = None
 
     def __init__(self):
         self.extra_zap_params = None
@@ -73,6 +74,7 @@ class DASTConfig:
             self.oauth_parameters = self._get_hook_param_list(os.environ.get('OAUTH_PARAMETERS')) or EMPTY_STRING
             self.disable_rules = self._get_hook_param_list(os.environ.get('DISABLE_RULES')) or None
             self.debug_mode = os.environ.get('DEBUG_MODE') or False
+            self.exclude_urls = self._get_hook_param_list(os.environ.get('EXCLUDE_URLS')) or list()
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)

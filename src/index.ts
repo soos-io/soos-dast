@@ -45,6 +45,7 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   contextFile: string;
   debug: boolean;
   disableRules: string;
+  excludeUrls: string;
   fullScanMinutes: number;
   oauthParameters: string;
   oauthTokenUrl: string;
@@ -179,6 +180,12 @@ class SOOSDASTAnalysis {
 
     analysisArgumentParser.argumentParser.add_argument("--disableRules", {
       help: "Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/",
+      required: false,
+      nargs: "*",
+    });
+
+    analysisArgumentParser.argumentParser.add_argument("--excludeUrls", {
+      help: "Comma separated list of regex Urls to exclude from the scan.",
       required: false,
       nargs: "*",
     });

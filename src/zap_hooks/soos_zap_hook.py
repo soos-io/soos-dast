@@ -53,6 +53,10 @@ def zap_started(zap, target):
             serialize_and_save(zap.core, 'wrk/core_data_started.json')
             serialize_and_save(zap.pscan, 'wrk/pscan_data_started.json')
             serialize_and_save(zap.context, 'wrk/context_data_started.json')
+        if config.exclude_urls:
+            for url in config.exclude_urls:
+                log(f"Excluding url on spider: {url}")
+                zap.spider.exclude_from_scan(url)
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
 
