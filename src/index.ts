@@ -45,7 +45,7 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   contextFile: string;
   debug: boolean;
   disableRules: string;
-  excludeUrls: string;
+  excludeUrlsFile: string;
   fullScanMinutes: number;
   oauthParameters: string;
   oauthTokenUrl: string;
@@ -184,10 +184,9 @@ class SOOSDASTAnalysis {
       nargs: "*",
     });
 
-    analysisArgumentParser.argumentParser.add_argument("--excludeUrls", {
-      help: "Comma separated list of regex Urls to exclude from the scan.",
+    analysisArgumentParser.argumentParser.add_argument("--excludeUrlsFile", {
+      help: "Path to a file containing regex URLs to exclude, one per line.",
       required: false,
-      nargs: "*",
     });
 
     analysisArgumentParser.argumentParser.add_argument("--fullScanMinutes", {

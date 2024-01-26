@@ -54,7 +54,7 @@ The basic command to run a baseline scan would look like:
 | `--commitHash` |  | The commit hash value from the SCM System |
 | `--contextFile` |  | Context file which will be loaded prior to scanning the target |
 | `--debug` |  | Enable debug logging for ZAP. |
-| `--excludeUrls` | | Comma separated list of regex Urls to exclude from the scan.`
+| `--excludeUrlsFile` | | Path to a file containing regex URLs to exclude, one per line. eg `--excludeUrlsFile=exclude_urls.txt`
 | `--disableRules` |  | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
 | `--fullScanMinutes` |  | Number of minutes for the spider to run |
 | `--logLevel` |  | Minimum level to show logs: DEBUG INFO, WARN, FAIL, ERROR. |
