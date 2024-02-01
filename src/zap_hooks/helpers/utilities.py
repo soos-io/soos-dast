@@ -61,3 +61,6 @@ def is_serializable(value):
     except (TypeError, OverflowError):
         return False
     
+def isUrl(url: str) -> bool:
+    return url.startswith('http://') or url.startswith('https://')
+    

@@ -17,7 +17,7 @@ import zap_common
 import logging
 
 from src.zap_hooks.helpers.browser_storage import BrowserStorage
-from src.zap_hooks.helpers.utilities import array_to_dict, log
+from src.zap_hooks.helpers.utilities import array_to_dict, log, isUrl
 from src.zap_hooks.model.log_level import LogLevel
 from src.zap_hooks.helpers.logging import LoggingFilter
 import src.zap_hooks.helpers.globals as globals
@@ -81,7 +81,7 @@ def setup_webdriver() -> webdriver.Chrome:
 def authenticate(zap, target, config):
     clear_driver = False
     try:
-        if zap is not None:
+        if zap is not None and isUrl(target):
             setup_context(zap, target, config)
 
         if config.auth_login_url:
