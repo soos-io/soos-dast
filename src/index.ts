@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import FormData from "form-data";
-import { spawn, execSync } from "child_process";
+import { spawn } from "child_process";
 import { ApiScanFormat, FormTypes, ScanMode, SubmitActions } from "./enums";
 import { exit } from "process";
 import {
@@ -315,11 +315,6 @@ class SOOSDASTAnalysis {
       branchHash = result.branchHash;
       analysisId = result.analysisId;
       scanStatusUrl = result.scanStatusUrl;
-
-      execSync("mkdir -p ~/.ZAP/reports /root/.ZAP/reports");
-
-      execSync("cp -R /zap/reports/traditional-json-headers ~/.ZAP/reports/traditional-json");
-      execSync("cp -R /zap/reports/traditional-json-headers /root/.ZAP/reports/traditional-json");
 
       const zapCommandGenerator = new ZAPCommandGenerator(this.args);
       soosLogger.info(`Generating ZAP command... ${this.args.scanMode}`);
