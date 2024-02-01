@@ -1,5 +1,6 @@
 import traceback
 from typing import List
+import os
 
 from src.zap_hooks.helpers.auth_context import authenticate
 from src.zap_hooks.helpers.configuration import DASTConfig
@@ -23,6 +24,7 @@ def start_zap(port, extra_zap_params):
 
 def zap_started(zap, target):
     log("zap_started_hook is running")
+    os.system("cp -R /zap/reports/traditional-json/report.json /root/.ZAP/reports/traditional-json/report.json")
     globals.initialize()
     try:
         # ZAP Docker scripts reset the target to the root URL
