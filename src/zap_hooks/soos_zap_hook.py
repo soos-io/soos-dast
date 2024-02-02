@@ -2,13 +2,12 @@ import traceback
 from typing import List
 import os
 
-from src.zap_hooks.helpers.auth_context import authenticate
+from src.zap_hooks.helpers.auth import authenticate
 from src.zap_hooks.helpers.configuration import DASTConfig
 from src.zap_hooks.helpers.utilities import log, exit_app, LogLevel, serialize_and_save
 from src.zap_hooks.helpers import custom_cookies as cookies
 from src.zap_hooks.helpers import custom_headers as headers
 from src.zap_hooks.helpers import constants as Constants
-import src.zap_hooks.helpers.globals as globals
 
 config = DASTConfig()
 
@@ -25,7 +24,6 @@ def start_zap(port, extra_zap_params):
 def zap_started(zap, target):
     log("zap_started_hook is running")
     os.system("cp -R /zap/reports/traditional-json/report.json /root/.ZAP/reports/traditional-json/report.json")
-    globals.initialize()
     try:
         # ZAP Docker scripts reset the target to the root URL
         if target.count('/') > 2:
@@ -71,7 +69,6 @@ def zap_started(zap, target):
 def zap_import_context(zap, context_file):
     log("zap_import_context_hook is running")
     log(f"importing context from file: {context_file}")
-    zap.context.remove_context(globals.context_name)
 
 def zap_pre_shutdown(zap):
     if config.debug_mode:

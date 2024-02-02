@@ -20,36 +20,12 @@ from src.zap_hooks.helpers.browser_storage import BrowserStorage
 from src.zap_hooks.helpers.utilities import array_to_dict, log, isUrl
 from src.zap_hooks.model.log_level import LogLevel
 from src.zap_hooks.helpers.logging import LoggingFilter
-import src.zap_hooks.helpers.globals as globals
 
 
-def setup_context(zap, target, config):
+def setup_replacer(zap, target, config):
     # Set an X-Scanner header so requests can be identified in logs
     zap.replacer.add_rule(description='Scanner', enabled=True, matchtype='REQ_HEADER',
                             matchregex=False, matchstring='X-Scanner', replacement="ZAP")
-    globals.context_id = zap.context.new_context(globals.context_name)
-
-    zap_common.context_name = globals.context_name
-    zap_common.context_id = globals.context_id
-
-    # include everything below the target
-    config.auth_include_urls.append(target + '.*')
-
-    # include additional url's
-    for include in config.auth_include_urls:
-        zap.context.include_in_context(globals.context_name, include)
-        log(f"Included {include}")
-
-    # exclude all urls that end the authenticated session
-    if len(config.auth_exclude_urls) == 0:
-        config.auth_exclude_urls.append('.*logout.*')
-        config.auth_exclude_urls.append('.*uitloggen.*')
-        config.auth_exclude_urls.append('.*afmelden.*')
-        config.auth_exclude_urls.append('.*signout.*')
-
-    for exclude in config.auth_exclude_urls:
-        zap.context.exclude_from_context(globals.context_name, exclude)
-        log(f"Excluded {exclude}")
 
 
 def setup_webdriver() -> webdriver.Chrome:
@@ -81,8 +57,8 @@ def setup_webdriver() -> webdriver.Chrome:
 def authenticate(zap, target, config):
     clear_driver = False
     try:
-        if zap is not None and isUrl(target):
-            setup_context(zap, target, config)
+        if zap is not None:
+            setup_replacer(zap, target, config)
 
         if config.auth_login_url:
             driver_instance = setup_webdriver()

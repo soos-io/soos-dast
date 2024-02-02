@@ -3,7 +3,6 @@ FILE_READ_MODE = "r"
 UTF_8_ENCODING = "utf-8"
 LOG_FORMAT = "%(asctime)s %(message)s"
 ZAP_ACTIVE_SCAN_POLICY_NAME = "Default Policy"
-ZAP_AUTH_CONTEXT = "ctx-zap-docker"
 ZAP_HTTP_SENDER_SCRIPTS_FOLDER_PATH = "/home/zap/.ZAP/scripts/scripts/httpsender"
 
 FILTER_LOGS = [
