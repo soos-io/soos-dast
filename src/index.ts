@@ -19,7 +19,7 @@ import {
   IntegrationType,
 } from "@soos-io/api-client";
 import { version } from "../package.json";
-import { ZAPCommandGenerator } from "./utilities";
+import { ZAPCommandGenerator, ZAPReportTransformer } from "./utilities";
 import AnalysisService from "@soos-io/api-client/dist/services/AnalysisService";
 import AnalysisArgumentParser, {
   IBaseScanArguments,
@@ -324,23 +324,12 @@ class SOOSDASTAnalysis {
       const runSuccess = fs.existsSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile);
       soosLogger.info(`Scan finished with success: ${runSuccess}`);
 
-      const discoveredUrls =
-        fs.existsSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile) &&
-        fs.statSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile).isFile()
-          ? fs
-              .readFileSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile, "utf-8")
-              .split("\n")
-              .filter((url) => url.trim() !== "")
-          : [];
-
       const data = JSON.parse(
         fs.readFileSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile, "utf-8"),
       );
-      data["discoveredUrls"] = discoveredUrls;
-      fs.writeFileSync(
-        SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
-        JSON.stringify(data, null, 4),
-      );
+
+      ZAPReportTransformer.transformReport();
+
       const formData = new FormData();
 
       formData.append("resultVersion", data["@version"]);
