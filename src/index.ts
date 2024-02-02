@@ -325,10 +325,13 @@ class SOOSDASTAnalysis {
       soosLogger.info(`Scan finished with success: ${runSuccess}`);
 
       const data = JSON.parse(
-        fs.readFileSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile, "utf-8"),
+        fs.readFileSync(
+          SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
+          SOOS_CONSTANTS.FileUploads.Encoding,
+        ),
       );
 
-      ZAPReportTransformer.transformReport();
+      ZAPReportTransformer.transformReport(data);
 
       const formData = new FormData();
 
