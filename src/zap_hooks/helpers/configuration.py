@@ -65,8 +65,6 @@ class DASTConfig:
             self.auth_check_delay = float(os.environ.get('AUTH_CHECK_DELAY') or 5)
             self.auth_check_element = os.environ.get('AUTH_CHECK_ELEMENT') or EMPTY_STRING
             self.auth_verification_url = os.environ.get('AUTH_VERIFICATION_URL') or EMPTY_STRING
-            self.auth_exclude_urls = self._get_hook_param_list(os.environ.get('AUTH_EXCLUDE_URLS')) or list()
-            self.auth_include_urls = self._get_hook_param_list(os.environ.get('AUTH_INCLUDE_URLS')) or list()
             self.xss_collector = os.environ.get('XSS_COLLECTOR') or EMPTY_STRING
             self.cookies = os.environ.get('CUSTOM_COOKIES') or EMPTY_STRING
             self.header = os.environ.get('CUSTOM_HEADER') or EMPTY_STRING
