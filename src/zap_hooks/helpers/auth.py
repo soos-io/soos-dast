@@ -17,7 +17,7 @@ import zap_common
 import logging
 
 from src.zap_hooks.helpers.browser_storage import BrowserStorage
-from src.zap_hooks.helpers.utilities import array_to_dict, log, isUrl
+from src.zap_hooks.helpers.utilities import array_to_dict, log
 from src.zap_hooks.model.log_level import LogLevel
 from src.zap_hooks.helpers.logging import LoggingFilter
 
