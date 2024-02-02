@@ -181,7 +181,7 @@ def add_authorization_header(zap, auth_token):
     if zap is not None:
         zap.replacer.add_rule(description='AuthHeader', enabled=True, matchtype='REQ_HEADER',
                                matchregex=False, matchstring='Authorization', replacement=auth_token)
-        log(f"Authorization header added: {auth_token}")
+        log("Authorization header added")
 
 def login(driver, config):
     """Main function to perform logging using selenium webdriver"""
