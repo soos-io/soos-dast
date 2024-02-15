@@ -364,8 +364,8 @@ class SOOSDASTAnalysis {
       });
       soosLogger.info(`Scan result uploaded successfully`);
 
-      if (data["discoveredUrls"]) {
-        soosLogger.info(`(${data["discoveredUrls"]} URLs discovered)`);
+      if (data["discoveredUrls"]?.length) {
+        soosLogger.info(`(${data["discoveredUrls"].length} URLs discovered)`);
       }
 
       const scanStatus = await soosAnalysisService.waitForScanToFinish({
