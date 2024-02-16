@@ -81,7 +81,7 @@ def zap_pre_shutdown(zap):
     with open('core_urls.txt', 'w') as f:
         for url in zap.core.urls():
             f.write(f"{url}\n")
-            log(f" -- {url}")
+            log(f"-- {url}")
 
 def _all_active_scanner_rules(zap, policy_name) -> List[str]: return [scanner['id'] for scanner in zap.ascan.scanners(policy_name)]
 
