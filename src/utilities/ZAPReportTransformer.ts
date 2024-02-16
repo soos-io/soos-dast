@@ -10,16 +10,11 @@ export class ZAPReportTransformer {
   }
 
   public static addDiscoveredUrls(reportData: any): void {
-    const discoveredUrls =
-      fs.existsSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile) &&
-      fs.statSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile).isFile()
-        ? fs
-            .readFileSync(SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile, "utf-8")
-            .split("\n")
-            .filter((url) => url.trim() !== "")
-        : [];
-
-    reportData["discoveredUrls"] = discoveredUrls;
+    this.addArrayPropertyToReportFromFile(
+      reportData,
+      "discoveredUrls",
+      SOOS_DAST_CONSTANTS.Files.DiscoveredUrlsFile,
+    );
   }
 
   public static obfuscateFields(reportData: any): void {
@@ -32,6 +27,22 @@ export class ZAPReportTransformer {
         }
       }
     }
+  }
+
+  private static addArrayPropertyToReportFromFile(
+    reportData: any,
+    name: string,
+    file: string,
+  ): void {
+    const lines =
+      fs.existsSync(file) && fs.statSync(file).isFile()
+        ? fs
+            .readFileSync(file, "utf-8")
+            .split("\n")
+            .filter((line) => line.trim() !== "")
+        : [];
+
+    reportData[name] = lines;
   }
 
   private static obfuscateBearerToken(field: string): string {
