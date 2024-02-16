@@ -77,12 +77,16 @@ def zap_pre_shutdown(zap):
         serialize_and_save(zap.core, 'wrk/core_data_pre_shutdown.json')
         serialize_and_save(zap.pscan, 'wrk/pscan_data_pre_shutdown.json')
         serialize_and_save(zap.context, 'wrk/context_data_pre_shutdown.json')
-    log("Overview of spidered URL's:")
+    log("Spidered URLs:")
     with open('spidered_urls.txt', 'w') as f:
         for url in zap.spider.all_urls:
             f.write(f"{url}\n")
-            log(f"found: {url}")
-
+            log(f"spider discovered url: {url}")
+    log("Core URLs:")
+    with open('core_urls.txt', 'w') as f:
+        for url in zap.core.urls():
+            f.write(f"{url}\n")
+            log(f"core url: {url}")
 
 def _all_active_scanner_rules(zap, policy_name) -> List[str]: return [scanner['id'] for scanner in zap.ascan.scanners(policy_name)]
 

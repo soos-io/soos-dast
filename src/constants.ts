@@ -1,8 +1,9 @@
 export const SOOS_DAST_CONSTANTS = {
   AuthDelayTime: 5,
   Tool: "zap",
-  ToolVersion: "2.12",
+  ToolVersion: "2.14",
   Files: {
+    CoreUrlsFile: "./core_urls.txt",
     ReportScanResultFile: "/zap/wrk/report.zap.json",
     ReportScanResultFilename: "report.zap.json",
     SarifResultsFilename: "results.sarif",
