@@ -4,25 +4,16 @@ import { SOOS_DAST_CONSTANTS } from "../constants";
 export class ZAPReportTransformer {
   // TODO - PA-12868 Rework this approach
   public static transformReport(reportData: any): void {
-    this.addCoreUrls(reportData);
     this.addDiscoveredUrls(reportData);
     this.obfuscateFields(reportData);
     this.saveReportContent(reportData);
-  }
-
-  public static addCoreUrls(reportData: any): void {
-    this.addArrayPropertyToReportFromFile(
-      reportData,
-      "coreUrls",
-      SOOS_DAST_CONSTANTS.Files.CoreUrlsFile,
-    );
   }
 
   public static addDiscoveredUrls(reportData: any): void {
     this.addArrayPropertyToReportFromFile(
       reportData,
       "discoveredUrls",
-      SOOS_DAST_CONSTANTS.Files.SpideredUrlsFile,
+      SOOS_DAST_CONSTANTS.Files.DiscoveredUrlsFile,
     );
   }
 
