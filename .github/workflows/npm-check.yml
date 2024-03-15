@@ -1,0 +1,11 @@
+name: Npm run check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check:
+    uses: soos-io/.github/.github/workflows/npm-check-workflow.yml@main
