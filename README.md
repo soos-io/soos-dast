@@ -39,36 +39,36 @@ The basic command to run a baseline scan would look like:
 | `--authPassword` |  | Password to use when authentication is required |
 | `--authPasswordField` |  | Password input id to use when authentication is required |
 | `--authSecondSubmitField` |  | Second submit button id to use when authentication is required (for multi-page forms) |
-| `--authSubmitAction`      |  | Submit action to perform on form filled. Options: click or submit |
-| `--authSubmitField`       |  | Submit button id to use when authentication is required |
-| `--authUsername`          |  | Username to use when authentication is required |
-| `--authUsernameField`     |  | Username input id to use when authentication is required |
-| `--authVerificationURL`   |  | URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. |
-| `--bearerToken`           |  | Bearer token to authenticate |
-| `--branchName`            |  | The name of the branch from the SCM System |
-| `--branchURI`             |  | The URI to the branch from the SCM System |
-| `--buildURI`              |  | URI to CI build info |
-| `--buildVersion`          |  | Version of application build artifacts |
-| `--checkoutDir`           |  | Checkout directory to locate SARIF report |
-| `--clientId`              |  | SOOS Client ID - get yours from [SOOS Integration](https://app.soos.io/integrate/sast). Uses `SOOS_API_CLIENT` env value if present. |
-| `--commitHash`            |  | The commit hash value from the SCM System |
-| `--contextFile`           |  | Context file which will be loaded prior to scanning the target |
-| `--debug`                 |  | Enable debug logging for ZAP. |
-| `--excludeUrlsFile`       | | Path to a file containing regex URLs to exclude, one per line. eg `--excludeUrlsFile=exclude_urls.txt`
+| `--authSubmitAction` |  | Submit action to perform on form filled. Options: click or submit |
+| `--authSubmitField` |  | Submit button id to use when authentication is required |
+| `--authUsername` |  | Username to use when authentication is required |
+| `--authUsernameField` |  | Username input id to use when authentication is required |
+| `--authVerificationURL` |  | URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. |
+| `--bearerToken` |  | Bearer token to authenticate |
+| `--branchName` |  | The name of the branch from the SCM System |
+| `--branchURI` |  | The URI to the branch from the SCM System |
+| `--buildURI` |  | URI to CI build info |
+| `--buildVersion` |  | Version of application build artifacts |
+| `--checkoutDir` |  | Checkout directory to locate SARIF report |
+| `--clientId` |  | SOOS Client ID - get yours from [SOOS Integration](https://app.soos.io/integrate/sast). Uses `SOOS_API_CLIENT` env value if present. |
+| `--commitHash` |  | The commit hash value from the SCM System |
+| `--contextFile` |  | Context file which will be loaded prior to scanning the target |
+| `--debug` |  | Enable debug logging for ZAP. |
+| `--excludeUrlsFile` | | Path to a file containing regex URLs to exclude, one per line. eg `--excludeUrlsFile=exclude_urls.txt`
 | `--includeUrlsFile`       | | Path to a file containing regex URLs to include, one per line. eg `--includeUrlsFile=include_urls.txt`
-| `--disableRules`          |  | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
-| `--fullScanMinutes`       |  | Number of minutes for the spider to run |
-| `--logLevel`              |  | Minimum level to show logs: DEBUG INFO, WARN, FAIL, ERROR. |
-| `--oauthParameters`       |  | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
-| `--oauthTokenUrl`         |  | The authentication URL that grants the access_token. |
-| `--onFailure`             | `continue_on_failure` | Action to perform when the scan fails. Options: fail_the_build, continue_on_failure |
-| `--operatingEnvironment`  |  | Set Operating environment for information purposes only |
-| `--otherOptions`          |  | Additional command line arguments for items not supported by the set of parameters above |
-| `--outputFormat`          |  | Output format for vulnerabilities: only the value SARIF is available at the moment |
-| `--projectName`           |  | Project Name - this is what will be displayed in the SOOS app |
-| `--requestCookies`        |  | Set Cookie values for the requests to the target URL |
-| `--requestHeaders`        |  | Set extra Header requests |
-| `--scanMode`              | `baseline` | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
+| `--disableRules` |  | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
+| `--fullScanMinutes` |  | Number of minutes for the spider to run |
+| `--logLevel` |  | Minimum level to show logs: DEBUG INFO, WARN, FAIL, ERROR. |
+| `--oauthParameters` |  | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
+| `--oauthTokenUrl` |  | The authentication URL that grants the access_token. |
+| `--onFailure` | `continue_on_failure` | Action to perform when the scan fails. Options: fail_the_build, continue_on_failure |
+| `--operatingEnvironment` |  | Set Operating environment for information purposes only |
+| `--otherOptions` |  | Additional command line arguments for items not supported by the set of parameters above |
+| `--outputFormat` |  | Output format for vulnerabilities: only the value SARIF is available at the moment |
+| `--projectName` |  | Project Name - this is what will be displayed in the SOOS app |
+| `--requestCookies` |  | Set Cookie values for the requests to the target URL |
+| `--requestHeaders` |  | Set extra Header requests |
+| `--scanMode` | `baseline` | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
 
 ## Scan Modes
 
