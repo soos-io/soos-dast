@@ -60,7 +60,9 @@ def zap_started(zap, target):
                     url = line.strip()
                     log(f"Excluding url on spider: {url}")
                     zap.spider.exclude_from_scan(url)
-            
+        # if config.include_urls_file:
+            # todo PA-12817 - ???
+
     except Exception:
         exit_app(f"error in zap_started: {traceback.print_exc()}")
 

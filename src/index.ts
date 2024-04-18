@@ -46,6 +46,7 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   debug: boolean;
   disableRules: string;
   excludeUrlsFile: string;
+  includeUrlsFile: string;
   fullScanMinutes: number;
   oauthParameters: string;
   oauthTokenUrl: string;
@@ -189,6 +190,11 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
+    analysisArgumentParser.argumentParser.add_argument("--includeUrlsFile", {
+      help: "Path to a file containing regex URLs to include, one per line.",
+      required: false,
+    });
+
     analysisArgumentParser.argumentParser.add_argument("--fullScanMinutes", {
       help: "Number of minutes for the spider to run.",
       required: false,
@@ -266,6 +272,13 @@ class SOOSDASTAnalysis {
     let analysisId: string | undefined;
     let scanStatusUrl: string | undefined;
     try {
+      // todo PA-12817 - experimented with setting first url as target url
+      // const includeUrlsFilePath = `wrk/${this.args.includeUrlsFile}`;
+      // const includeUrlsFileContents = fs.readFileSync(includeUrlsFilePath, 'utf-8');
+      // const newTarget: string = includeUrlsFileContents.split(/\r?\n/)[0];
+      // soosLogger.info(`Setting new Target URL : ${newTarget}`);
+      // this.args.targetURL = newTarget;
+
       soosLogger.info(`Project Name: ${this.args.projectName}`);
       soosLogger.info(`Scan Mode: ${this.args.scanMode}`);
       soosLogger.info(`API URL: ${this.args.apiURL}`);

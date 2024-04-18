@@ -38,6 +38,7 @@ class DASTConfig:
     disable_rules: Optional[str] = None
     debug_mode: Optional[bool] = False
     exclude_urls_file: Optional[str] = None
+    include_urls_file: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
@@ -73,6 +74,7 @@ class DASTConfig:
             self.disable_rules = self._get_hook_param_list(os.environ.get('DISABLE_RULES')) or None
             self.debug_mode = os.environ.get('DEBUG_MODE') or False
             self.exclude_urls_file = os.environ.get('EXCLUDE_URLS_FILE') or None
+            self.include_urls_file = os.environ.get('INCLUDE_URLS_FILE') or None
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)
