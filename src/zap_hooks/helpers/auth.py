@@ -114,9 +114,9 @@ def validate_authentication_url(driver, url):
     log(f"Validating authentication url: {url}")
     url_found = False
     for request in driver.requests:
-        if request.response and url in request.url:
+        if request.response and (url in request.url or search(url, request.url) is not None):
             url_found = True
-            log(f"Checking response status code {request.response}")
+            log(f"Checking response status code {request.response} for {request.url}")
             if request.response.status_code not in [200, 302]:
                 log(f"Status code is not 200/302 for {request.url}, it is {request.response.status_code}")
                 sys.exit(1)
