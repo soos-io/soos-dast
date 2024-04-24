@@ -122,6 +122,7 @@ def validate_authentication_url(driver, url):
                 sys.exit(1)
             else: 
                 log(f"Status code is {request.response.status_code} for {request.url}, authentication was successful")
+                break
     if not url_found:
         log(f"Authentication url {url} was not found, authentication failed.")
         sys.exit(1)
