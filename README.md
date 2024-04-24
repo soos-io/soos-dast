@@ -43,7 +43,7 @@ The basic command to run a baseline scan would look like:
 | `--authSubmitField` |  | Submit button id to use when authentication is required |
 | `--authUsername` |  | Username to use when authentication is required |
 | `--authUsernameField` |  | Username input id to use when authentication is required |
-| `--authVerificationURL` |  | URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. |
+| `--authVerificationURL` |  | URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. Supports plain URL or regex URL.|
 | `--bearerToken` |  | Bearer token to authenticate |
 | `--branchName` |  | The name of the branch from the SCM System |
 | `--branchURI` |  | The URI to the branch from the SCM System |

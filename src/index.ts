@@ -152,7 +152,7 @@ class SOOSDASTAnalysis {
     });
 
     analysisArgumentParser.argumentParser.add_argument("--authVerificationURL", {
-      help: "URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated.",
+      help: "URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. Supports plain URL or regex URL.",
       required: false,
     });
 
