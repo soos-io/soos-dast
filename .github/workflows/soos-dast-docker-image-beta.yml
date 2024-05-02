@@ -22,10 +22,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and Push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: soosio/dast:beta
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Promote alpha to beta
+        id: promote-alpha-to-beta
+        run: |
+          docker pull soosio/dast:alpha
+          docker tag soosio/dast:alpha soosio/dast:beta
+          docker push soosio/dast:beta
