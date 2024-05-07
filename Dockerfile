@@ -64,4 +64,4 @@ RUN npm install
 
 RUN npm run build
 
-ENTRYPOINT ["node", "dist/index.js"]
+ENTRYPOINT ["node", "--no-deprecation", "dist/index.js"]
