@@ -115,3 +115,8 @@ It also includes 2 scripts that:
 ## References
  - [ZAP](https://www.zaproxy.org/)
  - [Docker](https://docs.docker.com/)
+
+
+### Notes
+Be sure to use the public registry for installation of NPM packages:
+ `npm install --registry https://registry.npmjs.org/` 
