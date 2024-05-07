@@ -51,5 +51,8 @@
   "bugs": {
     "url": "https://github.com/soos-io/soos-dast/issues"
   },
-  "homepage": "https://github.com/soos-io/soos-dast#readme"
+  "homepage": "https://github.com/soos-io/soos-dast#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
 }
