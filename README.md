@@ -120,3 +120,5 @@ It also includes 2 scripts that:
 ### Notes
 Be sure to use the public registry for installation of NPM packages:
  `npm install --registry https://registry.npmjs.org/` 
+
+Be sure to wait for all actions to finish before tagging, releasing etc.
