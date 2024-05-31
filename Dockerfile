@@ -37,16 +37,16 @@ RUN cd /zap/plugin && \
 	chown -R zap:zap /zap
 
 # Set up Chrome version to be used
-ARG CHROME_VERSION="114.0.5735.133-1"
+ARG CHROME_VERSION="125.0.6422.141-1"
 
 # Set up the Chrome PPA
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \ 
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
 
 # Set up Chromedriver Environment variables
-ENV CHROMEDRIVER_VERSION 114.0.5735.16
+ENV CHROMEDRIVER_VERSION 114.0.5735.90
 ENV CHROMEDRIVER_DIR /chromedriver
 RUN mkdir $CHROMEDRIVER_DIR
 
