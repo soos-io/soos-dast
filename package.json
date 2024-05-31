@@ -19,7 +19,7 @@
     "patch-api-client": "npm run patch && npm run setup:clean && npm install @soos-io/api-client@latest --save-exact && npm install && npm run check"
   },
   "dependencies": {
-    "@soos-io/api-client": "0.2.47",
+    "@soos-io/api-client": "0.2.48",
     "@types/node": "^20.12.11",
     "argparse": "^2.0.1",
     "glob": "^10.3.14",
