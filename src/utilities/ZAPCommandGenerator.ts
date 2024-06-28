@@ -13,7 +13,6 @@ const SOOS_ZAP_CONSTANTS = {
     JsonReport: "-J",
     SpiderMinutes: "-m",
     TargetUrl: "-t",
-    UpdateAddons: "--updateAddons",
   },
   Scripts: {
     ApiScan: "/zap/zap-api-scan.py",
@@ -78,10 +77,6 @@ export class ZAPCommandGenerator {
 
     if (this.config.otherOptions) {
       args.push(this.config.otherOptions);
-    }
-
-    if (this.config.updateAddons) {
-      args.push(SOOS_ZAP_CONSTANTS.Options.UpdateAddons);
     }
 
     return args.join(" ");
