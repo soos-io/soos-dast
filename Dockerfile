@@ -33,7 +33,7 @@ RUN cd /zap/plugin && \
 	rm -rf network-* && wget https://github.com/zaproxy/zap-extensions/releases/download/network-v0.12.0/network-beta-0.12.0.zap && \
 	rm -rf oast-* && wget https://github.com/zaproxy/zap-extensions/releases/download/oast-v0.17.0/oast-beta-0.17.0.zap && \
 	rm -rf pscanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrules-v52/pscanrules-release-52.zap && \
-    rm -rf pscanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrulesBeta-v35/pscanrulesBeta-beta-35.zap && \
+    rm -rf pscanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrulesBeta-v38/pscanrulesBeta-beta-38.zap && \
 	chown -R zap:zap /zap
 
 # Set up Chrome version to be used
