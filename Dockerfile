@@ -1,4 +1,4 @@
-FROM soosio/zap2docker-soos as base
+FROM zaproxy/zap-stable:2.15.0 as base
 
 USER root
 
