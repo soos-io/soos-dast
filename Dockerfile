@@ -25,6 +25,17 @@ RUN mkdir /zap/wrk && cd /opt \
     && ln -s /opt/geckodriver /usr/bin/geckodriver \
     && export PATH=$PATH:/usr/bin/geckodriver
 
+RUN cd /zap/plugin && \
+	rm -rf ascanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/ascanrules-v64/ascanrules-release-64.zap && \
+    rm -rf ascanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/ascanrulesBeta-v52/ascanrulesBeta-beta-52.zap && \
+	rm -rf commonlib-* && wget https://github.com/zaproxy/zap-extensions/releases/download/commonlib-v1.26.0/commonlib-release-1.26.0.zap && \
+    rm -rf reports* && wget https://github.com/zaproxy/zap-extensions/releases/download/reports-v0.32.0/reports-release-0.32.0.zap && \
+	rm -rf network-* && wget https://github.com/zaproxy/zap-extensions/releases/download/network-v0.16.0/network-beta-0.16.0.zap && \
+	rm -rf oast-* && wget https://github.com/zaproxy/zap-extensions/releases/download/oast-v0.18.0/oast-beta-0.18.0.zap && \
+	rm -rf pscanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrules-v58/pscanrules-release-58.zap && \
+    rm -rf pscanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrulesBeta-v39/pscanrulesBeta-beta-39.zap && \
+	chown -R zap:zap /zap
+
 # Set up Chrome version to be used
 ARG CHROME_VERSION="125.0.6422.141-1"
 
