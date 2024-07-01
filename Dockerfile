@@ -1,4 +1,4 @@
-FROM soosio/zap2docker-soos as base
+FROM zaproxy/zap-stable:2.15.0 as base
 
 USER root
 
@@ -24,17 +24,6 @@ RUN mkdir /zap/wrk && cd /opt \
     && chmod +x geckodriver \
     && ln -s /opt/geckodriver /usr/bin/geckodriver \
     && export PATH=$PATH:/usr/bin/geckodriver
-
-RUN cd /zap/plugin && \
-	rm -rf ascanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/ascanrules-v58/ascanrules-release-58.zap && \
-    rm -rf ascanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/ascanrulesBeta-v48/ascanrulesBeta-beta-48.zap && \
-	rm -rf commonlib-* && wget https://github.com/zaproxy/zap-extensions/releases/download/commonlib-v1.18.0/commonlib-release-1.18.0.zap && \
-    rm -rf reports* && wget https://github.com/zaproxy/zap-extensions/releases/download/reports-v0.26.0/reports-release-0.26.0.zap && \
-	rm -rf network-* && wget https://github.com/zaproxy/zap-extensions/releases/download/network-v0.12.0/network-beta-0.12.0.zap && \
-	rm -rf oast-* && wget https://github.com/zaproxy/zap-extensions/releases/download/oast-v0.17.0/oast-beta-0.17.0.zap && \
-	rm -rf pscanrules-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrules-v52/pscanrules-release-52.zap && \
-    rm -rf pscanrulesBeta-* && wget https://github.com/zaproxy/zap-extensions/releases/download/pscanrulesBeta-v38/pscanrulesBeta-beta-38.zap && \
-	chown -R zap:zap /zap
 
 # Set up Chrome version to be used
 ARG CHROME_VERSION="125.0.6422.141-1"
