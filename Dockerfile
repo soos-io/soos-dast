@@ -1,4 +1,4 @@
-FROM zaproxy/zap-stable:2.15.0 as base
+FROM zaproxy/zap-weekly:20240722 as base
 
 USER root
 
