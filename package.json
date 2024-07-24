@@ -1,6 +1,6 @@
 {
   "name": "soos-dast",
-  "version": "2.0.41",
+  "version": "2.0.42",
   "description": "SOOS DAST - The affordable no limit web vulnerability scanner",
   "main": "index.js",
   "scripts": {
@@ -13,22 +13,22 @@
     "format": "prettier ./src --check",
     "format:fix": "prettier ./src --write",
     "typecheck": "tsc --noEmit",
-    "check": "npm run format && npm run typecheck && npm outdated",
+    "check": "npm run format && npm run typecheck",
     "link:soos-api-client": "npm link @soos-io/api-client && npm run build && npm link",
     "patch": "npm version patch --no-git-tag-version",
     "patch-api-client": "npm run patch && npm run setup:clean && npm install @soos-io/api-client@latest --save-exact && npm install && npm run check"
   },
   "dependencies": {
-    "@soos-io/api-client": "0.3.2",
+    "@soos-io/api-client": "0.3.3",
     "@types/node": "^20.14.9",
     "argparse": "^2.0.1",
-    "glob": "^10.4.2",
+    "glob": "^10.4.5",
     "tslib": "^2.6.3"
   },
   "devDependencies": {
-    "@types/argparse": "^2.0.15",
-    "prettier": "^3.3.2",
-    "typescript": "^5.5.3"
+    "@types/argparse": "^2.0.16",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
   },
   "repository": {
     "type": "git",
