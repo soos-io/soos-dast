@@ -3,7 +3,7 @@ FROM zaproxy/zap-stable:2.15.0 as base
 USER root
 
 # Install nodejs version based on NODE_MAJOR
-ENV NODE_MAJOR 18
+ENV NODE_MAJOR 20
 RUN apt-get update
 RUN apt-get install -y ca-certificates curl gnupg
 RUN mkdir -p /etc/apt/keyrings
