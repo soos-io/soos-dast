@@ -49,7 +49,6 @@ The basic command to run a baseline scan would look like:
 | `--branchURI` |  | The URI to the branch from the SCM System |
 | `--buildURI` |  | URI to CI build info |
 | `--buildVersion` |  | Version of application build artifacts |
-| `--checkoutDir` |  | Checkout directory to locate SARIF report |
 | `--clientId` |  | SOOS Client ID - get yours from [SOOS Integration](https://app.soos.io/integrate/sast). Uses `SOOS_API_CLIENT` env value if present. |
 | `--commitHash` |  | The commit hash value from the SCM System |
 | `--contextFile` |  | Context file which will be loaded prior to scanning the target |

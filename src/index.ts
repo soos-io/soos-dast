@@ -41,7 +41,6 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   authUsernameField: string;
   authVerificationURL: string;
   bearerToken: string;
-  checkoutDir: string;
   contextFile: string;
   debug: boolean;
   disableRules: string;
@@ -157,11 +156,6 @@ class SOOSDASTAnalysis {
 
     analysisArgumentParser.argumentParser.add_argument("--bearerToken", {
       help: "Bearer token, adds a Authentication header with the token value.",
-      required: false,
-    });
-
-    analysisArgumentParser.argumentParser.add_argument("--checkoutDir", {
-      help: "Directory where the SARIF file will be created, used by Github Actions.",
       required: false,
     });
 
@@ -377,7 +371,7 @@ class SOOSDASTAnalysis {
           scanType,
           analysisId: result.analysisId,
           outputFormat: this.args.outputFormat,
-          workingDirectory: this.args.checkoutDir,
+          workingDirectory: "/zap/wrk",
         });
       }
 
