@@ -44,7 +44,6 @@ def zap_started(zap, target):
                 'No login URL, Token Endpoint or Bearer token provided - skipping authentication',
                 log_level=LogLevel.WARN
             )
-        cookies.load(config, zap)
         headers.load(config, zap)
         if config.debug_mode:
             serialize_and_save(zap.ascan, 'wrk/ascan_data_started.json')
