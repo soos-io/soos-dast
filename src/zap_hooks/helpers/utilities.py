@@ -16,7 +16,7 @@ def exit_app(e) -> NoReturn:
     exit(1)
 
 
-def process_custom_cookie_header_data(data: str) -> Dict:
+def process_custom_header_data(data: str) -> Dict:
     values: Dict = dict()
 
     if data is not None:

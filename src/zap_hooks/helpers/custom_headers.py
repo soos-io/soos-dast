@@ -2,7 +2,7 @@ import sys
 import traceback
 
 from src.zap_hooks.helpers.configuration import DASTConfig
-from src.zap_hooks.helpers.utilities import log, process_custom_cookie_header_data
+from src.zap_hooks.helpers.utilities import log, process_custom_header_data
 
 
 def load(config: DASTConfig, zap):
@@ -10,7 +10,7 @@ def load(config: DASTConfig, zap):
         log(f"loading custom headers: {config.header}")
         script_name: str = 'request_headers'
 
-        header_data = process_custom_cookie_header_data(config.header)
+        header_data = process_custom_header_data(config.header)
 
         try:
             for key, value in header_data.items():

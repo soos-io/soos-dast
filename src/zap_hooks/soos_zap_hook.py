@@ -5,7 +5,6 @@ import os
 from src.zap_hooks.helpers.auth import authenticate
 from src.zap_hooks.helpers.configuration import DASTConfig
 from src.zap_hooks.helpers.utilities import log, exit_app, LogLevel, serialize_and_save
-from src.zap_hooks.helpers import custom_cookies as cookies
 from src.zap_hooks.helpers import custom_headers as headers
 from src.zap_hooks.helpers import constants as Constants
 

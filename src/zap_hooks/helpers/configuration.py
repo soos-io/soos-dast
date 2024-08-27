@@ -31,7 +31,6 @@ class DASTConfig:
     auth_exclude_urls: Optional[List[str]] = None
     auth_include_urls: Optional[List[str]] = None
     xss_collector: Optional[str] = None
-    cookies: Optional[str] = None
     header: Optional[str] = None
     oauth_token_url: Optional[str] = None
     oauth_parameters: Optional[str] = None
@@ -66,7 +65,6 @@ class DASTConfig:
             self.auth_check_element = os.environ.get('AUTH_CHECK_ELEMENT') or EMPTY_STRING
             self.auth_verification_url = os.environ.get('AUTH_VERIFICATION_URL') or EMPTY_STRING
             self.xss_collector = os.environ.get('XSS_COLLECTOR') or EMPTY_STRING
-            self.cookies = os.environ.get('CUSTOM_COOKIES') or EMPTY_STRING
             self.header = os.environ.get('CUSTOM_HEADER') or EMPTY_STRING
             self.oauth_token_url = os.environ.get('OAUTH_TOKEN_URL') or EMPTY_STRING
             self.oauth_parameters = self._get_hook_param_list(os.environ.get('OAUTH_PARAMETERS')) or EMPTY_STRING

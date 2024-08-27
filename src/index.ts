@@ -50,6 +50,9 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   oauthTokenUrl: string;
   otherOptions: string;
   outputFormat: OutputFormat;
+  /**
+   * @deprecated Only here for backwards compatibility, do not reference.
+   */
   requestCookies: string;
   requestHeaders: string;
   scanMode: ScanMode;
@@ -215,7 +218,7 @@ class SOOSDASTAnalysis {
     );
 
     analysisArgumentParser.argumentParser.add_argument("--requestCookies", {
-      help: "Set Cookie values for the requests to the target URL",
+      help: "DEPRECATED. This parameter has no effect.",
       nargs: "*",
       required: false,
     });
