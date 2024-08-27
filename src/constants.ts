@@ -1,7 +1,7 @@
 export const SOOS_DAST_CONSTANTS = {
   AuthDelayTime: 5,
   Tool: "zap",
-  ToolVersion: "2.14",
+  ToolVersion: "2.15", // NOTE: this should match the zap-stable version
   Files: {
     DiscoveredUrlsFile: "./core_urls.txt",
     ReportScanResultFile: "/zap/wrk/report.zap.json",
