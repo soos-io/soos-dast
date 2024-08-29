@@ -51,7 +51,6 @@ export class ZAPCommandGenerator {
     this.addEnvironmentVariable("AUTH_USERNAME", this.config.authUsername);
     this.addEnvironmentVariable("AUTH_USERNAME_FIELD", this.config.authUsernameField);
     this.addEnvironmentVariable("AUTH_VERIFICATION_URL", this.config.authVerificationURL);
-    this.addEnvironmentVariable("CUSTOM_COOKIES", this.config.requestCookies);
     this.addEnvironmentVariable("CUSTOM_HEADER", this.config.requestHeaders);
     this.addEnvironmentVariable("DISABLE_RULES", this.config.disableRules);
     this.addEnvironmentVariable("EXCLUDE_URLS_FILE", this.config.excludeUrlsFile);

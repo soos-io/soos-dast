@@ -41,7 +41,6 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   authUsernameField: string;
   authVerificationURL: string;
   bearerToken: string;
-  checkoutDir: string;
   contextFile: string;
   debug: boolean;
   disableRules: string;
@@ -51,6 +50,9 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   oauthTokenUrl: string;
   otherOptions: string;
   outputFormat: OutputFormat;
+  /**
+   * @deprecated Only here for backwards compatibility, do not reference.
+   */
   requestCookies: string;
   requestHeaders: string;
   scanMode: ScanMode;
@@ -160,11 +162,6 @@ class SOOSDASTAnalysis {
       required: false,
     });
 
-    analysisArgumentParser.argumentParser.add_argument("--checkoutDir", {
-      help: "Directory where the SARIF file will be created, used by Github Actions.",
-      required: false,
-    });
-
     analysisArgumentParser.argumentParser.add_argument("--contextFile", {
       help: "Context file which will be loaded prior to scanning the target.",
       nargs: "*",
@@ -221,7 +218,7 @@ class SOOSDASTAnalysis {
     );
 
     analysisArgumentParser.argumentParser.add_argument("--requestCookies", {
-      help: "Set Cookie values for the requests to the target URL",
+      help: "DEPRECATED. This parameter has no effect.",
       nargs: "*",
       required: false,
     });
@@ -377,7 +374,7 @@ class SOOSDASTAnalysis {
           scanType,
           analysisId: result.analysisId,
           outputFormat: this.args.outputFormat,
-          workingDirectory: this.args.checkoutDir,
+          workingDirectory: "/zap/wrk",
         });
       }
 
@@ -431,9 +428,8 @@ class SOOSDASTAnalysis {
     try {
       const args = this.parseArgs();
       soosLogger.setMinLogLevel(args.logLevel);
-      soosLogger.setVerbose(args.verbose);
       soosLogger.info("Configuration read");
-      soosLogger.verboseDebug(
+      soosLogger.debug(
         JSON.stringify(
           obfuscateProperties(args as unknown as Record<string, unknown>, [
             "apiKey",

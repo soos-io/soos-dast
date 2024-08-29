@@ -5,7 +5,6 @@ import os
 from src.zap_hooks.helpers.auth import authenticate
 from src.zap_hooks.helpers.configuration import DASTConfig
 from src.zap_hooks.helpers.utilities import log, exit_app, LogLevel, serialize_and_save
-from src.zap_hooks.helpers import custom_cookies as cookies
 from src.zap_hooks.helpers import custom_headers as headers
 from src.zap_hooks.helpers import constants as Constants
 
@@ -45,7 +44,6 @@ def zap_started(zap, target):
                 'No login URL, Token Endpoint or Bearer token provided - skipping authentication',
                 log_level=LogLevel.WARN
             )
-        cookies.load(config, zap)
         headers.load(config, zap)
         if config.debug_mode:
             serialize_and_save(zap.ascan, 'wrk/ascan_data_started.json')
