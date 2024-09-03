@@ -252,6 +252,12 @@ class SOOSDASTAnalysis {
     const scanType = ScanType.DAST;
     const soosAnalysisService = AnalysisService.create(this.args.apiKey, this.args.apiURL);
 
+    if (this.args.requestCookies !== "") {
+      soosLogger.warn(
+        "--requestCookies is deprecated and will be removed. The parameter has no effect.",
+      );
+    }
+
     let projectHash: string | undefined;
     let branchHash: string | undefined;
     let analysisId: string | undefined;
