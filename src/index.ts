@@ -265,6 +265,10 @@ class SOOSDASTAnalysis {
       );
     }
 
+    if (this.args.verbose) {
+      soosLogger.warn("--verbose is deprecated and will be removed. The parameter has no effect.");
+    }
+
     let projectHash: string | undefined;
     let branchHash: string | undefined;
     let analysisId: string | undefined;
