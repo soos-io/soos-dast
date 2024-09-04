@@ -52,11 +52,13 @@ export class ZAPCommandGenerator {
     this.addEnvironmentVariable("AUTH_USERNAME_FIELD", this.config.authUsernameField);
     this.addEnvironmentVariable("AUTH_VERIFICATION_URL", this.config.authVerificationURL);
     this.addEnvironmentVariable("CUSTOM_HEADER", this.config.requestHeaders);
+    if (this.config.debug) this.addEnvironmentVariable("DEBUG_MODE", this.config.debug);
     this.addEnvironmentVariable("DISABLE_RULES", this.config.disableRules);
     this.addEnvironmentVariable("EXCLUDE_URLS_FILE", this.config.excludeUrlsFile);
     this.addEnvironmentVariable("OAUTH_PARAMETERS", this.config.oauthParameters);
     this.addEnvironmentVariable("OAUTH_TOKEN_URL", this.config.oauthTokenUrl);
-    if (this.config.debug) this.addEnvironmentVariable("DEBUG_MODE", this.config.debug);
+    if (this.config.updatePlugins)
+      this.addEnvironmentVariable("UPDATE_PLUGINS", this.config.updatePlugins);
   }
 
   private generateCommand(args: string[]): string {

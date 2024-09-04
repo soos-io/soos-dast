@@ -56,6 +56,7 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   requestCookies: string;
   requestHeaders: string;
   scanMode: ScanMode;
+  updatePlugins: boolean;
   targetURL: string;
 }
 
@@ -239,6 +240,12 @@ class SOOSDASTAnalysis {
         required: false,
       },
     );
+
+    analysisArgumentParser.argumentParser.add_argument("--updatePlugins", {
+      help: "Set to true to update the ZAP plugins before running.",
+      action: "store_true",
+      required: false,
+    });
 
     analysisArgumentParser.argumentParser.add_argument("targetURL", {
       help: "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",

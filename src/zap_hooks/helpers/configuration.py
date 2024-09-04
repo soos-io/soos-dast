@@ -30,13 +30,14 @@ class DASTConfig:
     auth_verification_url: Optional[str] = None
     auth_exclude_urls: Optional[List[str]] = None
     auth_include_urls: Optional[List[str]] = None
-    xss_collector: Optional[str] = None
+    debug_mode: Optional[bool] = False
+    disable_rules: Optional[str] = None
+    exclude_urls_file: Optional[str] = None
     header: Optional[str] = None
     oauth_token_url: Optional[str] = None
     oauth_parameters: Optional[str] = None
-    disable_rules: Optional[str] = None
-    debug_mode: Optional[bool] = False
-    exclude_urls_file: Optional[str] = None
+    update_plugins: Optional[bool] = False
+    xss_collector: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
@@ -44,9 +45,6 @@ class DASTConfig:
     def load_config(self, extra_zap_params):
         log(f"load_config: {extra_zap_params}")
         try:
-            self.extra_zap_params = extra_zap_params
-            log(f"Extra params passed by ZAP: {self.extra_zap_params}")
-
             self.auth_login_url = os.environ.get('AUTH_LOGIN_URL') or EMPTY_STRING
             self.auth_username = os.environ.get('AUTH_USERNAME') or EMPTY_STRING
             self.auth_password = os.environ.get('AUTH_PASSWORD') or EMPTY_STRING
@@ -64,13 +62,21 @@ class DASTConfig:
             self.auth_check_delay = float(os.environ.get('AUTH_CHECK_DELAY') or 5)
             self.auth_check_element = os.environ.get('AUTH_CHECK_ELEMENT') or EMPTY_STRING
             self.auth_verification_url = os.environ.get('AUTH_VERIFICATION_URL') or EMPTY_STRING
-            self.xss_collector = os.environ.get('XSS_COLLECTOR') or EMPTY_STRING
+            self.debug_mode = os.environ.get('DEBUG_MODE') or False
+            self.disable_rules = self._get_hook_param_list(os.environ.get('DISABLE_RULES')) or None
+            self.exclude_urls_file = os.environ.get('EXCLUDE_URLS_FILE') or None
             self.header = os.environ.get('CUSTOM_HEADER') or EMPTY_STRING
             self.oauth_token_url = os.environ.get('OAUTH_TOKEN_URL') or EMPTY_STRING
             self.oauth_parameters = self._get_hook_param_list(os.environ.get('OAUTH_PARAMETERS')) or EMPTY_STRING
-            self.disable_rules = self._get_hook_param_list(os.environ.get('DISABLE_RULES')) or None
-            self.debug_mode = os.environ.get('DEBUG_MODE') or False
-            self.exclude_urls_file = os.environ.get('EXCLUDE_URLS_FILE') or None
+            self.update_plugins = os.environ.get('UPDATE_PLUGINS') or False
+            self.xss_collector = os.environ.get('XSS_COLLECTOR') or EMPTY_STRING
+
+            self.extra_zap_params = extra_zap_params
+            # NOTE: by default, we skip the addon update in case there are breaking changes and our image hasn't been updated yet.
+            if self.update_plugins is False and "-addonupdate" in self.extra_zap_params:
+                self.extra_zap_params.remove("-addonupdate")
+                log(f"Removing plugin update argument.")
+            log(f"Extra params passed by ZAP: {self.extra_zap_params}")
 
         except Exception as error:
             log(f"error in start_docker_zap: {traceback.print_exc()}", log_level=LogLevel.ERROR)
