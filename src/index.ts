@@ -261,12 +261,8 @@ class SOOSDASTAnalysis {
 
     if (this.args.requestCookies && this.args.requestCookies.length > 0) {
       soosLogger.warn(
-        "--requestCookies is deprecated and will be removed. The parameter has no effect.",
+        "requestCookies is deprecated and will be removed. The parameter has no effect.",
       );
-    }
-
-    if (this.args.verbose) {
-      soosLogger.warn("--verbose is deprecated and will be removed. The parameter has no effect.");
     }
 
     let projectHash: string | undefined;
