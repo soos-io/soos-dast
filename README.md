@@ -38,9 +38,9 @@ The basic command to run a baseline scan would look like:
 | `--authLoginURL` |  | Login url to use when authentication is required |
 | `--authPassword` |  | Password to use when authentication is required |
 | `--authPasswordField` |  | Password input id to use when authentication is required |
-| `--authSecondSubmitField` |  | Second submit button id to use when authentication is required (for multi-page forms) |
+| `--authSecondSubmitField` |  | Second submit button id/name/XPath to use when authentication is required (for multi-page forms) |
 | `--authSubmitAction` |  | Submit action to perform on form filled. Options: click or submit |
-| `--authSubmitField` |  | Submit button id to use when authentication is required |
+| `--authSubmitField` |  | Submit button id/name/XPath to use when authentication is required |
 | `--authUsername` |  | Username to use when authentication is required |
 | `--authUsernameField` |  | Username input id to use when authentication is required |
 | `--authVerificationURL` |  | URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. Supports plain URL or regex URL.|
