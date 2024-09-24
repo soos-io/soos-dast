@@ -66,7 +66,6 @@ The basic command to run a baseline scan would look like:
 | `--projectName` |  | Project Name - this is what will be displayed in the SOOS app |
 | `--requestHeaders` |  | Set extra Header requests |
 | `--scanMode` | `baseline` | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
-| `--updatePlugins` |  | Update ZAP plugins before running. |
 
 ## Scan Modes
 
