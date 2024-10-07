@@ -50,10 +50,6 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   oauthTokenUrl: string;
   otherOptions: string;
   outputFormat: OutputFormat;
-  /**
-   * @deprecated Only here for backwards compatibility, do not reference.
-   */
-  requestCookies: string;
   requestHeaders: string;
   scanMode: ScanMode;
   targetURL: string;
@@ -217,12 +213,6 @@ class SOOSDASTAnalysis {
       },
     );
 
-    analysisArgumentParser.argumentParser.add_argument("--requestCookies", {
-      help: "DEPRECATED. This parameter has no effect.",
-      nargs: "*",
-      required: false,
-    });
-
     analysisArgumentParser.argumentParser.add_argument("--requestHeaders", {
       help: "Set extra headers for the requests to the target URL",
       nargs: "*",
@@ -251,12 +241,6 @@ class SOOSDASTAnalysis {
   async runAnalysis(): Promise<void> {
     const scanType = ScanType.DAST;
     const soosAnalysisService = AnalysisService.create(this.args.apiKey, this.args.apiURL);
-
-    if (this.args.requestCookies && this.args.requestCookies.length > 0) {
-      soosLogger.warn(
-        "requestCookies is deprecated and will be removed. The parameter has no effect.",
-      );
-    }
 
     let projectHash: string | undefined;
     let branchHash: string | undefined;
