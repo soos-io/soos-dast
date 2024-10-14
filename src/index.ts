@@ -8,6 +8,7 @@ import {
   convertStringToBase64,
   obfuscateProperties,
   getAnalysisExitCodeWithMessage,
+  isScanDone,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -246,6 +247,8 @@ class SOOSDASTAnalysis {
     let branchHash: string | undefined;
     let analysisId: string | undefined;
     let scanStatusUrl: string | undefined;
+    let scanStatus: ScanStatus | undefined;
+
     try {
       soosLogger.info(`Project Name: ${this.args.projectName}`);
       soosLogger.info(`Scan Mode: ${this.args.scanMode}`);
@@ -349,7 +352,7 @@ class SOOSDASTAnalysis {
         soosLogger.always(`(${data["discoveredUrls"].length} URLs discovered)`);
       }
 
-      const scanStatus = await soosAnalysisService.waitForScanToFinish({
+      scanStatus = await soosAnalysisService.waitForScanToFinish({
         scanStatusUrl: result.scanStatusUrl,
         scanUrl: result.scanUrl,
         scanType,
@@ -376,7 +379,7 @@ class SOOSDASTAnalysis {
       soosLogger.always(`${exitCodeWithMessage.message} - exit ${exitCodeWithMessage.exitCode}`);
       exit(exitCodeWithMessage.exitCode);
     } catch (error) {
-      if (projectHash && branchHash && analysisId)
+      if (projectHash && branchHash && analysisId && (!scanStatus || !isScanDone(scanStatus)))
         await soosAnalysisService.updateScanStatus({
           clientId: this.args.clientId,
           projectHash,
