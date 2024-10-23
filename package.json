@@ -1,6 +1,6 @@
 {
   "name": "soos-dast",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "description": "SOOS DAST - The affordable no limit web vulnerability scanner",
   "main": "index.js",
   "scripts": {
@@ -19,15 +19,15 @@
     "patch-api-client": "npm run patch && npm run setup:clean && npm install @soos-io/api-client@latest --save-exact && npm install && npm run check"
   },
   "dependencies": {
-    "@soos-io/api-client": "1.0.9",
-    "@types/node": "^20.16.6",
+    "@soos-io/api-client": "1.0.10",
+    "@types/node": "^20.16.15",
     "argparse": "^2.0.1",
     "axios": "^1.7.7",
     "glob": "^11.0.0",
-    "tslib": "^2.6.3"
+    "tslib": "^2.8.0"
   },
   "devDependencies": {
-    "@types/argparse": "^2.0.16",
+    "@types/argparse": "^2.0.17",
     "prettier": "^3.3.3",
     "typescript": "^5.6.2"
   },
