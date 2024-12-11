@@ -19,31 +19,23 @@ COPY ./package.json ./
 RUN pip3 install -r ./src/zap_hooks/requirements.txt
 
 RUN mkdir /zap/wrk && cd /opt \
-    && wget -qO- -O geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz \
+    && wget -qO- -O geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz \
     && tar -xvzf geckodriver.tar.gz \
     && chmod +x geckodriver \
     && ln -s /opt/geckodriver /usr/bin/geckodriver \
     && export PATH=$PATH:/usr/bin/geckodriver
 
-# Set up Chrome version to be used
-ARG CHROME_VERSION="125.0.6422.141-1"
-
 # Set up the Chrome PPA
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \ 
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_131.0.6778.108-1_amd64.deb \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
 
-# Set up Chromedriver Environment variables
-ENV CHROMEDRIVER_VERSION 125.0.6422.141
+# Set up Chromedriver
 ENV CHROMEDRIVER_DIR /chromedriver
 RUN mkdir $CHROMEDRIVER_DIR
-
-# Download and install Chromedriver
-RUN wget -q --continue -P $CHROMEDRIVER_DIR "https://storage.googleapis.com/chrome-for-testing-public/$CHROMEDRIVER_VERSION/linux64/chrome-linux64.zip"
+RUN wget -q --continue -P $CHROMEDRIVER_DIR "https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.108/linux64/chrome-linux64.zip"
 RUN unzip $CHROMEDRIVER_DIR/chrome-linux64.zip -d $CHROMEDRIVER_DIR
-
-# Put Chromedriver into the PATH
 ENV PATH $CHROMEDRIVER_DIR:$PATH
 
 COPY ./src/reports/traditional-json /zap/reports/traditional-json

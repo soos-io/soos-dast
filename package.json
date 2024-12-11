@@ -1,6 +1,6 @@
 {
   "name": "soos-dast",
-  "version": "3.0.14",
+  "version": "3.0.15",
   "description": "SOOS DAST - The affordable no limit web vulnerability scanner",
   "main": "index.js",
   "scripts": {
