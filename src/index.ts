@@ -294,6 +294,8 @@ class SOOSDASTAnalysis {
         scanType,
         toolName: SOOS_DAST_CONSTANTS.Tool,
         toolVersion: SOOS_DAST_CONSTANTS.ToolVersion,
+        scanMode: this.args.scanMode,
+        commandLine: process.argv.length > 2 ? process.argv.slice(2).join(" ") : null,
       });
       projectHash = result.projectHash;
       branchHash = result.branchHash;
