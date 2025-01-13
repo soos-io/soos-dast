@@ -14,7 +14,6 @@ import {
   ScanStatus,
   ScanType,
   soosLogger,
-  OutputFormat,
   SOOS_CONSTANTS,
   IntegrationName,
   IntegrationType,
@@ -50,7 +49,7 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
   oauthParameters: string;
   oauthTokenUrl: string;
   otherOptions: string;
-  outputFormat: OutputFormat;
+  outputFormat: string; // TODO: PA-16483: Remove this
   requestHeaders: string;
   scanMode: ScanMode;
   targetURL: string;
@@ -204,15 +203,11 @@ class SOOSDASTAnalysis {
       nargs: "*",
     });
 
-    analysisArgumentParser.addEnumArgument(
-      analysisArgumentParser.argumentParser,
-      "--outputFormat",
-      OutputFormat,
-      {
-        help: "Output format for vulnerabilities: only the value SARIF is available at the moment",
-        required: false,
-      },
-    );
+    analysisArgumentParser.argumentParser.add_argument("--outputFormat", {
+      help: "OBSOLETE: use --exportFormat and --exportFileType instead.",
+      default: undefined,
+      required: false,
+    });
 
     analysisArgumentParser.argumentParser.add_argument("--requestHeaders", {
       help: "Set extra headers for the requests to the target URL",
@@ -248,6 +243,13 @@ class SOOSDASTAnalysis {
     let analysisId: string | undefined;
     let scanStatusUrl: string | undefined;
     let scanStatus: ScanStatus | undefined;
+
+    // TODO: PA-16483: Remove this
+    if (this.args.outputFormat !== undefined) {
+      soosLogger.warn(
+        "No output will be generated. The --outputFormat parameter has been replaced with --exportFormat and --exportFileType, please use these parameters instead.",
+      );
+    }
 
     try {
       soosLogger.info(`Project Name: ${this.args.projectName}`);
@@ -360,15 +362,15 @@ class SOOSDASTAnalysis {
         scanType,
       });
 
-      if (this.args.outputFormat !== undefined) {
+      if (this.args.exportFormat !== undefined && this.args.exportFileType !== undefined) {
         await soosAnalysisService.generateFormattedOutput({
           clientId: this.args.clientId,
           projectHash: result.projectHash,
           projectName: this.args.projectName,
           branchHash: result.branchHash,
-          scanType,
           analysisId: result.analysisId,
-          outputFormat: this.args.outputFormat,
+          format: this.args.exportFormat,
+          fileType: this.args.exportFileType,
           workingDirectory: "/zap/wrk",
         });
       }
