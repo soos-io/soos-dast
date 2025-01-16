@@ -55,6 +55,8 @@ The basic command to run a baseline scan would look like:
 | `--debug` |  | Enable debug logging for ZAP. |
 | `--excludeUrlsFile` | | Path to a file containing regex URLs to exclude, one per line. eg `--excludeUrlsFile=exclude_urls.txt`
 | `--disableRules` |  | Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/ |
+| `--exportFormat`   |  | Write the scan result to this file format. Options: CsafVex, CycloneDx, Sarif, Spdx, SoosIssues, SoosLicenses, SoosPackages, SoosVulnerabilities |
+| `--exportFileType` |  | Write the scan result to this file type (when used with exportFormat). Options: Csv, Html, Json, Text, Xml                                       |
 | `--fullScanMinutes` |  | Number of minutes for the spider to run |
 | `--logLevel` |  | Minimum level to show logs: DEBUG INFO, WARN, FAIL, ERROR. |
 | `--oauthParameters` |  | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
@@ -62,7 +64,6 @@ The basic command to run a baseline scan would look like:
 | `--onFailure` | `continue_on_failure` | Action to perform when the scan fails. Options: fail_the_build, continue_on_failure |
 | `--operatingEnvironment` |  | Set Operating environment for information purposes only |
 | `--otherOptions` |  | Additional command line arguments for items not supported by the set of parameters above |
-| `--outputFormat` |  | Output format for vulnerabilities: only the value SARIF is available at the moment |
 | `--projectName` |  | Project Name - this is what will be displayed in the SOOS app |
 | `--requestHeaders` |  | Set extra Header requests |
 | `--scanMode` | `baseline` | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
