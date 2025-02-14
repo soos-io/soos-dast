@@ -186,9 +186,19 @@ class SOOSDASTAnalysis {
     });
 
     analysisArgumentParser.argumentParser.add_argument("--oauthParameters", {
-      help: `Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials").`,
+      help: `Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID,client_secret:clientSecret,grant_type:client_credentials").`,
       required: false,
       nargs: "*",
+      type: (value: string | undefined) => {
+        if (value) {
+          // Ensures format h1:v1,h2:v2,...
+          if (!/^(\w+:\w+)(,\w+:\w+)*$/.test(value)) {
+            throw new Error("Invalid oauthParameters format. Expected h1:v1,h2:v2,...,hn:vn");
+          }
+        }
+
+        return value;
+      },
     });
 
     analysisArgumentParser.argumentParser.add_argument("--oauthTokenUrl", {
@@ -206,6 +216,16 @@ class SOOSDASTAnalysis {
       help: "Set extra headers for the requests to the target URL",
       nargs: "*",
       required: false,
+      type: (value: string | undefined) => {
+        if (value) {
+          // Ensures format h1:v1,h2:v2,...
+          if (!/^(\w+:\w+)(,\w+:\w+)*$/.test(value)) {
+            throw new Error("Invalid requestHeaders format. Expected h1:v1,h2:v2,...,hn:vn");
+          }
+        }
+
+        return value;
+      },
     });
 
     analysisArgumentParser.addEnumArgument(

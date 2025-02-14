@@ -25,8 +25,8 @@ RUN mkdir /zap/wrk && cd /opt \
     && ln -s /opt/geckodriver /usr/bin/geckodriver \
     && export PATH=$PATH:/usr/bin/geckodriver
 
-# Set up the Chrome PPA
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_131.0.6778.108-1_amd64.deb \ 
+# Set up the Chrome PPA - https://chromereleases.googleblog.com/search/label/Stable%20updates
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_133.0.6943.98-1_amd64.deb \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
@@ -34,7 +34,7 @@ RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/ma
 # Set up Chromedriver
 ENV CHROMEDRIVER_DIR /chromedriver
 RUN mkdir $CHROMEDRIVER_DIR
-RUN wget -q --continue -P $CHROMEDRIVER_DIR "https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.108/linux64/chrome-linux64.zip"
+RUN wget -q --continue -P $CHROMEDRIVER_DIR "https://storage.googleapis.com/chrome-for-testing-public/133.0.6943.98/linux64/chrome-linux64.zip"
 RUN unzip $CHROMEDRIVER_DIR/chrome-linux64.zip -d $CHROMEDRIVER_DIR
 ENV PATH $CHROMEDRIVER_DIR:$PATH
 
