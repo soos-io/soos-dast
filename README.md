@@ -63,7 +63,7 @@ The basic command to run a baseline scan would look like:
 | `--exportFileType` |  | Write the scan result to this file type (when used with exportFormat). Options: Csv, Html, Json, Text, Xml                                       |
 | `--fullScanMinutes` |  | Number of minutes for the spider to run |
 | `--logLevel` |  | Minimum level to show logs: DEBUG INFO, WARN, FAIL, ERROR. |
-| `--oauthParameters` |  | Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
+| `--oauthParameters` |  | Parameters to be added to the OAuth token request. (eg --oauthParameters="client_id:clientID, client_secret:clientSecret, grant_type:client_credentials") |
 | `--oauthTokenUrl` |  | The authentication URL that grants the access_token. |
 | `--onFailure` | `continue_on_failure` | Action to perform when the scan fails. Options: fail_the_build, continue_on_failure |
 | `--operatingEnvironment` |  | Set Operating environment for information purposes only |
