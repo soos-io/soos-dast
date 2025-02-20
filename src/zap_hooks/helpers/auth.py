@@ -165,16 +165,17 @@ def login_from_token_endpoint(zap, config):
         add_authorization_header(zap, auth_header)
 
 def login_from_oauth_token_url(zap, config):
-    """Login using an oauth token url"""
-    log('Making request to oauth token url')
+    """Login using an OAuth token url"""
+    log('Making request to OAuth token url...')
     body = array_to_dict(config.oauth_parameters)
     response = post(config.oauth_token_url, data=body)
     data = response.json()
     auth_header = None
     if "token" in data:
+        log("setting token from OAuth response")
         auth_header = f"Bearer {data['token']}"
     elif "access_token" in data:
-        log("setting access_token from oauth response")
+        log("setting access_token from OAuth response")
         auth_header = f"Bearer {data['access_token']}"
 
 def add_authorization_header(zap, auth_token):

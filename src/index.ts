@@ -186,7 +186,7 @@ class SOOSDASTAnalysis {
     });
 
     analysisArgumentParser.argumentParser.add_argument("--oauthParameters", {
-      help: `Parameters to be added to the oauth token request. (eg --oauthParameters="client_id:clientID,client_secret:clientSecret,grant_type:client_credentials").`,
+      help: `Parameters to be added to the OAuth token request. (eg --oauthParameters="client_id:clientID,client_secret:clientSecret,grant_type:client_credentials").`,
       required: false,
       nargs: "*",
       type: (value: string | undefined) => {

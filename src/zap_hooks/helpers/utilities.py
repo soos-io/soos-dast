@@ -34,7 +34,6 @@ def read_file(file_path):
 def array_to_dict(array: Iterable[str]):
     body = []
     for key_value in array:
-        print(key_value)
         key, value = key_value.split(':', 1)
         body.append((key, value))
     return body
