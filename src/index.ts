@@ -438,6 +438,7 @@ class SOOSDASTAnalysis {
             "apiKey",
             "authPassword",
             "bearerToken",
+            "oauthParameters",
           ]),
           null,
           2,
