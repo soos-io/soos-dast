@@ -31,7 +31,7 @@ export class ZAPCommandGenerator {
     }
   }
 
-  private addEnvironmentVariable(name: string, value: any) {
+  private addEnvironmentVariable(name: string, value: string | number | boolean) {
     if (value !== undefined) {
       process.env[name] = String(value);
     }

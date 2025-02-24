@@ -1,6 +1,6 @@
 {
   "name": "soos-dast",
-  "version": "3.0.28",
+  "version": "3.0.29",
   "description": "SOOS DAST - The affordable no limit web vulnerability scanner. Scan your website for vulnerabilities. Register for a free trial at https://app.soos.io/register",
   "main": "index.js",
   "scripts": {
@@ -12,14 +12,16 @@
     "build:clean": "npx rimraf build",
     "format": "prettier ./src --check",
     "format:fix": "prettier ./src --write",
+    "lint": "eslint --max-warnings 0",
+    "lint:fix": "eslint --max-warnings 0 --fix",
     "typecheck": "tsc --noEmit",
-    "check": "npm run format && npm run typecheck && (npm outdated || exit 0)",
+    "check": "npm run format && npm run lint && npm run typecheck && (npm outdated || exit 0)",
     "link:soos-api-client": "npm link @soos-io/api-client && npm run build && npm link",
     "patch": "npm version patch --no-git-tag-version",
     "patch-api-client": "npm run patch && npm run setup:clean && npm install @soos-io/api-client@latest --save-exact && npm install && npm run check"
   },
   "dependencies": {
-    "@soos-io/api-client": "1.1.9",
+    "@soos-io/api-client": "1.2.0",
     "@types/node": "^20.16.15",
     "argparse": "^2.0.1",
     "axios": "^1.7.7",
@@ -27,9 +29,13 @@
     "tslib": "^2.8.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.21.0",
     "@types/argparse": "^2.0.17",
+    "eslint": "^9.21.0",
+    "globals": "^16.0.0",
     "prettier": "^3.3.3",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.24.1"
   },
   "repository": {
     "type": "git",

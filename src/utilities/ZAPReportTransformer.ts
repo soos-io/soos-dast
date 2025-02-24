@@ -1,14 +1,17 @@
 import * as fs from "fs";
 import { SOOS_DAST_CONSTANTS } from "../constants";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ReportData = any;
+
 export class ZAPReportTransformer {
-  public static transformReport(reportData: any): void {
+  public static transformReport(reportData: ReportData): void {
     this.addDiscoveredUrls(reportData);
     this.obfuscateFields(reportData);
     this.saveReportContent(reportData);
   }
 
-  public static addDiscoveredUrls(reportData: any): void {
+  public static addDiscoveredUrls(reportData: ReportData): void {
     this.addArrayPropertyToReportFromFile(
       reportData,
       "discoveredUrls",
@@ -16,8 +19,8 @@ export class ZAPReportTransformer {
     );
   }
 
-  public static obfuscateFields(reportData: any): void {
-    for (let key in reportData) {
+  public static obfuscateFields(reportData: ReportData): void {
+    for (const key in reportData) {
       if (typeof reportData[key] === "object" && reportData[key] !== null) {
         this.obfuscateFields(reportData[key]);
       } else {
@@ -29,7 +32,7 @@ export class ZAPReportTransformer {
   }
 
   private static addArrayPropertyToReportFromFile(
-    reportData: any,
+    reportData: ReportData,
     name: string,
     file: string,
   ): void {
@@ -48,7 +51,7 @@ export class ZAPReportTransformer {
     return field.replace(/(Authorization:\s*)[^\r\n]+/, "$1****");
   }
 
-  private static saveReportContent = (reportData: any) => {
+  private static saveReportContent = (reportData: ReportData) => {
     fs.writeFileSync(
       SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
       JSON.stringify(reportData, null, 4),
