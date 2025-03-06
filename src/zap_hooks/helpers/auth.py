@@ -94,7 +94,7 @@ def set_authentication(zap, target, driver, config):
 
 def validate_authentication_url(driver, url):
     """Validate that the authentication URL is called during the authentication process and returns a 200/302 status code."""
-    log(f"Validating authentication URL: {url}")
+    log(f"Validating authentication url: {url}")
     log_entries = driver.get_log("performance")
     
     status = 0
