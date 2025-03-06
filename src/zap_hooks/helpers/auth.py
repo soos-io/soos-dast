@@ -12,21 +12,14 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from seleniumwire import webdriver
 import zap_common
 import logging
+import json
 
 from src.zap_hooks.helpers.browser_storage import BrowserStorage
 from src.zap_hooks.helpers.utilities import array_to_dict, log
 from src.zap_hooks.model.log_level import LogLevel
 from src.zap_hooks.helpers.logging import LoggingFilter
-
-
-def setup_replacer(zap, target, config):
-    # Set an X-Scanner header so requests can be identified in logs
-    zap.replacer.add_rule(description='Scanner', enabled=True, matchtype='REQ_HEADER',
-                            matchregex=False, matchstring='X-Scanner', replacement="ZAP")
-
 
 def setup_webdriver() -> webdriver.Chrome:
     log('Start webdriver')
@@ -36,38 +29,28 @@ def setup_webdriver() -> webdriver.Chrome:
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-
-    # NOTE this is needed for the chromedriver path to be found on github actions, where the path is overridden before execution
-    if environ['CHROMEDRIVER_DIR'] not in environ['PATH']:
-        log(f"adding {environ['CHROMEDRIVER_DIR']} to path {environ['PATH']}")
-        environ["PATH"] += pathsep + environ['CHROMEDRIVER_DIR']	
+    options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
     driver = webdriver.Chrome(options=options)
     driver.set_window_size(1920, 1080)
     driver.maximize_window()
 
-    loggingFilter = LoggingFilter()
-
     # Add the custom filter to all handlers of the root logger
+    loggingFilter = LoggingFilter()
     for handler in logging.getLogger().handlers:
         handler.addFilter(loggingFilter)
 
     return driver
 
 def authenticate(zap, target, config):
-    clear_driver = False
     try:
-        if zap is not None:
-            setup_replacer(zap, target, config)
-
         if config.auth_login_url:
             driver_instance = setup_webdriver()
             login(driver_instance, config)
             set_authentication(zap, target, driver_instance, config)
-            clear_driver = True
+            clean_up_driver = True
         elif config.auth_bearer_token:
-            add_authorization_header(
-                zap, f"Bearer {config.auth_bearer_token}")
+            add_authorization_header(zap, f"Bearer {config.auth_bearer_token}")
         elif config.auth_token_endpoint:
             login_from_token_endpoint(zap, config)
         elif config.oauth_token_url:
@@ -78,8 +61,8 @@ def authenticate(zap, target, config):
     finally:
         if config.auth_verification_url:
             validate_authentication_url(driver_instance, config.auth_verification_url)      
-        if (clear_driver):
             cleanup(driver_instance)
+            
 
 def set_authentication(zap, target, driver, config):
     log('Finding authentication cookies')
@@ -110,22 +93,29 @@ def set_authentication(zap, target, driver, config):
     add_token_from_browser_storage(zap, sessionStorage, config)
 
 def validate_authentication_url(driver, url):
-    """Validate that the authentication url is called during the authentication process and returns a 200/302 status code"""
-    log(f"Validating authentication url: {url}")
-    url_found = False
-    for request in driver.requests:
-        if request.response and (url in request.url or search(url, request.url) is not None):
-            url_found = True
-            log(f"Checking response status code {request.response} for {request.url}")
-            if request.response.status_code not in [200, 302]:
-                log(f"Status code is not 200/302 for {request.url}, it is {request.response.status_code}")
-                sys.exit(1)
-            else: 
-                log(f"Status code is {request.response.status_code} for {request.url}, authentication was successful")
+    """Validate that the authentication URL is called during the authentication process and returns a 200/302 status code."""
+    log(f"Validating authentication URL: {url}")
+    log_entries = driver.get_log("performance")
+    
+    status = 0
+    for entry in log_entries:    
+        obj_serialized: str = entry.get("message")
+        obj = json.loads(obj_serialized)
+        message = obj.get("message")
+        method = message.get("method")
+        if method == "Network.responseReceived":
+            response = message.get("params", {}).get("response", {})
+            response_url = response.get("url")
+            response_status = response.get("status")
+            if response_url == url:
+                status = response_status
                 break
-    if not url_found:
-        log(f"Authentication url {url} was not found, authentication failed.")
-        sys.exit(1)
+    
+    if status in (200, 302):
+        log(f"Status code is {status} for {url}, authentication was successful")
+    else:
+        log(f"Status code is not 200/302 for {url}, it is {status}")
+        sys.exit(1)       
 
 def add_token_from_browser_storage(zap, browserStorage, config):
     """Add JWT token from browser storage as Authorization header"""
