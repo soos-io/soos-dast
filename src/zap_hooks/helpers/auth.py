@@ -113,7 +113,7 @@ def validate_authentication_url(driver, url):
     
     if status in (200, 302):
         log(f"Status code is {status} for {url}, authentication was successful")
-    elif status == 0
+    elif status == 0:
         log(f"Authentication url {url} was not found, authentication failed.")
         sys.exit(1)
     else:
