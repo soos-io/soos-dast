@@ -31,11 +31,14 @@ def setup_webdriver() -> webdriver.Chrome:
     options.add_argument('--disable-dev-shm-usage')
     options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
+    if environ['CHROMEDRIVER_DIR'] not in environ['PATH']:
+        log(f"adding {environ['CHROMEDRIVER_DIR']} to path {environ['PATH']}")
+        environ["PATH"] += pathsep + environ['CHROMEDRIVER_DIR']	
+
     driver = webdriver.Chrome(options=options)
     driver.set_window_size(1920, 1080)
     driver.maximize_window()
 
-    # Add the custom filter to all handlers of the root logger
     loggingFilter = LoggingFilter()
     for handler in logging.getLogger().handlers:
         handler.addFilter(loggingFilter)
