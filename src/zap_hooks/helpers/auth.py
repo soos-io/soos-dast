@@ -113,9 +113,12 @@ def validate_authentication_url(driver, url):
     
     if status in (200, 302):
         log(f"Status code is {status} for {url}, authentication was successful")
+    elif status == 0
+        log(f"Authentication url {url} was not found, authentication failed.")
+        sys.exit(1)
     else:
         log(f"Status code is not 200/302 for {url}, it is {status}")
-        sys.exit(1)       
+        sys.exit(1)     
 
 def add_token_from_browser_storage(zap, browserStorage, config):
     """Add JWT token from browser storage as Authorization header"""
