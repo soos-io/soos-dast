@@ -15,32 +15,18 @@ RUN apt-get install -y python3-requests python3-termcolor python3-selenium pytho
 COPY ./src/ ./src/
 COPY ./tsconfig.json ./
 COPY ./package.json ./
+COPY ./package-lock.json ./
 
-RUN mkdir /zap/wrk && cd /opt \
-    && wget -qO- -O geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz \
-    && tar -xvzf geckodriver.tar.gz \
-    && chmod +x geckodriver \
-    && ln -s /opt/geckodriver /usr/bin/geckodriver \
-    && export PATH=$PATH:/usr/bin/geckodriver
-
-# Set up the Chrome PPA - https://chromereleases.googleblog.com/search/label/Stable%20updates
+# Set up Chrome - Check here for newer versions https://chromereleases.googleblog.com/search/label/Stable%20updates
 RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_134.0.6998.35-1_amd64.deb \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
 
-# Set up Chromedriver
-ENV CHROMEDRIVER_DIR /chromedriver
-RUN mkdir $CHROMEDRIVER_DIR
-RUN wget -q --continue -P $CHROMEDRIVER_DIR "https://storage.googleapis.com/chrome-for-testing-public/134.0.6998.35/linux64/chrome-linux64.zip"
-RUN unzip $CHROMEDRIVER_DIR/chrome-linux64.zip -d $CHROMEDRIVER_DIR
-ENV PATH $CHROMEDRIVER_DIR:$PATH
-
 COPY ./src/reports/traditional-json /zap/reports/traditional-json
 RUN chmod -R 444 /zap/reports/traditional-json
 
-RUN npm install
-
+RUN npm ci
 RUN npm run build
 
 ENTRYPOINT ["node", "--no-deprecation", "dist/index.js"]

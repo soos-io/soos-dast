@@ -30,10 +30,7 @@ def setup_webdriver() -> webdriver.Chrome:
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
-
-    if environ['CHROMEDRIVER_DIR'] not in environ['PATH']:
-        log(f"adding {environ['CHROMEDRIVER_DIR']} to path {environ['PATH']}")
-        environ["PATH"] += pathsep + environ['CHROMEDRIVER_DIR']	
+    options.binary_location = '/opt/google/chrome/google-chrome'
 
     driver = webdriver.Chrome(options=options)
     driver.set_window_size(1920, 1080)
