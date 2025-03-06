@@ -36,7 +36,6 @@ class DASTConfig:
     header: Optional[str] = None
     oauth_token_url: Optional[str] = None
     oauth_parameters: Optional[str] = None
-    xss_collector: Optional[str] = None
 
     def __init__(self):
         self.extra_zap_params = None
@@ -67,7 +66,6 @@ class DASTConfig:
             self.header = os.environ.get('CUSTOM_HEADER') or EMPTY_STRING
             self.oauth_token_url = os.environ.get('OAUTH_TOKEN_URL') or EMPTY_STRING
             self.oauth_parameters = self._get_hook_param_list(os.environ.get('OAUTH_PARAMETERS')) or EMPTY_STRING
-            self.xss_collector = os.environ.get('XSS_COLLECTOR') or EMPTY_STRING
 
             self.extra_zap_params = extra_zap_params
             log(f"Extra params passed by ZAP: {self.extra_zap_params}")

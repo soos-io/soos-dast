@@ -49,7 +49,6 @@ def zap_started(zap, target):
             serialize_and_save(zap.ascan, 'wrk/ascan_data_started.json')
             serialize_and_save(zap.spider, 'wrk/spider_data_started.json')
             serialize_and_save(zap.core, 'wrk/core_data_started.json')
-            serialize_and_save(zap.pscan, 'wrk/pscan_data_started.json')
             serialize_and_save(zap.context, 'wrk/context_data_started.json')
         if config.exclude_urls_file:
             exclude_urls_file_path = f"wrk/{config.exclude_urls_file}"
@@ -73,7 +72,6 @@ def zap_pre_shutdown(zap):
         serialize_and_save(zap.ascan, 'wrk/ascan_data_pre_shutdown.json')
         serialize_and_save(zap.spider, 'wrk/spider_data_pre_shutdown.json')
         serialize_and_save(zap.core, 'wrk/core_data_pre_shutdown.json')
-        serialize_and_save(zap.pscan, 'wrk/pscan_data_pre_shutdown.json')
         serialize_and_save(zap.context, 'wrk/context_data_pre_shutdown.json')
     log("URLs Discovered:")
     with open('core_urls.txt', 'w') as f:
