@@ -10,7 +10,6 @@ RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg -
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 RUN apt-get update
 RUN apt-get install -y nodejs
-#RUN apt-get install -y python3-requests=2.32.3 python3-termcolor=2.5.0 python3-selenium=4.29.0 python3-pyotp=2.9.0 python3-blinker=1.7.0
 RUN apt-get install -y python3-requests python3-termcolor python3-selenium python3-pyotp python3-blinker
 
 COPY ./src/ ./src/
