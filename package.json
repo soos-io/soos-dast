@@ -1,6 +1,6 @@
 {
   "name": "soos-dast",
-  "version": "3.1.7",
+  "version": "3.1.8",
   "description": "SOOS DAST - The affordable no limit web vulnerability scanner. Scan your website for vulnerabilities. Register for a free trial at https://app.soos.io/register",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "patch-api-client": "npm run patch && npm run setup:clean && npm install @soos-io/api-client@latest --save-exact && npm install && npm run check"
   },
   "dependencies": {
-    "@soos-io/api-client": "1.2.3",
+    "@soos-io/api-client": "1.2.4",
     "@types/node": "^20.17.24",
     "argparse": "^2.0.1",
     "axios": "^1.8.2",
