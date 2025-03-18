@@ -230,7 +230,6 @@ class SOOSDASTAnalysis {
       { useNoOptionKey: true, required: true },
     );
 
-    soosLogger.info("Parsing arguments");
     return analysisArgumentParser.parseArguments<IDASTAnalysisArgs>(process.argv);
   }
 
