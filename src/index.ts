@@ -26,7 +26,7 @@ import AnalysisArgumentParser, {
 } from "@soos-io/api-client/dist/services/AnalysisArgumentParser";
 import { SOOS_DAST_CONSTANTS } from "./constants";
 
-export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
+export interface IDASTAnalysisArgs extends IBaseScanArguments {
   ajaxSpider: boolean;
   apiScanFormat: ApiScanFormat;
   authDelayTime: number;
@@ -55,9 +55,9 @@ export interface SOOSDASTAnalysisArgs extends IBaseScanArguments {
 }
 
 class SOOSDASTAnalysis {
-  constructor(private args: SOOSDASTAnalysisArgs) {}
+  constructor(private args: IDASTAnalysisArgs) {}
 
-  static parseArgs(): SOOSDASTAnalysisArgs {
+  static parseArgs(): IDASTAnalysisArgs {
     const analysisArgumentParser = AnalysisArgumentParser.create(
       IntegrationName.SoosDast,
       IntegrationType.Script,
@@ -65,186 +65,173 @@ class SOOSDASTAnalysis {
       version,
     );
 
-    analysisArgumentParser.addBaseScanArguments();
-
-    analysisArgumentParser.argumentParser.add_argument("--ajaxSpider", {
-      help: "Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/.",
-      action: "store_true",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "ajaxSpider",
+      "Ajax Spider - Use the ajax spider in addition to the traditional one. Additional information: https://www.zaproxy.org/docs/desktop/addons/ajax-spider/.",
+      {
+        isFlag: true,
+      },
+    );
 
     analysisArgumentParser.addEnumArgument(
-      analysisArgumentParser.argumentParser,
-      "--apiScanFormat",
+      "apiScanFormat",
       ApiScanFormat,
+      "Target API format, OpenAPI, SOAP or GraphQL.",
+      { defaultValue: ApiScanFormat.OpenAPI },
+    );
+
+    analysisArgumentParser.addArgument(
+      "authDelayTime",
+      "Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
       {
-        help: "Target API format, OpenAPI, SOAP or GraphQL.",
-        required: false,
+        defaultValue: SOOS_DAST_CONSTANTS.AuthDelayTime,
       },
     );
 
-    analysisArgumentParser.argumentParser.add_argument("--authDelayTime", {
-      help: "Delay time in seconds to wait for the page to load after performing actions in the form. (Used only on authFormType: wait_for_password and multi_page)",
-      default: SOOS_DAST_CONSTANTS.AuthDelayTime,
-      required: false,
-    });
-
     analysisArgumentParser.addEnumArgument(
-      analysisArgumentParser.argumentParser,
-      "--authFormType",
+      "authFormType",
       FormTypes,
+      "Form type of the login URL options are: simple (all fields are displayed at once), wait_for_password (Password field is displayed only after username is filled), or multi_page (Password field is displayed only after username is filled and submit is clicked).",
       {
-        help: `Form type of the login URL options are: simple (all fields are displayed at once),
-             wait_for_password (Password field is displayed only after username is filled),
-             or multi_page (Password field is displayed only after username is filled and submit is clicked).`,
-        default: FormTypes.Simple,
-        required: false,
+        defaultValue: FormTypes.Simple,
       },
     );
 
-    analysisArgumentParser.argumentParser.add_argument("--authLoginURL", {
-      help: "Login URL to use when authentication is required.",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "authLoginURL",
+      "Login URL to use when authentication is required.",
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--authPassword", {
-      help: "Password to use when authentication is required.",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "authPassword",
+      "Password to use when authentication is required.",
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--authPasswordField", {
-      help: "Password input id to use when authentication is required.",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "authPasswordField",
+      "Password input id to use when authentication is required.",
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--authSecondSubmitField", {
-      help: "Second submit button id to use when authentication is required.",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "authSecondSubmitField",
+      "Second submit button id to use when authentication is required.",
+    );
 
     analysisArgumentParser.addEnumArgument(
-      analysisArgumentParser.argumentParser,
-      "--authSubmitAction",
+      "authSubmitAction",
       SubmitActions,
+      "Submit action to perform on form filled. Options: click or submit.",
       {
-        help: "Submit action to perform on form filled. Options: click or submit.",
-        required: false,
+        defaultValue: SubmitActions.Click,
       },
     );
 
-    analysisArgumentParser.argumentParser.add_argument("--authSubmitField", {
-      help: "Submit button id to use when authentication is required.",
-      required: false,
+    analysisArgumentParser.addArgument(
+      "authSubmitField",
+      "Submit button id to use when authentication is required.",
+    );
+
+    analysisArgumentParser.addArgument(
+      "authUsername",
+      "Username to use when authentication is required.",
+    );
+
+    analysisArgumentParser.addArgument(
+      "authUsernameField",
+      "Username input id to use when authentication is required.",
+    );
+
+    analysisArgumentParser.addArgument(
+      "authVerificationURL",
+      "URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. Supports plain URL or regex URL.",
+    );
+
+    analysisArgumentParser.addArgument(
+      "bearerToken",
+      "Bearer token, adds a Authentication header with the token value.",
+    );
+
+    analysisArgumentParser.addArgument(
+      "contextFile",
+      "Context file which will be loaded prior to scanning the target.",
+    );
+
+    analysisArgumentParser.addArgument("debug", "Enable debug logging for ZAP.", {
+      isFlag: true,
     });
 
-    analysisArgumentParser.argumentParser.add_argument("--authUsername", {
-      help: "Username to use when authentication is required.",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "disableRules",
+      "Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/",
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--authUsernameField", {
-      help: "Username input id to use when authentication is required.",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "excludeUrlsFile",
+      "Path to a file containing regex URLs to exclude, one per line.",
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--authVerificationURL", {
-      help: "URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. Supports plain URL or regex URL.",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "fullScanMinutes",
+      "Number of minutes for the spider to run.",
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--bearerToken", {
-      help: "Bearer token, adds a Authentication header with the token value.",
-      required: false,
-    });
-
-    analysisArgumentParser.argumentParser.add_argument("--contextFile", {
-      help: "Context file which will be loaded prior to scanning the target.",
-      nargs: "*",
-      required: false,
-    });
-
-    analysisArgumentParser.argumentParser.add_argument("--debug", {
-      help: "Enable debug logging for ZAP.",
-      action: "store_true",
-      required: false,
-    });
-
-    analysisArgumentParser.argumentParser.add_argument("--disableRules", {
-      help: "Comma separated list of ZAP rules IDs to disable. List for reference https://www.zaproxy.org/docs/alerts/",
-      required: false,
-      nargs: "*",
-    });
-
-    analysisArgumentParser.argumentParser.add_argument("--excludeUrlsFile", {
-      help: "Path to a file containing regex URLs to exclude, one per line.",
-      required: false,
-    });
-
-    analysisArgumentParser.argumentParser.add_argument("--fullScanMinutes", {
-      help: "Number of minutes for the spider to run.",
-      required: false,
-    });
-
-    analysisArgumentParser.argumentParser.add_argument("--oauthParameters", {
-      help: `Parameters to be added to the OAuth token request. (eg --oauthParameters="client_id:clientID,client_secret:clientSecret,grant_type:client_credentials").`,
-      required: false,
-      nargs: "*",
-      type: (value: string | undefined) => {
-        if (value) {
+    analysisArgumentParser.addArgument(
+      "oauthParameters",
+      'Parameters to be added to the OAuth token request. (eg --oauthParameters="client_id:clientID,client_secret:clientSecret,grant_type:client_credentials").',
+      {
+        argParser: (value: string) => {
           // Ensures format h1:v1,h2:v2,...
           if (!/^(\w+:\w+)(,\w+:\w+)*$/.test(value)) {
             throw new Error("Invalid oauthParameters format. Expected h1:v1,h2:v2,...,hn:vn");
           }
-        }
 
-        return value;
+          return value;
+        },
       },
-    });
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--oauthTokenUrl", {
-      help: "The authentication URL that grants the access_token.",
-      required: false,
-    });
+    analysisArgumentParser.addArgument(
+      "oauthTokenUrl",
+      "The authentication URL that grants the access_token.",
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--otherOptions", {
-      help: "Other command line arguments sent directly to the script for items not supported by other command line arguments",
-      required: false,
-      nargs: "*",
-    });
+    analysisArgumentParser.addArgument(
+      "otherOptions",
+      "Other command line arguments sent directly to the script for items not supported by other command line arguments",
+    );
 
-    analysisArgumentParser.argumentParser.add_argument("--requestHeaders", {
-      help: "Set extra headers for the requests to the target URL",
-      nargs: "*",
-      required: false,
-      type: (value: string | undefined) => {
-        if (value) {
+    analysisArgumentParser.addArgument(
+      "requestHeaders",
+      "Set extra headers for the requests to the target URL",
+      {
+        argParser: (value: string) => {
           // Ensures format h1:v1,h2:v2,...
           if (!/^(\w+:\w+)(,\w+:\w+)*$/.test(value)) {
             throw new Error("Invalid requestHeaders format. Expected h1:v1,h2:v2,...,hn:vn");
           }
-        }
 
-        return value;
-      },
-    });
-
-    analysisArgumentParser.addEnumArgument(
-      analysisArgumentParser.argumentParser,
-      "--scanMode",
-      ScanMode,
-      {
-        help: "Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
-        default: ScanMode.Baseline,
-        required: false,
+          return value;
+        },
       },
     );
 
-    analysisArgumentParser.argumentParser.add_argument("targetURL", {
-      help: "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
-    });
+    analysisArgumentParser.addEnumArgument(
+      "scanMode",
+      ScanMode,
+      "Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes)",
+      {
+        defaultValue: ScanMode.Baseline,
+      },
+    );
+
+    analysisArgumentParser.addArgument(
+      "targetURL",
+      "Target URL - URL of the site or api to scan. The URL should include the protocol. Ex: https://www.example.com",
+      { useNoOptionKey: true, required: true },
+    );
 
     soosLogger.info("Parsing arguments");
-    return analysisArgumentParser.parseArguments();
+    return analysisArgumentParser.parseArguments<IDASTAnalysisArgs>(process.argv);
   }
 
   async runAnalysis(): Promise<void> {

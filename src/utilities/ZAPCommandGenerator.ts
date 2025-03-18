@@ -1,4 +1,4 @@
-import { SOOSDASTAnalysisArgs } from "..";
+import { IDASTAnalysisArgs } from "..";
 import { SOOS_DAST_CONSTANTS } from "../constants";
 import { ScanMode } from "../enums";
 
@@ -22,7 +22,7 @@ const SOOS_ZAP_CONSTANTS = {
 };
 
 export class ZAPCommandGenerator {
-  constructor(private config: SOOSDASTAnalysisArgs) {}
+  constructor(private config: IDASTAnalysisArgs) {}
 
   private addOption(args: string[], option: string, value?: string | number | boolean) {
     if (value) {
