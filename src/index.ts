@@ -56,6 +56,10 @@ export interface IDASTAnalysisArgs extends IBaseScanArguments {
   targetURL: string;
 }
 
+const splitValueRegex = new RegExp(
+  /^([A-Za-z0-9\-_\\/]+:[A-Za-z0-9\-_\\/]+)(?:,\s*([A-Za-z0-9\-_\\/]+:[A-Za-z0-9\-_\\/]+))*$/,
+);
+
 class SOOSDASTAnalysis {
   constructor(private args: IDASTAnalysisArgs) {}
 
@@ -183,7 +187,7 @@ class SOOSDASTAnalysis {
       {
         argParser: (value: string) => {
           // Ensures format h1:v1,h2:v2,...
-          if (!/^(\w+:\w+)(,\w+:\w+)*$/.test(value)) {
+          if (!splitValueRegex.test(value)) {
             throw new Error("Invalid oauthParameters format. Expected h1:v1,h2:v2,...,hn:vn");
           }
 
@@ -208,7 +212,7 @@ class SOOSDASTAnalysis {
       {
         argParser: (value: string) => {
           // Ensures format h1:v1,h2:v2,...
-          if (!/^(\w+:\w+)(,\w+:\w+)*$/.test(value)) {
+          if (!splitValueRegex.test(value)) {
             throw new Error("Invalid requestHeaders format. Expected h1:v1,h2:v2,...,hn:vn");
           }
 
