@@ -7,8 +7,6 @@ from src.zap_hooks.helpers.constants import EMPTY_STRING
 from src.zap_hooks.helpers.utilities import log
 from src.zap_hooks.model.log_level import LogLevel
 
-
-
 class DASTConfig:
     extra_zap_params = None
     auth_login_url: Optional[str] = None
@@ -78,5 +76,4 @@ class DASTConfig:
             if value is None:
                 return []
             value = list(filter(None, value.split(',')))
-            log(f"_get_hook_param_list {value}")
             return [s.strip() for s in value]
