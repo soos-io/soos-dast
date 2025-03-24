@@ -425,7 +425,7 @@ class SOOSDASTAnalysis {
     try {
       const args = this.parseArgs();
       soosLogger.setMinLogLevel(args.logLevel);
-      soosLogger.info("Starting SOOS DAST Analysis");
+      soosLogger.always("Starting SOOS DAST Analysis");
       soosLogger.debug(
         JSON.stringify(
           obfuscateProperties(args as unknown as Record<string, unknown>, [
