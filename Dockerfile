@@ -1,4 +1,4 @@
-FROM zaproxy/zap-stable:2.16.0 AS base
+FROM zaproxy/zap-stable:2.16.1 AS base
 
 USER root
 
