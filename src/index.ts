@@ -14,7 +14,6 @@ import {
   ScanStatus,
   ScanType,
   soosLogger,
-  SOOS_CONSTANTS,
   IntegrationName,
   IntegrationType,
   AttributionFormatEnum,
@@ -311,10 +310,7 @@ class SOOSDASTAnalysis {
       soosLogger.info(`Scan finished with success: ${runSuccess}`);
 
       const data = JSON.parse(
-        fs.readFileSync(
-          SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
-          SOOS_CONSTANTS.FileUploads.Encoding,
-        ),
+        fs.readFileSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile, "utf-8"),
       );
 
       ZAPReportTransformer.transformReport(data);
@@ -322,20 +318,7 @@ class SOOSDASTAnalysis {
       const formData = new FormData();
 
       formData.append("resultVersion", data["@version"]);
-      formData.append(
-        "file",
-        convertStringToBase64(
-          JSON.stringify(
-            JSON.parse(
-              fs.readFileSync(
-                SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
-                SOOS_CONSTANTS.FileUploads.Encoding,
-              ),
-            ),
-          ),
-        ),
-        "base64Manifest",
-      );
+      formData.append("file", convertStringToBase64(JSON.stringify(data)), "base64Manifest");
       soosLogger.logLineSeparator();
       soosLogger.info(`Starting report results processing`);
       soosLogger.info(`Uploading scan result for project ${this.args.projectName}...`);
