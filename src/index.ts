@@ -299,7 +299,7 @@ class SOOSDASTAnalysis {
           process.argv.length > 2
             ? obfuscateCommandLine(
                 process.argv.slice(2).join(" "),
-                SOOS_DAST_CONSTANTS.ObfuscatedArguments,
+                SOOS_DAST_CONSTANTS.ObfuscatedArguments.map((a) => `--${a}`),
               )
             : null,
       });
