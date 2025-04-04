@@ -9,6 +9,7 @@ import {
   obfuscateProperties,
   getAnalysisExitCodeWithMessage,
   isScanDone,
+  obfuscateCommandLine,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -294,7 +295,13 @@ class SOOSDASTAnalysis {
         toolName: SOOS_DAST_CONSTANTS.Tool,
         toolVersion: SOOS_DAST_CONSTANTS.ToolVersion,
         scanMode: this.args.scanMode,
-        commandLine: process.argv.length > 2 ? process.argv.slice(2).join(" ") : null,
+        commandLine:
+          process.argv.length > 2
+            ? obfuscateCommandLine(
+                process.argv.slice(2).join(" "),
+                SOOS_DAST_CONSTANTS.ObfuscatedArguments.map((a) => `--${a}`),
+              )
+            : null,
       });
       projectHash = result.projectHash;
       branchHash = result.branchHash;
@@ -411,12 +418,10 @@ class SOOSDASTAnalysis {
       soosLogger.always("Starting SOOS DAST Analysis");
       soosLogger.debug(
         JSON.stringify(
-          obfuscateProperties(args as unknown as Record<string, unknown>, [
-            "apiKey",
-            "authPassword",
-            "bearerToken",
-            "oauthParameters",
-          ]),
+          obfuscateProperties(
+            args as unknown as Record<string, unknown>,
+            SOOS_DAST_CONSTANTS.ObfuscatedArguments,
+          ),
           null,
           2,
         ),
