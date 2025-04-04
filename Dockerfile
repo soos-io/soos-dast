@@ -20,8 +20,8 @@ COPY ./package-lock.json ./
 # The default working directory
 RUN mkdir /zap/wrk
 
-# Set up Chrome - Check here for newer versions https://chromereleases.googleblog.com/search/label/Stable%20updates
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_134.0.6998.35-1_amd64.deb \ 
+# Set up Chrome - Check here for newer version numbers https://deb.pkgs.org/packages/google-amd64/
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_135.0.7049.52-1_amd64.deb \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
