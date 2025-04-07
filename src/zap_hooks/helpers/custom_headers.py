@@ -7,7 +7,7 @@ from src.zap_hooks.helpers.utilities import log, process_custom_header_data
 
 def load(config: DASTConfig, zap):
     if config.header:
-        log(f"loading custom headers: {config.header}")
+        log(f"loading custom headers...")
         script_name: str = 'request_headers'
 
         header_data = process_custom_header_data(config.header)

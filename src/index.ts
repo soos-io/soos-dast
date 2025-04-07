@@ -10,6 +10,7 @@ import {
   getAnalysisExitCodeWithMessage,
   isScanDone,
   obfuscateCommandLine,
+  reassembleCommandLine,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -298,7 +299,7 @@ class SOOSDASTAnalysis {
         commandLine:
           process.argv.length > 2
             ? obfuscateCommandLine(
-                process.argv.slice(2).join(" "),
+                reassembleCommandLine(process.argv.slice(2)),
                 SOOS_DAST_CONSTANTS.ObfuscatedArguments.map((a) => `--${a}`),
               )
             : null,
