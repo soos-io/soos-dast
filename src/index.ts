@@ -255,7 +255,6 @@ class SOOSDASTAnalysis {
       soosLogger.info(`Scan Mode: ${this.args.scanMode}`);
       soosLogger.info(`API URL: ${this.args.apiURL}`);
       soosLogger.info(`Target URL: ${this.args.targetURL}`);
-      soosLogger.logLineSeparator();
 
       if (this.args.scanMode !== ScanMode.ApiScan) {
         soosLogger.info(`Checking if url '${this.args.targetURL}' is available...`);
@@ -324,10 +323,9 @@ class SOOSDASTAnalysis {
       ZAPReportTransformer.transformReport(data);
 
       const formData = new FormData();
-
       formData.append("resultVersion", data["@version"]);
       formData.append("file", convertStringToBase64(JSON.stringify(data)), "base64Manifest");
-      soosLogger.logLineSeparator();
+
       soosLogger.info(`Starting report results processing`);
       soosLogger.info(`Uploading scan result for project ${this.args.projectName}...`);
       await soosAnalysisService.analysisApiClient.uploadScanToolResult({
@@ -395,7 +393,6 @@ class SOOSDASTAnalysis {
 
   static async runZap(command: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      soosLogger.logLineSeparator();
       soosLogger.info("Running ZAP");
       const zapProcess = spawn(command, {
         shell: true,
@@ -427,7 +424,7 @@ class SOOSDASTAnalysis {
           2,
         ),
       );
-      soosLogger.logLineSeparator();
+
       const soosDASTAnalysis = new SOOSDASTAnalysis(args);
       await soosDASTAnalysis.runAnalysis();
     } catch (error) {
