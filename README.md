@@ -78,7 +78,7 @@ The basic command to run a baseline scan would look like:
 
 It runs the [ZAP](https://www.zaproxy.org/docs/docker/about/) spider against the specified target for (by default) 1 minute and then waits for the passive scanning to complete before reporting the results.
 
-This means that the script doesn't perform any actual ‘attacks’ and will run for a relatively short period of time (a few minutes at most).
+This means that the CLI doesn't perform any actual ‘attacks’ and will run for a relatively short period of time (a few minutes at most).
 
 By default, it reports all alerts as WARNings but you can specify a config file which can change any rules to `FAIL` or `IGNORE`.
 
@@ -88,7 +88,7 @@ This mode is intended to be ideal to run in a `CI/CD` environment, even against 
 
 It runs the [ZAP](https://www.zaproxy.org/docs/docker/about/) spider against the specified target (by default with no time limit) followed by an optional ajax spider scan and then a full `Active Scan` before reporting the results.
 
-This means that the script does perform actual ‘attacks’ and can potentially run for a long period of time. You should NOT use it on web applications that you do not own. `Active Scan` can only find certain types of vulnerabilities. Logical vulnerabilities, such as broken access control, will not be found by any active or automated vulnerability scanning. Manual penetration testing should always be performed in addition to active scanning to find all types of vulnerabilities.
+This means that the CLI does perform actual ‘attacks’ and can potentially run for a long period of time. You should NOT use it on web applications that you do not own. `Active Scan` can only find certain types of vulnerabilities. Logical vulnerabilities, such as broken access control, will not be found by any active or automated vulnerability scanning. Manual penetration testing should always be performed in addition to active scanning to find all types of vulnerabilities.
 
 By default, it reports all alerts as WARNings but you can specify a config file which can change any rules to FAIL or IGNORE. The configuration works in a very similar way as the [Baseline Mode](#baseline)
 
@@ -111,7 +111,7 @@ NOTE: The DNS name of the API being scanned must be resolved by the Docker conta
 
 It imports the definition that you specify and then runs an `Active Scan` against the URLs found. The `Active Scan` is tuned to APIs, so it doesn't bother looking for things like `XSSs`.
 
-It also includes 2 scripts that:
+It also includes 2 example scripts that:
 - Raise alerts for any HTTP Server Error response codes
 - Raise alerts for any URLs that return content types that are not usually associated with APIs
 
