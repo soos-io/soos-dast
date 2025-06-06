@@ -37,7 +37,7 @@ def zap_started(zap, target):
             zap.pscan.disable_scanners(','.join(pscan_disabled_rules))
             zap.ascan.disable_scanners(','.join(ascan_disabled_rules), Constants.ZAP_ACTIVE_SCAN_POLICY_NAME)
             log(f"disabled rules: {config.disable_rules}")
-        if config.auth_login_url or config.auth_bearer_token or config.auth_token_endpoint or config.oauth_token_url:
+        if config.auth_login_url or config.auth_bearer_token:
             authenticate(zap, target, config)
         else:
             log(
@@ -59,7 +59,7 @@ def zap_started(zap, target):
                     zap.spider.exclude_from_scan(url)
             
     except Exception:
-        exit_app(f"error in zap_started: {traceback.print_exc()}")
+        exit_app(f"error in zap_started:\n{traceback.format_exc()}")
 
     return zap, target
 

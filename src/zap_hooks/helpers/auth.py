@@ -1,10 +1,9 @@
 from os import environ, pathsep
 from re import search
 from time import sleep
-from traceback import print_exc
+import traceback
 import sys
 
-from pyotp import TOTP
 from requests import post
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
@@ -43,26 +42,18 @@ def setup_webdriver() -> webdriver.Chrome:
     return driver
 
 def authenticate(zap, target, config):
-    try:
-        if config.auth_login_url:
-            driver_instance = setup_webdriver()
-            login(driver_instance, config)
-            set_authentication(zap, target, driver_instance, config)
-            clean_up_driver = True
-        elif config.auth_bearer_token:
-            add_authorization_header(zap, f"Bearer {config.auth_bearer_token}")
-        elif config.auth_token_endpoint:
-            login_from_token_endpoint(zap, config)
-        elif config.oauth_token_url:
-            login_from_oauth_token_url(zap, config)
+    driver_instance = setup_webdriver()
 
-    except Exception:
-        log(f"error in authenticate: {print_exc()}", log_level=LogLevel.ERROR)
-    finally:
-        if config.auth_verification_url:
-            validate_authentication_url(driver_instance, config.auth_verification_url)      
-            cleanup(driver_instance)
-            
+    if config.auth_login_url:
+        login(driver_instance, config)
+        set_authentication(zap, target, driver_instance, config)
+    elif config.auth_bearer_token:
+        add_authorization_header(zap, f"Bearer {config.auth_bearer_token}")
+
+    if config.auth_verification_url:
+        validate_authentication_url(driver_instance, config.auth_verification_url)      
+
+    cleanup(driver_instance)           
 
 def set_authentication(zap, target, driver, config):
     log('Finding authentication cookies')
@@ -107,6 +98,8 @@ def validate_authentication_url(driver, url):
             response = message.get("params", {}).get("response", {})
             response_url = response.get("url")
             response_status = response.get("status")
+            if response_url.startswith("http"):
+                log(f"Comparing {response_url} {response_status}")
             if response_url == url:
                 status = response_status
                 break
@@ -135,41 +128,6 @@ def add_token_from_cookie(zap, cookies):
         if cookie['name'] == 'token':
             auth_header = "Bearer " + cookie['value']
             add_authorization_header(zap, auth_header)
-        
-
-def login_from_token_endpoint(zap, config):
-    """Login using a token endpoint"""
-    log('Fetching authentication token from endpoint')
-    response = post(config.auth_token_endpoint, data={
-        'username': config.auth_username, 'password': config.auth_password})
-    data = response.json()
-    auth_header = None
-
-    if "token" in data:
-        auth_header = f"Bearer {data['token']}"
-    elif "token_type" in data:
-        auth_header = f"{data['token_type']} {data['access_token']}"
-    elif "access" in data:
-            auth_header = f"Bearer {data['access']}"
-    else:
-        raise Exception(f"Unhandled auth response: {str(data)}" )
-
-    if auth_header:
-        add_authorization_header(zap, auth_header)
-
-def login_from_oauth_token_url(zap, config):
-    """Login using an OAuth token url"""
-    log('Making request to OAuth token url...')
-    body = array_to_dict(config.oauth_parameters)
-    response = post(config.oauth_token_url, data=body)
-    data = response.json()
-    auth_header = None
-    if "token" in data:
-        log("setting token from OAuth response")
-        auth_header = f"Bearer {data['token']}"
-    elif "access_token" in data:
-        log("setting access_token from OAuth response")
-        auth_header = f"Bearer {data['access_token']}"
 
 def add_authorization_header(zap, auth_token):
     """Add an authorization header to all requests using the zap replacer"""
@@ -179,7 +137,7 @@ def add_authorization_header(zap, auth_token):
         log("Authorization header added")
 
 def login(driver, config):
-    """Main function to perform logging using selenium webdriver"""
+    """Main function to perform login via form"""
     log(f"authenticate using webdriver against URL: {config.auth_login_url}")
 
     driver.get(config.auth_login_url)
@@ -212,17 +170,6 @@ def login(driver, config):
                 'Did not find the password field - clicking Next button and trying again', log_level=LogLevel.WARN)
 
             fill_password(config, driver)
-
-    if config.auth_otp_secret:
-        try:
-            fill_otp(config, driver)
-        except Exception:
-            log(
-                'Did not find the OTP field - clicking Next button and trying again', log_level=LogLevel.WARN)
-
-            submit_form(config.auth_submit_action,
-                                final_submit_button, config.auth_password_field_name, driver)
-            fill_otp(config, driver)
 
     submit_form(config.auth_submit_action,
                     final_submit_button, config.auth_password_field_name, driver)
@@ -263,19 +210,6 @@ def fill_password(config, driver):
                                         config.auth_password_field_name,
                                         "password",
                                         "//input[@type='password' or contains(@name,'ass')]",
-                                        driver)
-
-def fill_otp(config, driver):
-    """fills """
-    totp = TOTP(config.auth_otp_secret)
-    otp = totp.now()
-
-    log(f"Generated OTP: {otp}")
-
-    return find_and_fill_element(otp,
-                                        config.auth_otp_field_name,
-                                        "input",
-                                        "//input[@type='text' and (contains(@id,'otp') or contains(@name,'otp'))]",
                                         driver)
 
 def find_and_fill_element( value, name, element_type, xpath, driver):

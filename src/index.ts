@@ -49,8 +49,6 @@ export interface IDASTAnalysisArgs extends IBaseScanArguments {
   disableRules: string;
   excludeUrlsFile: string;
   fullScanMinutes: number;
-  oauthParameters: string;
-  oauthTokenUrl: string;
   otherOptions: string;
   requestHeaders: string;
   scanMode: ScanMode;
@@ -180,26 +178,6 @@ class SOOSDASTAnalysis {
     analysisArgumentParser.addArgument(
       "fullScanMinutes",
       "Number of minutes for the spider to run.",
-    );
-
-    analysisArgumentParser.addArgument(
-      "oauthParameters",
-      'Parameters to be added to the OAuth token request. (eg --oauthParameters="client_id:clientID,client_secret:clientSecret,grant_type:client_credentials").',
-      {
-        argParser: (value: string) => {
-          // Ensures format h1:v1,h2:v2,...
-          if (!splitValueRegex.test(value)) {
-            throw new Error("Invalid oauthParameters format. Expected h1:v1,h2:v2,...,hn:vn");
-          }
-
-          return value;
-        },
-      },
-    );
-
-    analysisArgumentParser.addArgument(
-      "oauthTokenUrl",
-      "The authentication URL that grants the access_token.",
     );
 
     analysisArgumentParser.addArgument(
