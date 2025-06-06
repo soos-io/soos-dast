@@ -8,12 +8,5 @@ export const SOOS_DAST_CONSTANTS = {
     ReportScanResultFilename: "report.zap.json",
     ZapHookFile: "src/zap_hooks/soos_zap_hook.py",
   },
-  ObfuscatedArguments: [
-    "apiKey",
-    "authUsername",
-    "authPassword",
-    "bearerToken",
-    "oauthParameters",
-    "requestHeaders",
-  ],
+  ObfuscatedArguments: ["apiKey", "authUsername", "authPassword", "bearerToken", "requestHeaders"],
 };

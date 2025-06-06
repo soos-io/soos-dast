@@ -17,6 +17,6 @@ def load(config: DASTConfig, zap):
                 zap.replacer.add_rule(description=f"ReqHeader {key}", enabled=True, matchtype='REQ_HEADER',
                                       matchregex=False, matchstring=key, replacement=value)
         except Exception as error:
-            log(f"error in zap_{script_name}.load loading custom script: {traceback.print_exc()}")
+            log(f"error in zap_{script_name}.load loading custom script:\n{traceback.format_exc()}")
             log(f"Error: {error}")
             sys.exit(1)
