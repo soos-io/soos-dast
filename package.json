@@ -24,6 +24,7 @@
   "dependencies": {
     "@soos-io/api-client": "1.5.5",
     "@types/node": "^20.19.0",
+    "brace-expansion": "2.0.0",
     "form-data": "^4.0.3",
     "tslib": "^2.8.0"
   },
@@ -38,7 +39,7 @@
   },
   "overrides": {
     "glob": "^11.0.2",
-    "brace-expansion": "2.0.1"
+    "brace-expansion": "2.0.0"
   },
   "repository": {
     "type": "git",
