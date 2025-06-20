@@ -46,7 +46,7 @@ class DASTConfig:
             self.auth_password_field_name = os.environ.get('AUTH_PASSWORD_FIELD') or 'password'
             self.auth_submit_field_name = os.environ.get('AUTH_SUBMIT_FIELD') or 'login'
             self.auth_submit_second_field_name =  os.environ.get('AUTH_SECOND_SUBMIT_FIELD') or 'login'
-            self.auth_delay_time = float(os.environ.get('AUTH_DELAY_TIME') or 0)
+            self.auth_delay_time = float(os.environ.get('AUTH_DELAY_TIME') or 1)
             self.auth_check_delay = float(os.environ.get('AUTH_CHECK_DELAY') or 5)
             self.auth_check_element = os.environ.get('AUTH_CHECK_ELEMENT') or EMPTY_STRING
             self.auth_verification_url = os.environ.get('AUTH_VERIFICATION_URL') or EMPTY_STRING

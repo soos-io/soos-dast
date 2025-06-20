@@ -193,7 +193,7 @@ def submit_form(submit_action, submit_field_name, password_field_name, driver):
         actions.move_to_element(element).click().perform()
         log(f"Clicked the {submit_field_name} element")
     else:
-        find_element(password_field_name,"password","//input[@type='password' or contains(@name,'ass')]", driver).submit()
+        find_element(password_field_name,"password","//input[@type='password' or contains(@name,'Pass') or contains(@name,'pass')]", driver).submit()
         log('Submitted the form')
 
 def fill_username(config, driver):
@@ -201,7 +201,7 @@ def fill_username(config, driver):
     return find_and_fill_element(config.auth_username,
                                         config.auth_username_field_name,
                                         "input",
-                                        "(//input[((@type='text' or @type='email') and contains(@name,'ser')) or (@type='text' or @type='email')])[1]",
+                                        "(//input[contains(@name,'User') or contains(@name,'user') or @type='email'])[1]",
                                         driver)
 
 def fill_password(config, driver):
@@ -209,7 +209,7 @@ def fill_password(config, driver):
     return find_and_fill_element(config.auth_password,
                                         config.auth_password_field_name,
                                         "password",
-                                        "//input[@type='password' or contains(@name,'ass')]",
+                                        "//input[@type='password' or contains(@name,'Pass') or contains(@name,'pass')]",
                                         driver)
 
 def find_and_fill_element( value, name, element_type, xpath, driver):
