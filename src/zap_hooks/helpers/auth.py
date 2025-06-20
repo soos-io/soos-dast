@@ -201,7 +201,7 @@ def fill_username(config, driver):
     return find_and_fill_element(config.auth_username,
                                         config.auth_username_field_name,
                                         "input",
-                                        "(//input[((@type='text' or @type='email') and (contains(@name,'User') or contains(@name,'user'))) or (@type='text' or @type='email')])[1]",
+                                        "(//input[contains(@name,'User') or contains(@name,'user') or @type='email'])[1]",
                                         driver)
 
 def fill_password(config, driver):
