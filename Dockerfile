@@ -21,7 +21,7 @@ COPY ./package-lock.json ./
 RUN mkdir /zap/wrk
 
 # Set up Chrome - Check here for newer version numbers https://deb.pkgs.org/packages/google-amd64/
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_137.0.7151.68-1_amd64.deb \ 
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_138.0.7204.92-1_amd64.deb \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
