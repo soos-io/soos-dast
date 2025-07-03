@@ -24,9 +24,13 @@ def start_zap(port, extra_zap_params):
 
 def zap_started(zap, target):
     log("zap_started_hook is running")
-    os.system(
-        f"cp -R /zap/reports/traditional-json/report.json /home/{getpass.getuser()}/.ZAP/reports/traditional-json/report.json"
-    )
+    current_user = getpass.getuser()
+    if current_user == 'root':
+        base_dir = '/root'
+    else:
+        base_dir = f'/home/{current_user}'
+    os.system(f"cp -R /zap/reports/traditional-json/report.json {base_dir}/.ZAP/reports/traditional-json/report.json")
+
     try:
         # ZAP Docker scripts reset the target to the root URL
         if target.count('/') > 2:
