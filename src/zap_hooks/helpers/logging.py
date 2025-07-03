@@ -1,6 +1,3 @@
-"""
-Logger classes for the ZAP CLI.
-"""
 import logging
 import sys
 
@@ -34,9 +31,7 @@ class ColorStreamHandler(logging.StreamHandler):
 
         if self.is_tty and colorize:
             color, attr = self.level_map[record.levelno]
-            prefix = colored(
-                str("[" + record.levelname + "]"), color, attrs=attr
-            )
+            prefix = colored(str("[" + record.levelname + "]"), color, attrs=attr)
             if hasattr(record, "highlight") and record.highlight:
                 record.msg = colored(record.msg, color, attrs=["bold", "reverse"])
         else:
@@ -45,6 +40,8 @@ class ColorStreamHandler(logging.StreamHandler):
         record.msg = f"{prefix} {record.msg}"
 
         logging.StreamHandler.emit(self, record)
+
+
 class CustomFormatter(logging.Formatter):
     """Custom Formatter to match the TypeScript timestamp style."""
 
@@ -66,12 +63,14 @@ class ConsoleLogger(logging.Logger):
         self.addHandler(handler)
         self.propagate = False
 
+
 class LoggingFilter(logging.Filter):
     """Filter out logs from the console logger."""
 
     def filter(self, record):
         return record.name not in Constants.FILTER_LOGS
-    
+
+
 default_logger_class = logging.getLoggerClass()
 
 logging.setLoggerClass(ConsoleLogger)

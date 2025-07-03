@@ -17,5 +17,5 @@ loggerFunc = {
     LogLevel.INFO: console.info,
     LogLevel.WARN: console.warn,
     LogLevel.ERROR: console.error,
-    LogLevel.CRITICAL: console.critical
+    LogLevel.CRITICAL: console.critical,
 }

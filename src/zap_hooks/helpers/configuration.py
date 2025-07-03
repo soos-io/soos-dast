@@ -5,7 +5,8 @@ from typing import Optional, List
 
 from src.zap_hooks.helpers.constants import EMPTY_STRING
 from src.zap_hooks.helpers.utilities import log
-from src.zap_hooks.model.log_level import LogLevel
+from src.zap_hooks.helpers.log_level import LogLevel
+
 
 class DASTConfig:
     extra_zap_params = None
@@ -14,7 +15,7 @@ class DASTConfig:
     auth_password: Optional[str] = None
     auth_submit_action: Optional[str] = None
     auth_form_type: Optional[str] = None
-    auth_delay_time: Optional[int] = None
+    auth_delay_time: Optional[float] = None
     auth_bearer_token: Optional[str] = None
     auth_username_field_name: Optional[str] = None
     auth_password_field_name: Optional[str] = None
@@ -26,7 +27,7 @@ class DASTConfig:
     auth_exclude_urls: Optional[List[str]] = None
     auth_include_urls: Optional[List[str]] = None
     debug_mode: Optional[bool] = False
-    disable_rules: Optional[str] = None
+    disable_rules: Optional[List[str]] = None
     exclude_urls_file: Optional[str] = None
     header: Optional[str] = None
 
@@ -45,13 +46,13 @@ class DASTConfig:
             self.auth_username_field_name = os.environ.get('AUTH_USERNAME_FIELD') or 'username'
             self.auth_password_field_name = os.environ.get('AUTH_PASSWORD_FIELD') or 'password'
             self.auth_submit_field_name = os.environ.get('AUTH_SUBMIT_FIELD') or 'login'
-            self.auth_submit_second_field_name =  os.environ.get('AUTH_SECOND_SUBMIT_FIELD') or 'login'
+            self.auth_submit_second_field_name = os.environ.get('AUTH_SECOND_SUBMIT_FIELD') or 'login'
             self.auth_delay_time = float(os.environ.get('AUTH_DELAY_TIME') or 1)
             self.auth_check_delay = float(os.environ.get('AUTH_CHECK_DELAY') or 5)
             self.auth_check_element = os.environ.get('AUTH_CHECK_ELEMENT') or EMPTY_STRING
             self.auth_verification_url = os.environ.get('AUTH_VERIFICATION_URL') or EMPTY_STRING
-            self.debug_mode = os.environ.get('DEBUG_MODE') or False
-            self.disable_rules = self._get_hook_param_list(os.environ.get('DISABLE_RULES')) or None
+            self.debug_mode = os.environ.get('DEBUG_MODE', 'false').lower() == 'true'
+            self.disable_rules = self._split_and_trim_parameter_value(os.environ.get('DISABLE_RULES'))
             self.exclude_urls_file = os.environ.get('EXCLUDE_URLS_FILE') or None
             self.header = os.environ.get('CUSTOM_HEADER') or EMPTY_STRING
 
@@ -62,8 +63,8 @@ class DASTConfig:
             log(f"error in start_docker_zap:\n{traceback.format_exc()}", log_level=LogLevel.ERROR)
             sys.exit(1)
 
-    def _get_hook_param_list(self, value):
-            if value is None:
-                return []
-            value = list(filter(None, value.split(',')))
-            return [s.strip() for s in value]
+    def _split_and_trim_parameter_value(self, value: Optional[str]) -> Optional[List[str]]:
+        if not value:
+            return None
+        items = [s.strip() for s in value.split(',') if s.strip()]
+        return items or None

@@ -1,19 +1,27 @@
 {
-    "editor.tabSize": 2,
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "prettier.configPath": "./.prettierrc",
-    "cSpell.words": [
-      "apiscan",
-      "DAST",
-      "fullscan",
-      "httpsender",
-      "Levelkey",
-      "nargs",
-      "SARIF",
-      "SOOS",
-      "SOOSDAST",
-      "SPIDERED"
-    ],
-    "sarif-viewer.connectToGithubCodeScanning": "off",
-  }
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.configPath": "./.prettierrc",
+  "cSpell.words": [
+    "apiscan",
+    "DAST",
+    "fullscan",
+    "httpsender",
+    "Levelkey",
+    "nargs",
+    "SARIF",
+    "SOOS",
+    "SOOSDAST",
+    "SPIDERED"
+  ],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  },
+  "black-formatter.args": [
+    "-S", // forces to not replace the single quote.
+    "--line-length", // define the line length limit.
+    "120" // the limit itself (matching w/ the ruler pos)
+  ],
+}

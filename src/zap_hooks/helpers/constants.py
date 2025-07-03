@@ -16,5 +16,5 @@ FILTER_LOGS = [
     'selenium.webdriver.firefox.webdriver',
     'selenium.webdriver.firefox',
     'hpack.hpack',
-    'hpack.table'
+    'hpack.table',
 ]
