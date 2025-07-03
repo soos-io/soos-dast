@@ -2,7 +2,7 @@ import json
 from sys import exit
 from typing import NoReturn
 
-from zap_hooks.helpers.log_level import LogLevel, loggerFunc
+from src.zap_hooks.helpers.log_level import LogLevel, loggerFunc
 
 
 def log(message: str, log_level: LogLevel = LogLevel.INFO) -> None:

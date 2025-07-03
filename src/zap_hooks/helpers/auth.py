@@ -14,7 +14,7 @@ import json
 
 from src.zap_hooks.helpers.browser_storage import BrowserStorage
 from src.zap_hooks.helpers.utilities import log
-from zap_hooks.helpers.log_level import LogLevel
+from src.zap_hooks.helpers.log_level import LogLevel
 from src.zap_hooks.helpers.logging import LoggingFilter
 
 
@@ -155,10 +155,8 @@ def login(driver, config):
     sleep(5)
     log('automatically finding login elements')
 
-    username_element = None
-
     if config.auth_username:
-        username_element = fill_username(config, driver)
+        fill_username(config, driver)
 
     if config.auth_form_type == 'wait_for_password':
         log(f"Waiting for {config.auth_password_field_name} element to load")
@@ -243,13 +241,12 @@ def find_and_fill_element(value, name, element_type, xpath, driver):
 
     return element
 
+
+def find_element(name_or_id_or_xpath, element_type, default_xpath, driver):
     # 1. Find by ID attribute (case insensitive)
     # 2. Find by Name attribute (case insensitive)
     # 3. Find by xpath
     # 4. Find by the default xpath if all above fail
-
-
-def find_element(name_or_id_or_xpath, element_type, default_xpath, driver):
     element = None
     log(f"Trying to find element {name_or_id_or_xpath}")
 
