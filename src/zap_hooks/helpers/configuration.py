@@ -5,7 +5,8 @@ from typing import Optional, List
 
 from src.zap_hooks.helpers.constants import EMPTY_STRING
 from src.zap_hooks.helpers.utilities import log
-from src.zap_hooks.model.log_level import LogLevel
+from zap_hooks.helpers.log_level import LogLevel
+
 
 class DASTConfig:
     extra_zap_params = None
@@ -14,7 +15,7 @@ class DASTConfig:
     auth_password: Optional[str] = None
     auth_submit_action: Optional[str] = None
     auth_form_type: Optional[str] = None
-    auth_delay_time: Optional[int] = None
+    auth_delay_time: Optional[float] = None
     auth_bearer_token: Optional[str] = None
     auth_username_field_name: Optional[str] = None
     auth_password_field_name: Optional[str] = None
@@ -45,7 +46,7 @@ class DASTConfig:
             self.auth_username_field_name = os.environ.get('AUTH_USERNAME_FIELD') or 'username'
             self.auth_password_field_name = os.environ.get('AUTH_PASSWORD_FIELD') or 'password'
             self.auth_submit_field_name = os.environ.get('AUTH_SUBMIT_FIELD') or 'login'
-            self.auth_submit_second_field_name =  os.environ.get('AUTH_SECOND_SUBMIT_FIELD') or 'login'
+            self.auth_submit_second_field_name = os.environ.get('AUTH_SECOND_SUBMIT_FIELD') or 'login'
             self.auth_delay_time = float(os.environ.get('AUTH_DELAY_TIME') or 1)
             self.auth_check_delay = float(os.environ.get('AUTH_CHECK_DELAY') or 5)
             self.auth_check_element = os.environ.get('AUTH_CHECK_ELEMENT') or EMPTY_STRING
@@ -63,7 +64,7 @@ class DASTConfig:
             sys.exit(1)
 
     def _get_hook_param_list(self, value):
-            if value is None:
-                return []
-            value = list(filter(None, value.split(',')))
-            return [s.strip() for s in value]
+        if value is None:
+            return []
+        value = list(filter(None, value.split(',')))
+        return [s.strip() for s in value]
