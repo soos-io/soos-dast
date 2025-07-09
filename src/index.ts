@@ -53,6 +53,7 @@ export interface IDASTAnalysisArgs extends IBaseScanArguments {
   requestHeaders: string;
   scanMode: ScanMode;
   targetURL: string;
+  timeout?: number;
 }
 
 const splitValueRegex = new RegExp(
@@ -215,6 +216,11 @@ class SOOSDASTAnalysis {
       { useNoOptionKey: true, required: true },
     );
 
+    analysisArgumentParser.addArgument(
+      "timeout",
+      "Max time in minutes to wait for ZAP to start and the passive scan to run",
+    );
+
     return analysisArgumentParser.parseArguments<IDASTAnalysisArgs>(process.argv);
   }
 
@@ -288,7 +294,7 @@ class SOOSDASTAnalysis {
 
       const zapCommandGenerator = new ZAPCommandGenerator(this.args);
       soosLogger.info(`Generating ZAP command... ${this.args.scanMode}`);
-      const command = zapCommandGenerator.runCommandGeneration(this.args.scanMode);
+      const command = zapCommandGenerator.createCommand(this.args.scanMode);
       soosLogger.info(`Running command: ${command}`);
       await SOOSDASTAnalysis.runZap(command);
       const runSuccess = fs.existsSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile);
