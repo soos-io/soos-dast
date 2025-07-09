@@ -13,6 +13,7 @@ const SOOS_ZAP_CONSTANTS = {
     JsonReport: "-J",
     SpiderMinutes: "-m",
     TargetUrl: "-t",
+    Timeout: "-T",
   },
   Scripts: {
     ApiScan: "/zap/zap-api-scan.py",
@@ -57,7 +58,7 @@ export class ZAPCommandGenerator {
     this.addEnvironmentVariable("EXCLUDE_URLS_FILE", this.config.excludeUrlsFile);
   }
 
-  private generateCommand(args: string[]): string {
+  private createCommandline(args: string[]): string {
     this.addOption(args, SOOS_ZAP_CONSTANTS.Options.AjaxSpider, this.config.ajaxSpider);
     this.addOption(args, SOOS_ZAP_CONSTANTS.Options.ContextFile, this.config.contextFile);
     this.addOption(args, SOOS_ZAP_CONSTANTS.Options.Debug, this.config.debug);
@@ -67,9 +68,9 @@ export class ZAPCommandGenerator {
       SOOS_ZAP_CONSTANTS.Options.JsonReport,
       SOOS_DAST_CONSTANTS.Files.ReportScanResultFilename,
     );
-
     this.addOption(args, SOOS_ZAP_CONSTANTS.Options.SpiderMinutes, this.config.fullScanMinutes);
     this.addOption(args, SOOS_ZAP_CONSTANTS.Options.TargetUrl, this.config.targetURL);
+    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.Timeout, this.config.timeout);
     this.addHookParams();
 
     if (this.config.otherOptions) {
@@ -79,32 +80,22 @@ export class ZAPCommandGenerator {
     return args.join(" ");
   }
 
-  private baselineScan(): string {
-    const args = [SOOS_ZAP_CONSTANTS.PythonBin, SOOS_ZAP_CONSTANTS.Scripts.Baseline];
-    return this.generateCommand(args);
-  }
+  public createCommand(mode: ScanMode): string {
+    const args = [SOOS_ZAP_CONSTANTS.PythonBin];
 
-  private fullScan(): string {
-    const args = [SOOS_ZAP_CONSTANTS.PythonBin, SOOS_ZAP_CONSTANTS.Scripts.FullScan];
-    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.TargetUrl, this.config.targetURL);
-    return this.generateCommand(args);
-  }
-
-  private apiScan(): string {
-    const args = [SOOS_ZAP_CONSTANTS.PythonBin, SOOS_ZAP_CONSTANTS.Scripts.ApiScan];
-    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.TargetUrl, this.config.targetURL);
-    this.addOption(args, SOOS_ZAP_CONSTANTS.Options.Format, this.config.apiScanFormat);
-    return this.generateCommand(args);
-  }
-
-  public runCommandGeneration(mode: ScanMode): string {
     switch (mode) {
-      case ScanMode.Baseline:
-        return this.baselineScan();
-      case ScanMode.FullScan:
-        return this.fullScan();
       case ScanMode.ApiScan:
-        return this.apiScan();
+        args.push(SOOS_ZAP_CONSTANTS.Scripts.ApiScan);
+        this.addOption(args, SOOS_ZAP_CONSTANTS.Options.Format, this.config.apiScanFormat);
+        break;
+      case ScanMode.Baseline:
+        args.push(SOOS_ZAP_CONSTANTS.Scripts.Baseline);
+        break;
+      case ScanMode.FullScan:
+        args.push(SOOS_ZAP_CONSTANTS.Scripts.FullScan);
+        break;
     }
+
+    return this.createCommandline(args);
   }
 }
