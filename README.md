@@ -19,11 +19,11 @@ If you maintain an Open Source project, sign up for the Free as in Beer [SOOS Co
 ## How to Use
 To start the scan you need to run this command from a terminal:
 ``` shell
-docker run -it --rm soosio/dast <parameters>
+docker run -u zap -it --rm soosio/dast <parameters>
 ```
 
 The basic command to run a baseline scan would look like:
-`docker run -it --rm soosio/dast --clientId=<YOUR_CLIENT_ID> --apiKey=<YOUR_API_KEY> --projectName="<YOUR_PROJECT_NAME>" <YOUR_TARGET_URL>`
+`docker run -u zap -it --rm soosio/dast --clientId=<YOUR_CLIENT_ID> --apiKey=<YOUR_API_KEY> --projectName="<YOUR_PROJECT_NAME>" <YOUR_TARGET_URL>`
 
 ### Arguments
 
@@ -69,6 +69,7 @@ The basic command to run a baseline scan would look like:
 | `--projectName` |  | Project Name - this is what will be displayed in the SOOS app |
 | `--requestHeaders` |  | Set extra Header requests |
 | `--scanMode` | `baseline` | Scan Mode - Available modes: baseline, fullscan, and apiscan (for more information about scan modes visit https://github.com/soos-io/soos-dast#scan-modes) |
+| `--timeout` |  | Max time in minutes to wait for ZAP to start and the passive scan to run |
 
 ## Scan Modes
 
@@ -96,7 +97,7 @@ It is tuned for performing scans against APIs defined by `openapi`, `soap`, or `
 
 To point to a local file, use the following syntax:
 ```
-docker run -v <absolute-path-to-local-file>:/zap/wrk/:rw -it --rm soosio/dast --clientId=<client>--apiKey=<apiKey> --projectName=<api project name> --scanMode=apiscan --apiScanFormat=openapi swagger.yaml
+docker run -u zap -v <absolute-path-to-local-file>:/zap/wrk/:rw -it --rm soosio/dast --clientId=<client>--apiKey=<apiKey> --projectName=<api project name> --scanMode=apiscan --apiScanFormat=openapi swagger.yaml
 ```
 
 Be sure the local file still points to the live endpoint of your API. E.g. for `openapi` YAML, you would set the `servers` section:
