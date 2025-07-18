@@ -99,6 +99,7 @@ To point to a local file, use the following syntax:
 ```
 docker run -u zap -v <absolute-path-to-local-file>:/zap/wrk/:rw -it --rm soosio/dast --clientId=<client>--apiKey=<apiKey> --projectName=<api project name> --scanMode=apiscan --apiScanFormat=openapi swagger.yaml
 ```
+*NOTE:* the zap user (1000:1000) will need rwx access to the mount. If you can't do that, you can run as without the -u parameter and have the container run as root.
 
 Be sure the local file still points to the live endpoint of your API. E.g. for `openapi` YAML, you would set the `servers` section:
 ```
