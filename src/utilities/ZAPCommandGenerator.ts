@@ -33,9 +33,7 @@ export class ZAPCommandGenerator {
   }
 
   private addEnvironmentVariable(name: string, value: string | number | boolean) {
-    if (value !== undefined) {
-      process.env[name] = String(value);
-    }
+    process.env[name] = String(value);
   }
 
   private addHookParams() {
@@ -53,7 +51,7 @@ export class ZAPCommandGenerator {
     this.addEnvironmentVariable("AUTH_USERNAME_FIELD", this.config.authUsernameField);
     this.addEnvironmentVariable("AUTH_VERIFICATION_URL", this.config.authVerificationURL);
     this.addEnvironmentVariable("CUSTOM_HEADER", this.config.requestHeaders);
-    if (this.config.debug) this.addEnvironmentVariable("DEBUG_MODE", this.config.debug);
+    this.addEnvironmentVariable("DEBUG_MODE", this.config.debug);
     this.addEnvironmentVariable("DISABLE_RULES", this.config.disableRules);
     this.addEnvironmentVariable("EXCLUDE_URLS_FILE", this.config.excludeUrlsFile);
   }

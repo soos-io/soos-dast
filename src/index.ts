@@ -263,18 +263,13 @@ class SOOSDASTAnalysis {
         integrationName: this.args.integrationName,
         appVersion: this.args.appVersion,
         scriptVersion: this.args.scriptVersion,
-        contributingDeveloperAudit:
-          !this.args.contributingDeveloperId ||
-          !this.args.contributingDeveloperSource ||
-          !this.args.contributingDeveloperSourceName
-            ? []
-            : [
-                {
-                  contributingDeveloperId: this.args.contributingDeveloperId,
-                  source: this.args.contributingDeveloperSource,
-                  sourceName: this.args.contributingDeveloperSourceName,
-                },
-              ],
+        contributingDeveloperAudit: [
+          {
+            contributingDeveloperId: this.args.contributingDeveloperId,
+            source: this.args.contributingDeveloperSource,
+            sourceName: this.args.contributingDeveloperSourceName,
+          },
+        ],
         scanType,
         toolName: SOOS_DAST_CONSTANTS.Tool,
         toolVersion: SOOS_DAST_CONSTANTS.ToolVersion,
