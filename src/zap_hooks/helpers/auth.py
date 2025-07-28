@@ -32,6 +32,9 @@ def setup_webdriver() -> webdriver.Chrome:
     driver = webdriver.Chrome(options=options)
     driver.set_window_size(1920, 1080)
     driver.maximize_window()
+    driver.implicitly_wait(60)
+    driver.set_page_load_timeout(60)
+    driver.set_script_timeout(60)
 
     loggingFilter = LoggingFilter()
     for handler in logging.getLogger().handlers:
@@ -152,7 +155,7 @@ def login(driver, config):
 
     driver.get(config.auth_login_url)
     final_submit_button = config.auth_submit_field_name
-    sleep(5)
+    sleep(config.auth_delay_time)
     log('automatically finding login elements')
 
     if config.auth_username:
@@ -181,17 +184,7 @@ def login(driver, config):
             fill_password(config, driver)
 
     submit_form(config.auth_submit_action, final_submit_button, config.auth_password_field_name, driver)
-
-    if config.auth_check_element:
-        try:
-            log('Check element')
-            WebDriverWait(driver, config.auth_check_delay).until(
-                EC.presence_of_element_located((By.XPATH, config.auth_check_element))
-            )
-        except TimeoutException:
-            log('Check element timeout')
-    else:
-        sleep(config.auth_check_delay)
+    sleep(config.auth_delay_time)
 
 
 def submit_form(submit_action, submit_field_name, password_field_name, driver):
