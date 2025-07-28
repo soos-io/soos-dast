@@ -25,15 +25,17 @@ const SOOS_ZAP_CONSTANTS = {
 export class ZAPCommandGenerator {
   constructor(private config: IDASTAnalysisArgs) {}
 
-  private addOption(args: string[], option: string, value?: string | number | boolean) {
+  private addOption(args: string[], option: string, value: string | number | boolean | undefined) {
     if (value) {
       args.push(option);
       if (typeof value !== "boolean") args.push(value.toString());
     }
   }
 
-  private addEnvironmentVariable(name: string, value: string | number | boolean) {
-    process.env[name] = String(value);
+  private addEnvironmentVariable(name: string, value: string | number | boolean | undefined) {
+    if (value !== undefined) {
+      process.env[name] = String(value);
+    }
   }
 
   private addHookParams() {
