@@ -108,7 +108,10 @@ class SOOSDASTAnalysis {
       "Login URL to use when authentication is required.",
       {
         argParser: (value: string) => {
-          if (!value.startsWith("http://") && !value.startsWith("https://")) {
+          if (
+            !value.toLowerCase().startsWith("http://") &&
+            !value.toLowerCase().startsWith("https://")
+          ) {
             throw new Error("Invalid authLoginURL. Expected http(s):// URL.");
           }
 
@@ -161,7 +164,10 @@ class SOOSDASTAnalysis {
       "URL used to verify authentication success, should be an URL that is expected to throw 200/302 during any authFormType authentication. If authentication fails when this URL is provided, the scan will be terminated. Supports plain URL or regex URL.",
       {
         argParser: (value: string) => {
-          if (!value.startsWith("http://") && !value.startsWith("https://")) {
+          if (
+            !value.toLowerCase().startsWith("http://") &&
+            !value.toLowerCase().startsWith("https://")
+          ) {
             throw new Error("Invalid authVerificationURL. Expected http(s):// URL.");
           }
 
