@@ -32,9 +32,9 @@ def setup_webdriver() -> webdriver.Chrome:
     driver = webdriver.Chrome(options=options)
     driver.set_window_size(1920, 1080)
     driver.maximize_window()
-    driver.implicitly_wait(60)
-    driver.set_page_load_timeout(60)
-    driver.set_script_timeout(60)
+    driver.implicitly_wait(120)
+    driver.set_page_load_timeout(120)
+    driver.set_script_timeout(120)
 
     loggingFilter = LoggingFilter()
     for handler in logging.getLogger().handlers:
@@ -195,12 +195,13 @@ def submit_form(submit_action, submit_field_name, password_field_name, driver):
         actions.move_to_element(element).click().perform()
         log(f"Clicked the {submit_field_name} element")
     else:
-        find_element(
+        element = find_element(
             password_field_name,
             "password",
             "//input[@type='password' or contains(@name,'Pass') or contains(@name,'pass')]",
             driver,
-        ).submit()
+        )
+        element.submit()
         log('Submitted the form')
 
 
@@ -262,7 +263,8 @@ def find_element(name_or_id_or_xpath, element_type, default_xpath, driver):
                         element = driver.find_element(By.XPATH, default_xpath)
                         log(f"Found element {default_xpath} by default xpath")
                     except NoSuchElementException:
-                        log(f"Failed to find the element {name_or_id_or_xpath}")
+                        log(f"Failed to find the element {name_or_id_or_xpath} - exiting")
+                        sys.exit(1)
 
     return element
 
