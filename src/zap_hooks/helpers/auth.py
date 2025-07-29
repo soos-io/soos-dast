@@ -32,9 +32,7 @@ def setup_webdriver() -> webdriver.Chrome:
     driver = webdriver.Chrome(options=options)
     driver.set_window_size(1920, 1080)
     driver.maximize_window()
-    driver.implicitly_wait(120)
-    driver.set_page_load_timeout(120)
-    driver.set_script_timeout(120)
+    driver.implicitly_wait(60)
 
     loggingFilter = LoggingFilter()
     for handler in logging.getLogger().handlers:
