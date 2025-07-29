@@ -169,7 +169,7 @@ def login(driver, config):
             log(f"Filled the {config.auth_username_field_name} element")
 
     if config.auth_form_type == 'wait_for_password':
-        log(f"Waiting {config.auth_delay_time} for {config.auth_password_field_name} element to load")
+        log(f"Waiting for {config.auth_password_field_name} element to load")
         sleep(config.auth_delay_time)
     elif config.auth_form_type == 'multi_page':
         element = find_element(config.auth_submit_field_name, "submit", "//*[@type='submit' or @type='button']", driver)
