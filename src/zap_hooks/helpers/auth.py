@@ -159,29 +159,43 @@ def login(driver, config):
     log('automatically finding login elements')
 
     if config.auth_username:
-        fill_username(config, driver)
+        element = find_element(
+            config.auth_username_field_name,
+            "input",
+            "(//input[contains(@name,'User') or contains(@name,'user') or @type='email'])[1]",
+            driver,
+        )
+        if element is not None:
+            element.clear()
+            element.send_keys(config.auth_username)
+            log(f"Filled the {config.auth_username_field_name} element")
 
     if config.auth_form_type == 'wait_for_password':
         log(f"Waiting for {config.auth_password_field_name} element to load")
         sleep(config.auth_delay_time)
 
     if config.auth_form_type == 'multi_page':
-        continue_button = find_element(
+        element = find_element(
             config.auth_submit_field_name, "submit", "//*[@type='submit' or @type='button' or button]", driver
         )
-        actions = ActionChains(driver)
-        actions.move_to_element(continue_button).click().perform()
-        final_submit_button = config.auth_submit_second_field_name
-        log("Clicked the first submit element for multi page")
-        sleep(config.auth_delay_time)
+        if element is not None:
+            actions = ActionChains(driver)
+            actions.move_to_element(element).click().perform()
+            final_submit_button = config.auth_submit_second_field_name
+            log("Clicked the first submit element for multi page")
+            sleep(config.auth_delay_time)
 
     if config.auth_password:
-        try:
-            fill_password(config, driver)
-        except Exception:
-            log('Did not find the password field - clicking Next button and trying again', log_level=LogLevel.WARN)
-
-            fill_password(config, driver)
+        element = find_element(
+            config.auth_password_field_name,
+            "password",
+            "//input[@type='password' or contains(@name,'Pass') or contains(@name,'pass')]",
+            driver,
+        )
+        if element is not None:
+            element.clear()
+            element.send_keys(config.auth_password)
+            log(f"Filled the {config.auth_password_field_name} element")
 
     submit_form(config.auth_submit_action, final_submit_button, config.auth_password_field_name, driver)
     sleep(config.auth_delay_time)
@@ -191,9 +205,10 @@ def submit_form(submit_action, submit_field_name, password_field_name, driver):
     """Submit the form using the submit action can either be click or submit"""
     if submit_action == "click":
         element = find_element(submit_field_name, "submit", "//*[@type='submit' or @type='button' or button]", driver)
-        actions = ActionChains(driver)
-        actions.move_to_element(element).click().perform()
-        log(f"Clicked the {submit_field_name} element")
+        if element is not None:
+            actions = ActionChains(driver)
+            actions.move_to_element(element).click().perform()
+            log(f"Clicked the {submit_field_name} element")
     else:
         element = find_element(
             password_field_name,
@@ -201,39 +216,9 @@ def submit_form(submit_action, submit_field_name, password_field_name, driver):
             "//input[@type='password' or contains(@name,'Pass') or contains(@name,'pass')]",
             driver,
         )
-        element.submit()
-        log('Submitted the form')
-
-
-def fill_username(config, driver):
-    """Finds and fills username field"""
-    return find_and_fill_element(
-        config.auth_username,
-        config.auth_username_field_name,
-        "input",
-        "(//input[contains(@name,'User') or contains(@name,'user') or @type='email'])[1]",
-        driver,
-    )
-
-
-def fill_password(config, driver):
-    """Find and fills password field"""
-    return find_and_fill_element(
-        config.auth_password,
-        config.auth_password_field_name,
-        "password",
-        "//input[@type='password' or contains(@name,'Pass') or contains(@name,'pass')]",
-        driver,
-    )
-
-
-def find_and_fill_element(value, name, element_type, xpath, driver):
-    element = find_element(name, element_type, xpath, driver)
-    element.clear()
-    element.send_keys(value)
-    log(f"Filled the {name} element")
-
-    return element
+        if element is not None:
+            element.submit()
+            log('Submitted the form')
 
 
 def find_element(name_or_id_or_xpath, element_type, default_xpath, driver):
@@ -264,7 +249,6 @@ def find_element(name_or_id_or_xpath, element_type, default_xpath, driver):
                         log(f"Found element {default_xpath} by default xpath")
                     except NoSuchElementException:
                         log(f"Failed to find the element {name_or_id_or_xpath} - exiting")
-                        sys.exit(1)
 
     return element
 
@@ -286,7 +270,6 @@ def build_xpath(name, find_by, element_type):
         xpath = "//*[{0}]".format(xpath)
 
     log(f"Built xpath: {xpath}")
-
     return xpath
 
 
