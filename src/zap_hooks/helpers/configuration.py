@@ -45,7 +45,7 @@ class DASTConfig:
             self.auth_password_field_name = os.environ.get('AUTH_PASSWORD_FIELD') or 'password'
             self.auth_submit_field_name = os.environ.get('AUTH_SUBMIT_FIELD') or 'login'
             self.auth_submit_second_field_name = os.environ.get('AUTH_SECOND_SUBMIT_FIELD') or 'login'
-            self.auth_delay_time = float(os.environ.get('AUTH_DELAY_TIME') or 5)
+            self.auth_delay_time = float(os.environ.get('AUTH_DELAY_TIME') or 3)
             self.auth_verification_url = os.environ.get('AUTH_VERIFICATION_URL') or EMPTY_STRING
             self.debug_mode = os.environ.get('DEBUG_MODE', 'false').lower() == 'true'
             self.disable_rules = self._split_and_trim_parameter_value(os.environ.get('DISABLE_RULES'))

@@ -154,7 +154,6 @@ def login(driver, config):
     log(f"authenticate using webdriver against URL: {config.auth_login_url}")
 
     driver.get(config.auth_login_url)
-    final_submit_button = config.auth_submit_field_name
     sleep(config.auth_delay_time)
     log('automatically finding login elements')
 
@@ -171,17 +170,15 @@ def login(driver, config):
             log(f"Filled the {config.auth_username_field_name} element")
 
     if config.auth_form_type == 'wait_for_password':
-        log(f"Waiting for {config.auth_password_field_name} element to load")
+        log(f"Waiting {config.auth_delay_time} for {config.auth_password_field_name} element to load")
         sleep(config.auth_delay_time)
-
-    if config.auth_form_type == 'multi_page':
+    elif config.auth_form_type == 'multi_page':
         element = find_element(
             config.auth_submit_field_name, "submit", "//*[@type='submit' or @type='button' or button]", driver
         )
         if element is not None:
             actions = ActionChains(driver)
             actions.move_to_element(element).click().perform()
-            final_submit_button = config.auth_submit_second_field_name
             log("Clicked the first submit element for multi page")
             sleep(config.auth_delay_time)
 
@@ -197,7 +194,11 @@ def login(driver, config):
             element.send_keys(config.auth_password)
             log(f"Filled the {config.auth_password_field_name} element")
 
-    submit_form(config.auth_submit_action, final_submit_button, config.auth_password_field_name, driver)
+    if config.auth_form_type == 'multi_page':
+        submit_button = config.auth_submit_second_field_name
+    else:
+        submit_button = config.auth_submit_field_name
+    submit_form(config.auth_submit_action, submit_button, config.auth_password_field_name, driver)
     sleep(config.auth_delay_time)
 
 
