@@ -236,21 +236,25 @@ def find_element(id_name_or_xpath, element_type, default_xpath, driver):
         log(f"Trying to find element {id_name_or_xpath}")
         is_xpath = id_name_or_xpath.strip().startswith(('/', '//'))
         if not is_xpath:
-            element = try_find_element(build_xpath(id_name_or_xpath, "id", element_type), "id", driver)
+            element = try_find_element(
+                build_xpath(id_name_or_xpath, "id", element_type), id_name_or_xpath, "id", driver
+            )
             if element is None:
-                element = try_find_element(build_xpath(id_name_or_xpath, "name", element_type), "name", driver)
+                element = try_find_element(
+                    build_xpath(id_name_or_xpath, "name", element_type), id_name_or_xpath, "name", driver
+                )
 
         if element is None:
-            element = try_find_element(id_name_or_xpath, "xpath", driver)
+            element = try_find_element(id_name_or_xpath, id_name_or_xpath, "xpath", driver)
             if element is None:
-                element = try_find_element(default_xpath, "default xpath", driver)
+                element = try_find_element(default_xpath, id_name_or_xpath, "default xpath", driver)
                 if element is None:
                     log(f"Failed to find the element {id_name_or_xpath}")
 
     return element
 
 
-def try_find_element(xpath, by, driver):
+def try_find_element(xpath, id_name_or_xpath, by, driver):
     element = None
 
     try:
@@ -258,7 +262,7 @@ def try_find_element(xpath, by, driver):
     except TimeoutException:
         element = None
     if element is not None:
-        log(f"Found element {xpath} by {by}")
+        log(f"Found element {id_name_or_xpath} by {by}")
 
     return element
 
