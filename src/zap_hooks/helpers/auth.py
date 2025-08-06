@@ -30,9 +30,11 @@ def setup_webdriver() -> webdriver.Chrome:
     options.binary_location = '/opt/google/chrome/google-chrome'
 
     driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(30)
+    driver.set_page_load_timeout(30)
+    driver.set_script_timeout(30)
     driver.set_window_size(1920, 1080)
     driver.maximize_window()
-    driver.implicitly_wait(30)
 
     loggingFilter = LoggingFilter()
     for handler in logging.getLogger().handlers:
@@ -223,53 +225,55 @@ def submit_form(submit_action, submit_field_name, password_field_name, driver):
             log(f"Didn't find the {password_field_name} element")
 
 
-def find_element(name_or_id_or_xpath, element_type, default_xpath, driver):
+def find_element(id_name_or_xpath, element_type, default_xpath, driver):
     # 1. Find by ID attribute (case insensitive)
     # 2. Find by Name attribute (case insensitive)
     # 3. Find by xpath
     # 4. Find by the default xpath if all above fail
     element = None
-    log(f"Trying to find element {name_or_id_or_xpath}")
 
-    if name_or_id_or_xpath:
-        try:
-            path = build_xpath(name_or_id_or_xpath, "id", element_type)
-            element = driver.find_element(By.XPATH, path)
-            log(f"Found element {name_or_id_or_xpath} by id")
-        except NoSuchElementException:
-            try:
-                path = build_xpath(name_or_id_or_xpath, "name", element_type)
-                element = driver.find_element(By.XPATH, path)
-                log(f"Found element {name_or_id_or_xpath} by name")
-            except NoSuchElementException:
-                try:
-                    element = driver.find_element(By.XPATH, name_or_id_or_xpath)
-                    log(f"Found element {name_or_id_or_xpath} by xpath (name)")
-                except NoSuchElementException:
-                    try:
-                        element = driver.find_element(By.XPATH, default_xpath)
-                        log(f"Found element {default_xpath} by default xpath")
-                    except NoSuchElementException:
-                        log(f"Failed to find the element {name_or_id_or_xpath} - exiting")
+    if id_name_or_xpath:
+        log(f"Trying to find element {id_name_or_xpath}")
+        is_xpath = id_name_or_xpath.strip().startswith(('/', '//'))
+        if not is_xpath:
+            element = try_find_element(build_xpath(id_name_or_xpath, "id", element_type), "id", driver)
+            if element is None:
+                element = try_find_element(build_xpath(id_name_or_xpath, "name", element_type), "name", driver)
+
+        if element is None:
+            element = try_find_element(id_name_or_xpath, "xpath", driver)
+            if element is None:
+                element = try_find_element(default_xpath, "default xpath", driver)
+                if element is None:
+                    log(f"Failed to find the element {id_name_or_xpath}")
+
+    return element
+
+
+def try_find_element(xpath, by, driver):
+    element = None
+
+    try:
+        element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, xpath)))
+    except TimeoutException:
+        element = None
+    if element is not None:
+        log(f"Found element {xpath} by {by}")
 
     return element
 
 
 def build_xpath(name, find_by, element_type):
-    xpath = "translate(@{0}, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='{1}'".format(
-        find_by, name.lower()
-    )
+    xpath = f"translate(@{find_by}, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='{name.lower()}'"
 
     if element_type == 'input':
-        xpath = "//input[({0}) and ({1})]".format(
-            xpath, "@type='text' or @type='email' or @type='number' or not(@type)"
-        )
+        xpath = f"//input[({xpath}) and (@type='text' or @type='email' or @type='number' or not(@type))]"
     elif element_type == 'password':
-        xpath = "//input[({0}) and ({1})]".format(xpath, "@type='text' or @type='password' or not(@type)")
+        xpath = f"//input[({xpath}) and (@type='text' or @type='password' or not(@type))]"
     elif element_type == 'submit':
-        xpath = "//*[({0}) and ({1})]".format(xpath, "@type='submit' or @type='button'")
+        xpath = f"//*[({xpath}) and (@type='submit' or @type='button')]"
     else:
-        xpath = "//*[{0}]".format(xpath)
+        xpath = f"//*[{xpath}]"
 
     log(f"Built xpath: {xpath}")
     return xpath
