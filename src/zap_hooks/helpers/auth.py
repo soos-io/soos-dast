@@ -226,10 +226,8 @@ def submit_form(submit_action, submit_field_name, password_field_name, driver):
 
 
 def find_element(id_name_or_xpath, element_type, default_xpath, driver):
-    # 1. Find by ID attribute (case insensitive)
-    # 2. Find by Name attribute (case insensitive)
-    # 3. Find by xpath
-    # 4. Find by the default xpath if all above fail
+    # Find by ID then Name attribute if not provided Xpath else find by Xpath
+    # If not found, use a default XPath to try to find the most likely option
     element = None
 
     if id_name_or_xpath:
@@ -243,13 +241,13 @@ def find_element(id_name_or_xpath, element_type, default_xpath, driver):
                 element = try_find_element(
                     build_xpath(id_name_or_xpath, "name", element_type), id_name_or_xpath, "name", driver
                 )
+        else:
+            element = try_find_element(id_name_or_xpath, id_name_or_xpath, "xpath", driver)
 
         if element is None:
-            element = try_find_element(id_name_or_xpath, id_name_or_xpath, "xpath", driver)
+            element = try_find_element(default_xpath, default_xpath, "default xpath", driver)
             if element is None:
-                element = try_find_element(default_xpath, id_name_or_xpath, "default xpath", driver)
-                if element is None:
-                    log(f"Failed to find the element {id_name_or_xpath}")
+                log(f"Failed to find the element {id_name_or_xpath}")
 
     return element
 
