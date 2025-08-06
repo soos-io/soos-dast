@@ -247,7 +247,7 @@ def find_element(id_name_or_xpath, element_type, default_xpath, driver):
         if element is None:
             element = try_find_element(id_name_or_xpath, id_name_or_xpath, "xpath", driver)
             if element is None:
-                element = try_find_element(default_xpath, id_name_or_xpath, "default xpath", driver)
+                element = try_find_element(default_xpath, default_xpath, "default xpath", driver)
                 if element is None:
                     log(f"Failed to find the element {id_name_or_xpath}")
 
