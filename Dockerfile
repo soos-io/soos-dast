@@ -9,8 +9,8 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesourc
 RUN apt-get update && apt-get install -y nodejs
 RUN apt-get install -y python3-termcolor python3-selenium python3-blinker
 
-# Set up Chrome - Check here for newer version numbers https://deb.pkgs.org/packages/google-amd64/
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_138.0.7204.168-1_amd64.deb \ 
+# Set up Chrome - Check here for newer version numbers https://pkgs.org/download/google-chrome-stable
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_139.0.7258.66-1_amd64.deb \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
