@@ -328,7 +328,11 @@ class SOOSDASTAnalysis {
 
       const formData = new FormData();
       formData.append("resultVersion", report["@version"]);
-      formData.append("file", convertStringToBase64(JSON.stringify(report)));
+      formData.append(
+        "file",
+        convertStringToBase64(JSON.stringify(report)),
+        SOOS_DAST_CONSTANTS.Files.ReportScanResultFilename,
+      );
 
       soosLogger.info(`Starting report results processing`);
       soosLogger.info(`Uploading scan result for project ${this.args.projectName}...`);
