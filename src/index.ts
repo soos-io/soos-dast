@@ -11,7 +11,6 @@ import {
   isScanDone,
   obfuscateCommandLine,
   reassembleCommandLine,
-  FileUtilities,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -320,8 +319,9 @@ class SOOSDASTAnalysis {
       const doesReportExist = fs.existsSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile);
       soosLogger.info(`Scan finished with success: ${doesReportExist}`);
 
-      const fileContent = await FileUtilities.readFileAsync(
+      const fileContent = await fs.promises.readFile(
         SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
+        { encoding: "utf-8" },
       );
       const report = JSON.parse(fileContent);
       ZAPReportTransformer.transformReport(report);
