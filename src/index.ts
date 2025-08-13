@@ -11,6 +11,7 @@ import {
   isScanDone,
   obfuscateCommandLine,
   reassembleCommandLine,
+  FileUtilities,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -316,18 +317,22 @@ class SOOSDASTAnalysis {
       const command = zapCommandGenerator.createCommand(this.args.scanMode);
       soosLogger.info(`Running command: ${command}`);
       await SOOSDASTAnalysis.runZap(command);
-      const runSuccess = fs.existsSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile);
-      soosLogger.info(`Scan finished with success: ${runSuccess}`);
+      const doesReportExist = fs.existsSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile);
+      soosLogger.info(`Scan finished with success: ${doesReportExist}`);
 
-      const data = JSON.parse(
-        fs.readFileSync(SOOS_DAST_CONSTANTS.Files.ReportScanResultFile, "utf-8"),
+      const fileContent = await FileUtilities.readFileAsync(
+        SOOS_DAST_CONSTANTS.Files.ReportScanResultFile,
       );
-
-      ZAPReportTransformer.transformReport(data);
+      const report = JSON.parse(fileContent);
+      ZAPReportTransformer.transformReport(report);
 
       const formData = new FormData();
-      formData.append("resultVersion", data["@version"]);
-      formData.append("file", convertStringToBase64(JSON.stringify(data)), "base64Manifest");
+      formData.append("resultVersion", report["@version"]);
+      formData.append(
+        "file",
+        convertStringToBase64(JSON.stringify(report)),
+        SOOS_DAST_CONSTANTS.Files.ReportScanResultFilename,
+      );
 
       soosLogger.info(`Starting report results processing`);
       soosLogger.info(`Uploading scan result for project ${this.args.projectName}...`);
@@ -342,8 +347,8 @@ class SOOSDASTAnalysis {
       });
       soosLogger.info(`Scan result uploaded successfully`);
 
-      if (data["discoveredUrls"]?.length) {
-        soosLogger.always(`(${data["discoveredUrls"].length} URLs discovered)`);
+      if (report["discoveredUrls"]?.length) {
+        soosLogger.always(`(${report["discoveredUrls"].length} URLs discovered)`);
       }
 
       scanStatus = await soosAnalysisService.waitForScanToFinish({
