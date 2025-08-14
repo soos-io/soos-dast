@@ -5,12 +5,12 @@ import { ApiScanFormat, FormTypes, ScanMode, SubmitActions } from "./enums";
 import { exit } from "process";
 import {
   isUrlAvailable,
-  convertStringToBase64,
   obfuscateProperties,
   getAnalysisExitCodeWithMessage,
   isScanDone,
   obfuscateCommandLine,
   reassembleCommandLine,
+  StringUtilities,
 } from "@soos-io/api-client/dist/utilities";
 import {
   ScanStatus,
@@ -330,7 +330,7 @@ class SOOSDASTAnalysis {
       formData.append("resultVersion", report["@version"]);
       formData.append(
         "file",
-        convertStringToBase64(JSON.stringify(report)),
+        StringUtilities.toBase64(JSON.stringify(report)),
         SOOS_DAST_CONSTANTS.Files.ReportScanResultFilename,
       );
 
