@@ -1,27 +1,20 @@
 {
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "prettier.configPath": "./.prettierrc",
-  "cSpell.words": [
-    "apiscan",
-    "DAST",
-    "fullscan",
-    "httpsender",
-    "Levelkey",
-    "nargs",
-    "SARIF",
-    "SOOS",
-    "SOOSDAST",
-    "SPIDERED"
+  "eslint.format.enable": true,
+  "eslint.run": "onSave",
+  "eslint.workingDirectories": [
+    "./"
   ],
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
-    "editor.formatOnSave": true
-  },
-  "black-formatter.args": [
-    "-S", // forces to not replace the single quote.
-    "--line-length", // define the line length limit.
-    "120" // the limit itself (matching w/ the ruler pos)
+  "eslint.validate": [
+    "javascript",
+    "typescript",
   ],
+  "autoimport.spaceBetweenBraces": true,
+  "autoimport.autoComplete": true
 }
