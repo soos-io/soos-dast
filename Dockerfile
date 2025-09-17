@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y nodejs
 RUN apt-get install -y python3-termcolor python3-selenium python3-blinker
 
 # Set up Chrome - Check here for newer version numbers https://pkgs.org/download/google-chrome-stable
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_139.0.7258.66-1_amd64.deb \ 
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_140.0.7339.127-1_amd64.deb \ 
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
