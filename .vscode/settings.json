@@ -16,5 +16,8 @@
     "typescript",
   ],
   "autoimport.spaceBetweenBraces": true,
-  "autoimport.autoComplete": true
+  "autoimport.autoComplete": true,
+  "cSpell.words": [
+    "SOOS"
+  ]
 }
