@@ -4,6 +4,8 @@
 **Ticket:** https://soos.atlassian.net/browse/PA-0000
 
 <!---
+Confirm that google-chrome-stable has been updated to latest in Dockerfile.
+
 If you've edited any of the arguments for this package:
 
 1. Run this script with the --helpFormatted argument (ex. soos-dast --helpFormatted)
