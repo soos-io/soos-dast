@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@soos-io/api-client": "1.9.8",
-    "@types/node": "^22.19.0",
+    "@types/node": "^24.10.1",
     "form-data": "^4.0.3",
     "tslib": "^2.8.0"
   },
