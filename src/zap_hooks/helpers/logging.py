@@ -8,9 +8,7 @@ from src.zap_hooks.helpers import constants as Constants
 
 
 class ColorStreamHandler(logging.StreamHandler):
-    """
-    StreamHandler that prints color. This is used by the console client.
-    """
+    """StreamHandler that prints color. This is used by the console client."""
 
     level_map = {
         logging.DEBUG: ("magenta", ["bold"]),
@@ -41,16 +39,6 @@ class ColorStreamHandler(logging.StreamHandler):
 
         logging.StreamHandler.emit(self, record)
 
-
-class CustomFormatter(logging.Formatter):
-    """Custom Formatter to match the TypeScript timestamp style."""
-
-    def formatTime(self, record, datefmt=None):
-        utc_time = datetime.utcfromtimestamp(record.created)
-        t = utc_time.strftime("%Y-%m-%d %I:%M:%S %p")
-        return f"{t} UTC"
-
-
 class ConsoleLogger(logging.Logger):
     """Log to the console with some color decorations."""
 
@@ -58,7 +46,7 @@ class ConsoleLogger(logging.Logger):
         super(ConsoleLogger, self).__init__(name)
         self.setLevel(logging.DEBUG)
         handler = ColorStreamHandler(sys.stdout)
-        formatter = CustomFormatter(fmt=Constants.LOG_FORMAT)
+        formatter = logging.Formatter(fmt=Constants.LOG_FORMAT, datefmt=Constants.LOG_DATE_FORMAT)
         handler.setFormatter(formatter)
         self.addHandler(handler)
         self.propagate = False

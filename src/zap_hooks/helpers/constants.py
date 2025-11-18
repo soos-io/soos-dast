@@ -2,6 +2,7 @@ EMPTY_STRING = ''
 FILE_READ_MODE = "r"
 UTF_8_ENCODING = "utf-8"
 LOG_FORMAT = "%(asctime)s %(message)s"
+LOG_DATE_FORMAT = "%Y-%m-%d %I:%M:%S %p UTC"
 ZAP_ACTIVE_SCAN_POLICY_NAME = "Default Policy"
 
 FILTER_LOGS = [
