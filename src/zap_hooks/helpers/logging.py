@@ -8,9 +8,7 @@ from src.zap_hooks.helpers import constants as Constants
 
 
 class ColorStreamHandler(logging.StreamHandler):
-    """
-    StreamHandler that prints color. This is used by the console client.
-    """
+    """StreamHandler that prints color. This is used by the console client."""
 
     level_map = {
         logging.DEBUG: ("magenta", ["bold"]),
