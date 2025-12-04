@@ -1,0 +1,6 @@
+{
+  "ignoreBinaries": [
+    "rimraf",
+    "npm-check"
+  ]
+}
