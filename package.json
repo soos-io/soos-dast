@@ -1,6 +1,6 @@
 {
   "name": "soos-dast",
-  "version": "3.4.19",
+  "version": "3.4.20",
   "description": "SOOS DAST - The affordable no limit web vulnerability scanner. Scan your website for vulnerabilities. Register for a free trial at https://app.soos.io/register",
   "scripts": {
     "setup:install": "npm install",
