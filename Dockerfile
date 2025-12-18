@@ -1,4 +1,4 @@
-FROM zaproxy/zap-stable:2.16.1 AS base
+FROM zaproxy/zap-stable:2.17.0 AS base
 
 USER root
 
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y nodejs
 RUN apt-get install -y python3-termcolor python3-selenium python3-blinker
 
 # Set up Chrome - Check here for newer version numbers https://pkgs.org/download/google-chrome-stable
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_143.0.7499.109-1_amd64.deb \
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_143.0.7499.146-1_amd64.deb \
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
