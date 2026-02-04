@@ -42,18 +42,18 @@ jobs:
           # Check for available 2.17.x tags
           # Get all tags for zaproxy/zap-stable
           TAGS=$(curl -s "https://hub.docker.com/v2/repositories/zaproxy/zap-stable/tags?page_size=100" | \
-                 jq -r '.results[] | select(.name | test("^2\\.17\\.[0-9]+$")) | {name: .name, last_updated: .last_updated} | @json')
+                 jq -r '[.results[] | select(.name | test("^2\\.17\\.[0-9]+$")) | {name: .name, last_updated: .last_updated}]')
           
           echo "Available 2.17.x tags:"
-          echo "$TAGS" | jq -r '.name'
+          echo "$TAGS" | jq -r '.[].name' | sort -V
           
           # Find the latest 2.17.x version
-          LATEST_VERSION=$(echo "$TAGS" | jq -r '.name' | sort -V | tail -1)
+          LATEST_VERSION=$(echo "$TAGS" | jq -r '.[].name' | sort -V | tail -1)
           echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
           echo "Latest ZAP version: $LATEST_VERSION"
           
           # Get the last updated date for the latest version
-          LATEST_IMAGE_DATE=$(echo "$TAGS" | jq -r "select(.name == \"$LATEST_VERSION\") | .last_updated")
+          LATEST_IMAGE_DATE=$(echo "$TAGS" | jq -r --arg ver "$LATEST_VERSION" '.[] | select(.name == $ver) | .last_updated')
           echo "latest_image_date=$LATEST_IMAGE_DATE" >> $GITHUB_OUTPUT
           echo "Latest image date: $LATEST_IMAGE_DATE"
           
@@ -155,7 +155,7 @@ jobs:
             Update Docker base images
             
             - Update zaproxy/zap-stable from ${{ steps.check-zap.outputs.current_version }} to ${{ steps.check-zap.outputs.latest_version }}
-            - Update Google Chrome to ${{ steps.check-chrome.outputs.chrome_version }}
+            ${{ steps.check-chrome.outputs.chrome_version != '' && format('- Update Google Chrome to {0}', steps.check-chrome.outputs.chrome_version) || '' }}
           branch: automated/update-docker-images
           delete-branch: true
           title: 'Update Docker base images to ZAP ${{ steps.check-zap.outputs.latest_version }}'
@@ -166,7 +166,7 @@ jobs:
 
             ### Changes
             - **ZAP Proxy**: `${{ steps.check-zap.outputs.current_version }}` → `${{ steps.check-zap.outputs.latest_version }}`
-            ${{ steps.check-chrome.outputs.chrome_version && format('- **Google Chrome**: `{0}` → `{1}`', steps.check-chrome.outputs.current_chrome, steps.check-chrome.outputs.chrome_version) || '- **Google Chrome**: Version check failed, kept current version' }}
+            ${{ steps.check-chrome.outputs.chrome_version != '' && format('- **Google Chrome**: `{0}` → `{1}`', steps.check-chrome.outputs.current_chrome, steps.check-chrome.outputs.chrome_version) || '- **Google Chrome**: Version check failed, kept current version' }}
 
             ### Details
             - Last commit date: `${{ steps.last-commit.outputs.last_commit_date }}`
