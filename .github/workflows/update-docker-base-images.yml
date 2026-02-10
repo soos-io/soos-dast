@@ -31,7 +31,7 @@ jobs:
           echo "last_commit_date=$LAST_COMMIT_DATE" >> $GITHUB_OUTPUT
           echo "Last commit date: $LAST_COMMIT_DATE"
 
-      - name: Check for ZAP Proxy 2.17.x updates
+      - name: Check for zaproxy 2.17.x updates
         id: check-zap
         run: |
           # Get current version from Dockerfile
@@ -150,7 +150,7 @@ jobs:
             This PR updates the Docker base images to their latest versions:
 
             ### Changes
-            - **ZAP Proxy**: `${{ steps.check-zap.outputs.current_version }}` → `${{ steps.check-zap.outputs.latest_version }}`
+            - **zaproxy**: `${{ steps.check-zap.outputs.current_version }}` → `${{ steps.check-zap.outputs.latest_version }}`
             ${{ steps.check-chrome.outputs.chrome_version != '' && format('- **Google Chrome**: `{0}` → `{1}`', steps.check-chrome.outputs.current_chrome, steps.check-chrome.outputs.chrome_version) || '- **Google Chrome**: Version check failed, kept current version' }}
 
             ### Details
