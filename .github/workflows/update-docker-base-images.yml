@@ -1,0 +1,163 @@
+name: Update Docker Base Images
+
+on:
+  schedule:
+    # Run every Tuesday at 9:00 AM UTC
+    - cron: '0 9 * * 2'
+  workflow_dispatch:
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get last commit date on default branch
+        id: last-commit
+        run: |
+          # Get the default branch name
+          DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+          echo "default_branch=$DEFAULT_BRANCH" >> $GITHUB_OUTPUT
+          
+          # Get the last commit date on the default branch
+          LAST_COMMIT_DATE=$(git log -1 --format="%aI" origin/$DEFAULT_BRANCH)
+          echo "last_commit_date=$LAST_COMMIT_DATE" >> $GITHUB_OUTPUT
+          echo "Last commit date: $LAST_COMMIT_DATE"
+
+      - name: Check for zaproxy 2.17.x updates
+        id: check-zap
+        run: |
+          # Get current version from Dockerfile
+          CURRENT_VERSION=$(grep -oP 'FROM zaproxy/zap-stable:\K[0-9.]+' Dockerfile)
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current ZAP version: $CURRENT_VERSION"
+          
+          # Check for available 2.17.x tags
+          # Get all tags for zaproxy/zap-stable
+          TAGS=$(curl -s "https://hub.docker.com/v2/repositories/zaproxy/zap-stable/tags?page_size=100" | \
+                 jq -r '[.results[] | select(.name | test("^2\\.17\\.[0-9]+$")) | {name: .name, last_updated: .last_updated}]')
+          
+          echo "Available 2.17.x tags:"
+          echo "$TAGS" | jq -r '.[].name' | sort -V
+          
+          # Find the latest 2.17.x version
+          LATEST_VERSION=$(echo "$TAGS" | jq -r '.[].name' | sort -V | tail -1)
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "Latest ZAP version: $LATEST_VERSION"
+          
+          # Get the last updated date for the latest version
+          LATEST_IMAGE_DATE=$(echo "$TAGS" | jq -r --arg ver "$LATEST_VERSION" '.[] | select(.name == $ver) | .last_updated')
+          echo "latest_image_date=$LATEST_IMAGE_DATE" >> $GITHUB_OUTPUT
+          echo "Latest image date: $LATEST_IMAGE_DATE"
+          
+          # Check if update is needed
+          if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
+            # Compare dates - only update if image is newer than last commit
+            COMMIT_TIMESTAMP=$(date -d "${{ steps.last-commit.outputs.last_commit_date }}" +%s)
+            IMAGE_TIMESTAMP=$(date -d "$LATEST_IMAGE_DATE" +%s)
+            
+            if [ $IMAGE_TIMESTAMP -gt $COMMIT_TIMESTAMP ]; then
+              echo "needs_update=true" >> $GITHUB_OUTPUT
+              echo "Update needed: $CURRENT_VERSION -> $LATEST_VERSION"
+            else
+              echo "needs_update=false" >> $GITHUB_OUTPUT
+              echo "Latest image ($LATEST_VERSION) is not newer than last commit, no update needed"
+            fi
+          else
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+            echo "Already on latest version"
+          fi
+
+      - name: Get latest Google Chrome stable version
+        id: check-chrome
+        if: steps.check-zap.outputs.needs_update == 'true'
+        run: |
+          # Get current Chrome version from Dockerfile
+          CURRENT_CHROME=$(grep -oP 'google-chrome-stable_\K[0-9.]+-[0-9]+' Dockerfile)
+          echo "current_chrome=$CURRENT_CHROME" >> $GITHUB_OUTPUT
+          echo "Current Chrome version: $CURRENT_CHROME"
+
+          # Scrape pkgs.org to get the latest Chrome stable version
+          CHROME_VERSION=$(curl -s 'https://pkgs.org/download/google-chrome-stable' | \
+                          grep -oP 'google-chrome-stable latest versions.*?:\s*\K[0-9.]+' | head -1)
+
+          # If we got a version without the Debian package revision, add -1
+          if [ -n "$CHROME_VERSION" ] && [[ ! "$CHROME_VERSION" =~ -[0-9]+$ ]]; then
+            CHROME_VERSION="${CHROME_VERSION}-1"
+          fi
+
+          echo "chrome_version=$CHROME_VERSION" >> $GITHUB_OUTPUT
+          echo "Latest Chrome version: $CHROME_VERSION"
+
+      - name: Update Dockerfile
+        id: update-dockerfile
+        if: steps.check-zap.outputs.needs_update == 'true'
+        run: |
+          CURRENT_ZAP="${{ steps.check-zap.outputs.current_version }}"
+          LATEST_ZAP="${{ steps.check-zap.outputs.latest_version }}"
+          CHROME_VERSION="${{ steps.check-chrome.outputs.chrome_version }}"
+          
+          # Update ZAP base image version
+          sed -i "s/FROM zaproxy\/zap-stable:$CURRENT_ZAP/FROM zaproxy\/zap-stable:$LATEST_ZAP/" Dockerfile
+          
+          # Update Chrome version if we found one
+          if [ -n "$CHROME_VERSION" ]; then
+            CURRENT_CHROME="${{ steps.check-chrome.outputs.current_chrome }}"
+            sed -i "s/google-chrome-stable_${CURRENT_CHROME}_amd64.deb/google-chrome-stable_${CHROME_VERSION}_amd64.deb/" Dockerfile
+            echo "Updated Chrome from $CURRENT_CHROME to $CHROME_VERSION"
+          else
+            echo "Could not determine latest Chrome version, keeping current version"
+          fi
+
+          echo "Dockerfile updated successfully"
+
+      - name: Check for changes
+        id: check-changes
+        if: steps.check-zap.outputs.needs_update == 'true'
+        run: |
+          if git diff --quiet Dockerfile; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in Dockerfile"
+            git diff Dockerfile
+          fi
+
+      - name: Create Pull Request
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            Update Docker base images
+            
+            - Update zaproxy/zap-stable from ${{ steps.check-zap.outputs.current_version }} to ${{ steps.check-zap.outputs.latest_version }}
+            ${{ steps.check-chrome.outputs.chrome_version != '' && format('- Update Google Chrome to {0}', steps.check-chrome.outputs.chrome_version) || '' }}
+          branch: automated/update-docker-images
+          delete-branch: true
+          title: 'Update Docker base images to ZAP ${{ steps.check-zap.outputs.latest_version }}'
+          body: |
+            ## Automated Docker Image Update
+
+            This PR updates the Docker base images to their latest versions:
+
+            ### Changes
+            - **zaproxy**: `${{ steps.check-zap.outputs.current_version }}` → `${{ steps.check-zap.outputs.latest_version }}`
+            ${{ steps.check-chrome.outputs.chrome_version != '' && format('- **Google Chrome**: `{0}` → `{1}`', steps.check-chrome.outputs.current_chrome, steps.check-chrome.outputs.chrome_version) || '- **Google Chrome**: Version check failed, kept current version' }}
+
+            ### Details
+            - Last commit date: `${{ steps.last-commit.outputs.last_commit_date }}`
+            - Latest ZAP image date: `${{ steps.check-zap.outputs.latest_image_date }}`
+
+            This PR was automatically created by the Update Docker Base Images workflow.
+          labels: |
+            dependencies
+            automated
