@@ -430,8 +430,8 @@ const runAnalysis = async (args: IDASTAnalysisArgs): Promise<void> => {
 
     await runAnalysis(args);
   } catch (error) {
-    soosLogger.error(`Error on execution: ${error}`);
-    soosLogger.always(`Error on execution: ${error} - exit 1`);
+    soosLogger.error(`Error on createAndRun: ${error}`);
+    soosLogger.always(`Error on createAndRun: ${error} - exit 1`);
     exit(1);
   }
 })();
