@@ -18,6 +18,7 @@
   "autoimport.spaceBetweenBraces": true,
   "autoimport.autoComplete": true,
   "cSpell.words": [
-    "SOOS"
+    "SOOS",
+    "DAST"
   ]
 }
