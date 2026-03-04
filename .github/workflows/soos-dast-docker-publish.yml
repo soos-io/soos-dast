@@ -24,15 +24,9 @@ jobs:
       - name: Wait for registry propagation
         run: sleep 10
 
-  soos-dast:
+  soos-csa:
     needs: wait-for-publish
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run SOOS DAST
-        uses: soos-io/soos-dast-github-action@v2
-        with:
-          project_name: ${{ github.event.repository.name }}
-          client_id: ${{ secrets.SOOS_CLIENT_ID }}
-          api_key: ${{ secrets.SOOS_API_KEY }}
-          scan_mode: "baseline"
-          target_url: "https://soos.io"
+    uses: soos-io/.github/.github/workflows/soos-csa-workflow.yml@main
+    with:
+      target_image: ${{ format('soosio/dast:{0}', github.event_name == 'release' && 'latest' || startsWith(github.ref, 'refs/tags/v') && 'beta' || 'alpha') }}
+    secrets: inherit
