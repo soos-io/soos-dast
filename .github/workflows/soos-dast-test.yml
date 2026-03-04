@@ -32,7 +32,7 @@ jobs:
           name: dast-image-${{ github.sha }}
           path: dast-image.tar
 
-  soos-dast:
+  soos-csa:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
