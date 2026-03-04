@@ -1,0 +1,32 @@
+name: Push Docker Container
+
+on:
+  push:
+    branches:
+      - "main"
+    tags:
+      - "v*"
+  release:
+    types: [published]
+
+jobs:
+  docker:
+    uses: soos-io/.github/.github/workflows/docker-publish-workflow.yml@main
+    with:
+      image_name: soosio/dast
+      short_description: SOOS DAST - The affordable no limit web vulnerability scanner.
+    secrets: inherit
+
+  wait-for-publish:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for registry propagation
+        run: sleep 10
+
+  soos-csa:
+    needs: wait-for-publish
+    uses: soos-io/.github/.github/workflows/soos-csa-workflow.yml@main
+    with:
+      target_image: ${{ format('soosio/dast:{0}', github.event_name == 'release' && 'latest' || startsWith(github.ref, 'refs/tags/v') && 'beta' || 'alpha') }}
+    secrets: inherit

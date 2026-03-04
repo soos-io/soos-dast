@@ -4,17 +4,52 @@ on:
   pull_request: {}
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - name: Build and Test Docker Image
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Build Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: false
+          load: true
           tags: soosio/dast:${{ github.sha }}
-      - name: Run Tests
+
+      - name: Run Test Scan
         run: |
-          docker run -u zap soosio/dast:${{ github.sha }} --clientId=${{secrets.SOOS_CLIENT_ID}} --apiKey=${{secrets.SOOS_API_KEY}} --apiURL="https://dev-api.soos.io/api/" --projectName="soos-dast" https://soos.io --debug
+          docker run -u zap soosio/dast:${{ github.sha }} --clientId=${{secrets.SOOS_CLIENT_ID_DEV}} --apiKey=${{secrets.SOOS_API_KEY_DEV}} --apiURL="https://dev-api.soos.io/api/" --projectName="${{ github.event.repository.name }} test" https://soos.io --debug
+
+      - name: Save Docker Image
+        run: docker save soosio/dast:${{ github.sha }} -o dast-image.tar
+
+      - name: Upload Docker Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dast-image-${{ github.sha }}
+          path: dast-image.tar
+
+  soos-csa:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Docker Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dast-image-${{ github.sha }}
+
+      - name: Load Docker Image
+        run: docker load -i dast-image.tar
+
+      - name: Run SOOS CSA
+        uses: soos-io/soos-csa-github-action@v1
+        with:
+          project_name: ${{ github.event.repository.name }}
+          client_id: ${{ secrets.SOOS_CLIENT_ID_DEV }}
+          api_key: ${{ secrets.SOOS_API_KEY_DEV }}
+          api_url: "https://dev-api.soos.io/api/"
+          target_image: soosio/dast:${{ github.sha }}
+          other_docker_run_options: "-v /var/run/docker.sock:/var/run/docker.sock"
