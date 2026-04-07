@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y nodejs
 RUN apt-get install -y python3-termcolor python3-selenium python3-blinker
 
 # Set up Chrome - Check here for newer version numbers https://pkgs.org/download/google-chrome-stable
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_146.0.7680.80-1_amd64.deb \
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_146.0.7680.177-1_amd64.deb \
   && apt-get update \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
@@ -19,7 +19,7 @@ COPY --chown=zap:zap ./src/ ./src/
 COPY ./tsconfig.json ./
 COPY ./package.json ./
 COPY ./package-lock.json ./
-RUN npm ci && npm run build
+RUN npm ci && npm run build && rm -rf ./src
 
 COPY --chown=zap:zap ./src/reports/traditional-json/report.json /zap/reports/traditional-json/report.json
 RUN mkdir -p /zap/wrk && chown -R zap:zap /zap/wrk && chmod -R 770 /zap/wrk
