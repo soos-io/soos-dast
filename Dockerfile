@@ -19,7 +19,7 @@ COPY --chown=zap:zap ./src/ ./src/
 COPY ./tsconfig.json ./
 COPY ./package.json ./
 COPY ./package-lock.json ./
-RUN npm ci && npm run build
+RUN npm ci && npm run build && rm -rf ./src
 
 COPY --chown=zap:zap ./src/reports/traditional-json/report.json /zap/reports/traditional-json/report.json
 RUN mkdir -p /zap/wrk && chown -R zap:zap /zap/wrk && chmod -R 770 /zap/wrk
